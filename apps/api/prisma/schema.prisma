@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,12 +7,553 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Sample {
-  id        Int      @id @default(autoincrement())
-  name      String
-  code      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model User {
+  id          Int     @id @default(autoincrement())
+  username    String  @unique
+  first_name  String
+  last_name   String
+  email       String  @unique
+  password    String?
+  middle_name String?
+  image       String?
+  referral    String? @unique
+  verified    Boolean @default(false)
 
-  @@map("samples") // if you want to use snake_case format
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  verifications Verifications[] @relation("user_verification")
+
+  role             UserHasRole[]
+  auth_provider    UsersAuthProvider[]
+  addresses        UsersAddress[]
+  store_admins     StoreHasAdmin[]
+  carts            Cart[]
+  orders           Order[]             @relation("OrderCustomer")
+  managed_orders   Order[]             @relation("OrderManager")
+  inventory        StocksAdjustment[]
+  vouchers_created Voucher[]           @relation("VoucherCreator")
+  vouchers_used    UsersVoucher[]
+
+  @@index([id])
+  @@index([username])
+  @@index([email])
+  @@index([referral])
+  @@map("users")
+}
+
+model Verifications {
+  id                 Int                @id @default(autoincrement())
+  user_id            Int?
+  validated_at       DateTime?
+  validation_sent_at DateTime?
+  expired_at         DateTime?
+  email              String
+  unique_identifier  String             @unique
+  status             VerificationStatus
+  user               User?              @relation("user_verification", fields: [user_id], references: [id])
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@index([unique_identifier])
+  @@map("verifications")
+}
+
+enum VerificationStatus {
+  activated
+  on_progress
+  deactivated
+  expired
+}
+
+model UsersAuthProvider {
+  id               Int           @id @default(autoincrement())
+  user             User?         @relation(fields: [user_id], references: [id])
+  user_id          Int?
+  auth_provider    AuthProvider? @relation(fields: [auth_provider_id], references: [id])
+  auth_provider_id Int?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("users_auth_providers")
+}
+
+model AuthProvider {
+  id       Int    @id @default(autoincrement())
+  provider String
+
+  users_auth_provider UsersAuthProvider[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("auth_providers")
+}
+
+model Permission {
+  id           Int     @id @default(autoincrement())
+  name         String  @unique
+  display_name String?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  roles_permissions RolesHasPermission[]
+
+  @@index([id])
+  @@index([name])
+  @@map("permissions")
+}
+
+model Role {
+  id           Int     @id @default(autoincrement())
+  name         String  @unique
+  display_name String?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  user_role         UserHasRole[]
+  roles_permissions RolesHasPermission[]
+
+  @@index([id])
+  @@index([name])
+  @@map("roles")
+}
+
+model RolesHasPermission {
+  id            Int        @id @default(autoincrement())
+  permission    Permission @relation(fields: [permission_id], references: [id])
+  permission_id Int
+  role          Role       @relation(fields: [role_id], references: [id])
+  role_id       Int
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("role_has_permissions")
+}
+
+model UserHasRole {
+  id      Int  @id @default(autoincrement())
+  user    User @relation(fields: [user_id], references: [id])
+  user_id Int
+  role    Role @relation(fields: [role_id], references: [id])
+  role_id Int
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("user_has_roles")
+}
+
+model UsersAddress {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [user_id], references: [id])
+  user_id     Int
+  city        City     @relation(fields: [city_id], references: [id])
+  city_id     Int
+  province    Province @relation(fields: [province_id], references: [id])
+  province_id Int
+  is_primary  Boolean
+  address     String
+  kecamatan   String
+  kelurahan   String
+  latitude    Decimal? @db.Decimal(9, 6)
+  longtitude  Decimal? @db.Decimal(9, 6)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("users_addresses")
+}
+
+model Province {
+  id       Int    @id @default(autoincrement())
+  province String
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  cities          City[]
+  stores          Store[]
+  users_addresses UsersAddress[]
+
+  @@index([id])
+  @@map("provinces")
+}
+
+model City {
+  id          Int      @id @default(autoincrement())
+  province    Province @relation(fields: [province_id], references: [id])
+  province_id Int
+  type        CityType
+  city_name   String
+  postal_code String
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  users_addresses UsersAddress[]
+  stores          Store[]
+
+  @@index([id])
+  @@map("cities")
+}
+
+enum CityType {
+  kabupaten
+  kota
+}
+
+model Expedition {
+  id           Int    @id @default(autoincrement())
+  name         String
+  display_name String
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  orders Order[]
+
+  @@index([id])
+  @@map("expeditions")
+}
+
+model Store {
+  id          Int       @id @default(autoincrement())
+  name        String
+  store_type  StoreType
+  city        City      @relation(fields: [city_id], references: [id])
+  city_id     Int
+  province    Province  @relation(fields: [province_id], references: [id])
+  province_id Int
+  address     String
+  kecamatan   String
+  kelurahan   String
+  image       String?
+  latitude    Decimal   @db.Decimal(9, 6)
+  longtitude  Decimal   @db.Decimal(9, 6)
+
+  store_admins        StoreHasAdmin[]
+  products            Product[]
+  inventory_from      StocksAdjustment[] @relation("FromStore")
+  inventory_destinied StocksAdjustment[] @relation("DestiniedStore")
+  carts               Cart[]
+  orders              Order[]
+  order_detail        OrderDetail[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("stores")
+}
+
+enum StoreType {
+  central
+  branch
+}
+
+model StoreHasAdmin {
+  id          Int   @id @default(autoincrement())
+  user        User  @relation(fields: [user_id], references: [id])
+  user_id     Int
+  store       Store @relation(fields: [store_id], references: [id])
+  store_id    Int
+  assignee_id Int
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("store_has_admins")
+}
+
+model ProductCategory {
+  id           Int     @id @default(autoincrement())
+  name         String  @unique
+  display_name String?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  products Product[]
+
+  @@index([id])
+  @@index([name])
+  @@map("product_categories")
+}
+
+model Product {
+  id                  Int             @id @default(autoincrement())
+  sku                 String          @unique
+  name                String          @unique
+  product_category    ProductCategory @relation(fields: [product_category_id], references: [id])
+  product_category_id Int
+  description         String?
+  current_stock       Int
+  unit                String
+  price               Float
+  image               String?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  inventory         StocksAdjustment[]
+  carts             Cart[]
+  vouchers          Voucher[]
+  product_discounts ProductDiscount[]
+  store             Store?             @relation(fields: [store_id], references: [id])
+  store_id          Int?
+  order_detail      OrderDetail[]
+
+  @@index([id])
+  @@map("products")
+}
+
+model StocksAdjustment {
+  id                 Int             @id @default(autoincrement())
+  qty_change         Int
+  type               StockAdjustType
+  managed_by         User            @relation(fields: [managed_by_id], references: [id])
+  managed_by_id      Int
+  product            Product         @relation(fields: [product_id], references: [id])
+  product_id         Int
+  detail             String
+  from_store         Store           @relation("FromStore", fields: [from_store_id], references: [id])
+  from_store_id      Int
+  destinied_store    Store           @relation("DestiniedStore", fields: [destinied_store_id], references: [id])
+  destinied_store_id Int
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("stocks_adjustments")
+}
+
+enum StockAdjustType {
+  increment
+  decreement
+}
+
+model Cart {
+  id         Int     @id @default(autoincrement())
+  product    Product @relation(fields: [product_id], references: [id])
+  product_id Int
+  qty        Int
+  user       User    @relation(fields: [user_id], references: [id])
+  user_id    Int
+  store      Store   @relation(fields: [store_id], references: [id])
+  store_id   Int
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("carts")
+}
+
+model Order {
+  id                Int                       @id @default(autoincrement())
+  invoice           String                    @unique
+  customer          User                      @relation("OrderCustomer", fields: [customer_id], references: [id])
+  customer_id       Int
+  managed_by        User                      @relation("OrderManager", fields: [managed_by_id], references: [id])
+  managed_by_id     Int
+  store             Store                     @relation(fields: [store_id], references: [id])
+  store_id          Int
+  expedition        Expedition                @relation(fields: [expedition_id], references: [id])
+  expedition_id     Int
+  payment_proof     String?
+  order_status      OrderStatus               @relation(fields: [order_status_id], references: [id])
+  order_status_id   Int
+  order_details     OrderDetail[]
+  vouchers          OrderHasVoucher[]
+  product_discounts OrderHasProductDiscount[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@index([invoice])
+  @@map("orders")
+}
+
+model OrderStatus {
+  id     Int    @id @default(autoincrement())
+  status String
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  orders Order[]
+
+  @@index([id])
+  @@map("order_statuses")
+}
+
+model OrderDetail {
+  id         Int     @id @default(autoincrement())
+  order      Order   @relation(fields: [order_id], references: [id])
+  order_id   Int
+  product    Product @relation(fields: [product_id], references: [id])
+  product_id Int
+  qty        Int
+  store      Store   @relation(fields: [store_id], references: [id])
+  store_id   Int
+  price      Float
+  sub_total  Float
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("order_details")
+}
+
+model Voucher {
+  id                               Int              @id @default(autoincrement())
+  voucher                          String?          @unique
+  voucher_type                     VoucherType
+  started_at                       DateTime
+  end_at                           DateTime
+  created_by                       User             @relation("VoucherCreator", fields: [created_by_id], references: [id])
+  created_by_id                    Int
+  is_all_get                       Boolean
+  description                      String
+  buy_n_qty                        Int?
+  get_n_qty                        Int?
+  product                          Product?         @relation(fields: [product_id], references: [id])
+  product_id                       Int?
+  delivery_discount                Float?
+  is_delivery_free                 Boolean?
+  product_discount                 ProductDiscount? @relation(fields: [product_discount_id], references: [id])
+  product_discount_id              Int?
+  can_stack_with_product_discounts Boolean
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  users_vouchers  UsersVoucher[]
+  orders_vouchers OrderHasVoucher[]
+
+  @@index([id])
+  @@index([voucher])
+  @@map("vouchers")
+}
+
+enum VoucherType {
+  buy_n_get_n
+  delivery_discount
+  delivery_free
+  product_discount
+}
+
+model UsersVoucher {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [user_id], references: [id])
+  user_id    Int
+  voucher    Voucher  @relation(fields: [voucher_id], references: [id])
+  voucher_id Int
+  used_at    DateTime
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+
+  @@map("users_vouchers")
+}
+
+model OrderHasVoucher {
+  id         Int     @id @default(autoincrement())
+  order      Order   @relation(fields: [order_id], references: [id])
+  order_id   Int
+  voucher    Voucher @relation(fields: [voucher_id], references: [id])
+  voucher_id Int
+  nominal    Float
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+
+  @@map("order_has_vouchers")
+}
+
+model ProductDiscount {
+  id         Int      @id @default(autoincrement())
+  discount   Int
+  started_at DateTime
+  end_at     DateTime
+  product    Product  @relation(fields: [product_id], references: [id])
+  product_id Int
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  orders        OrderHasProductDiscount[]
+  vouchers      Voucher[]
+  discount_type DiscountType
+
+  @@index([id])
+
+  @@map("product_discounts")
+}
+
+enum DiscountType {
+  nominal
+  percentage
+}
+
+model OrderHasProductDiscount {
+  id                  Int             @id @default(autoincrement())
+  order               Order           @relation(fields: [order_id], references: [id])
+  order_id            Int
+  product_discount    ProductDiscount @relation(fields: [product_discount_id], references: [id])
+  product_discount_id Int
+  nominal             Float
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  
+  @@map("order_has_product_discounts")
 }

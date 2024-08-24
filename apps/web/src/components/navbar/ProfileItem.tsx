@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { FaUser } from "react-icons/fa";
 
 import { ProfileDropDownItems } from "@/constants";
 
@@ -15,14 +15,7 @@ export default function ProfileItem() {
         role="button"
         className="avatar btn btn-circle btn-ghost"
       >
-        <div className="w-8 rounded-full">
-          <Image
-            width={100}
-            height={100}
-            alt="user placeholder"
-            src="/400.svg"
-          />
-        </div>
+        <FaUser size={20} />
       </div>
       <ul
         tabIndex={0}

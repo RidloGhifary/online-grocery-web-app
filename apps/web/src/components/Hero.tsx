@@ -5,6 +5,7 @@ import { Navigation, Autoplay } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/pagination";
+import Image from "next/image";
 
 export default function Hero() {
   return (
@@ -22,15 +23,18 @@ export default function Hero() {
         modules={[Autoplay, Navigation]}
         className="mySwiper"
       >
-        <SwiperSlide>Slide 1</SwiperSlide>
-        <SwiperSlide>Slide 2</SwiperSlide>
-        <SwiperSlide>Slide 3</SwiperSlide>
-        <SwiperSlide>Slide 4</SwiperSlide>
-        <SwiperSlide>Slide 5</SwiperSlide>
-        <SwiperSlide>Slide 6</SwiperSlide>
-        <SwiperSlide>Slide 7</SwiperSlide>
-        <SwiperSlide>Slide 8</SwiperSlide>
-        <SwiperSlide>Slide 9</SwiperSlide>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <SwiperSlide key={index}>
+            <Image
+              width={1000}
+              height={1000}
+              src="/banner-hero-sample.webp"
+              alt="Placeholder"
+              className="h-full w-full object-cover"
+              priority
+            />
+          </SwiperSlide>
+        ))}
       </Swiper>
     </div>
   );

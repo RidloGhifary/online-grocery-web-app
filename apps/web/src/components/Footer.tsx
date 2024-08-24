@@ -2,7 +2,7 @@ import Logo from "./Logo";
 
 export default function Footer() {
   return (
-    <footer className="footer footer-center border-t bg-white p-10 text-primary-content">
+    <footer className="footer footer-center mt-28 border-t bg-white p-10 text-primary-content">
       <aside>
         <p className="font-bold">
           <Logo />

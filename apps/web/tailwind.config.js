@@ -18,6 +18,13 @@ module.exports = {
   },
   plugins: [require("daisyui")],
   daisyui: {
-    themes: [],
+    themes: [
+      {
+        mytheme: {
+          primary: "#16a34a",
+          "base-100": "#ffffff",
+        },
+      },
+    ],
   },
 };

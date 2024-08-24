@@ -10,6 +10,10 @@ export const NavbarItems = [
         href: "/cart",
       },
       {
+        name: "My Vouchers",
+        href: "/my-vouchers",
+      },
+      {
         name: "Profile",
         href: "/profile",
       },
@@ -34,18 +38,20 @@ export const ProfileDropDownItems = [
     name: "Profile",
     href: "/profile",
     requireAuth: true,
-    icon: FaUser,
   },
   {
     name: "My Store",
     href: "/my-store",
     requireAuth: true,
-    icon: PiStorefrontFill,
+  },
+  {
+    name: "Create Store",
+    href: "/create-store",
+    requireAuth: true,
   },
   {
     name: "Logout",
     href: "/logout",
     requireAuth: true,
-    icon: LuLogOut,
   },
 ];

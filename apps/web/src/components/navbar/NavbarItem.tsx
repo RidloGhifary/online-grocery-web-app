@@ -6,19 +6,16 @@ import { NavbarItems } from "@/constants";
 import ProfileItem from "./ProfileItem";
 
 export default function NavbarItem() {
-  const isLoggedIn = false;
+  const isLoggedIn = true;
   const router = useRouter();
 
   return (
-    <div className="space-x-4">
+    <div>
       {NavbarItems.map((item, i) => (
-        <div
-          key={i}
-          className="flex cursor-pointer items-center gap-4 hover:underline"
-        >
+        <div key={i} className="flex items-center gap-4">
           {isLoggedIn &&
             item?.requireAuth?.map((item, i) => (
-              <div key={i}>
+              <div key={i} className="mr-auto cursor-pointer hover:underline">
                 {item.name === "Profile" ? (
                   <ProfileItem />
                 ) : (
@@ -31,6 +28,7 @@ export default function NavbarItem() {
 
           {!isLoggedIn && (
             <span
+              className="cursor-pointer"
               onClick={() =>
                 router.push(
                   `${item.href === "/cart" ? "/login?callbackUrl=/cart" : item.href}`,

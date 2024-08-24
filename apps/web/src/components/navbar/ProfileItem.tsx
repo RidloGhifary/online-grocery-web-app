@@ -26,7 +26,7 @@ export default function ProfileItem() {
       </div>
       <ul
         tabIndex={0}
-        className="menu dropdown-content menu-sm z-[1] w-52 space-y-3 rounded-box bg-base-100 p-4 shadow"
+        className="menu dropdown-content menu-sm z-50 w-52 space-y-3 rounded-box bg-white p-4 shadow"
       >
         {ProfileDropDownItems.map((item, i) => (
           <li

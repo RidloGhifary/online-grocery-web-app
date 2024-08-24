@@ -1,14 +1,15 @@
-import type { Metadata } from 'next';
-import { Nunito } from 'next/font/google';
+import type { Metadata } from "next";
+import { Nunito } from "next/font/google";
 
-import './globals.css';
-import Navbar from '@/components/navbar/Navbar';
+import "./globals.css";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/Footer";
 
-const font = Nunito({ subsets: ['latin'] });
+const font = Nunito({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Online Grocery Store',
-  description: 'Online Grocery Store',
+  title: "Online Grocery Store",
+  description: "Online Grocery Store",
 };
 
 export default function RootLayout({
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className={font.className}>
         <Navbar />
         <main>{children}</main>
+        <Footer />
       </body>
     </html>
   );

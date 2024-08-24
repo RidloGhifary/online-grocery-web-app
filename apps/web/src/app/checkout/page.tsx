@@ -4,10 +4,6 @@ import { mockAddress, mockCartItems } from '@/constants/index';
 
 const CheckoutPage: React.FC = () => {
   const [selectedDeliveryService, setSelectedDeliveryService] = useState('JNE');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('DANA');
-  const handlePaymentChange = (method: string) => {
-    setSelectedPaymentMethod(method);
-  };
   const [deliveryNotes, setDeliveryNotes] = useState('');
 
   return (

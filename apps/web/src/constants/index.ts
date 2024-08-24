@@ -4,6 +4,7 @@ export interface mockCartItem {
     price: number;
     quantity: number;
     image: string;
+    weight: number; 
   }
   
   export const mockCartItems: mockCartItem[] = [
@@ -13,6 +14,7 @@ export interface mockCartItem {
       price: 2.99,
       quantity: 2,
       image: '/images/apple.jpg',
+      weight: 0.3, 
     },
     {
       id: 2,
@@ -20,6 +22,7 @@ export interface mockCartItem {
       price: 1.5,
       quantity: 3,
       image: '/images/banana.jpg',
+      weight: 0.2, 
     },
     {
       id: 3,
@@ -27,5 +30,16 @@ export interface mockCartItem {
       price: 3.99,
       quantity: 1,
       image: '/images/orange.jpg',
+      weight: 0.4, 
     },
   ];
+
+  export const mockAddress = {
+    id: 1,
+    name: 'John Doe',
+    addressLine1: '123 Main Street',
+    addressLine2: 'Apartment 4B',
+    city: 'New York',
+    state: 'NY',
+    postalCode: '10001',
+  };

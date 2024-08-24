@@ -3,6 +3,7 @@
 import { Provinces } from "@/constants";
 import { UseFormRegister } from "react-hook-form";
 import { RegisterFormData } from "../register/page";
+import GoogleLoginButton from "./GoogleLoginButton";
 
 interface RegisterFormProps {
   isLoading: boolean;
@@ -187,6 +188,8 @@ export default function RegisterForm({
           )}
         </button>
       </div>
+      <hr />
+      <GoogleLoginButton />
     </form>
   );
 }

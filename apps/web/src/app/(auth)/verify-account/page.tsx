@@ -6,6 +6,8 @@ import { z } from "zod";
 import { useTransition } from "react";
 import { toast } from "react-toastify";
 import { useSearchParams } from "next/navigation";
+import AuthHeader from "../_components/AuthHeader";
+import AuthWrapper from "../_components/AuthWrapper";
 
 const schema = z
   .object({
@@ -50,12 +52,8 @@ export default function VerifyAccountPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          Verify your account
-        </h2>
-      </div>
+    <AuthWrapper>
+      <AuthHeader title="Verify your account" />
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -120,6 +118,6 @@ export default function VerifyAccountPage() {
           </div>
         </form>
       </div>
-    </div>
+    </AuthWrapper>
   );
 }

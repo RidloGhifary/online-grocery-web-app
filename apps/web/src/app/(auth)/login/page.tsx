@@ -6,6 +6,9 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "react-toastify";
+import GoogleLoginButton from "../_components/GoogleLoginButton";
+import AuthHeader from "../_components/AuthHeader";
+import AuthWrapper from "../_components/AuthWrapper";
 
 const schema = z.object({
   email: z.string().email({ message: "Enter valid email!" }),
@@ -42,12 +45,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          Sign in to your account
-        </h2>
-      </div>
+    <AuthWrapper>
+      <AuthHeader title="Sign in to your account" />
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -115,6 +114,8 @@ export default function LoginPage() {
               )}
             </button>
           </div>
+          <hr />
+          <GoogleLoginButton />
         </form>
 
         <p className="mt-10 text-center text-sm text-gray-500">
@@ -127,6 +128,6 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </AuthWrapper>
   );
 }

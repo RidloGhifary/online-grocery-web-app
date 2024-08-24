@@ -1,23 +1,24 @@
-import { SampleController } from '@/controllers/sample.controller';
-import { Router } from 'express';
 
-export class SampleRouter {
-  private router: Router;
-  private sampleController: SampleController;
+// import { SampleController } from '@/controllers/sample.controller';
+// import { Router } from 'express';
 
-  constructor() {
-    this.sampleController = new SampleController();
-    this.router = Router();
-    this.initializeRoutes();
-  }
+// export class SampleRouter {
+//   private router: Router;
+//   private sampleController: SampleController;
 
-  private initializeRoutes(): void {
-    this.router.get('/', this.sampleController.getSampleData);
-    this.router.get('/:id', this.sampleController.getSampleDataById);
-    this.router.post('/', this.sampleController.createSampleData);
-  }
+//   constructor() {
+//     this.sampleController = new SampleController();
+//     this.router = Router();
+//     this.initializeRoutes();
+//   }
 
-  getRouter(): Router {
-    return this.router;
-  }
-}
+//   private initializeRoutes(): void {
+//     this.router.get('/', this.sampleController.getSampleData);
+//     this.router.get('/:id', this.sampleController.getSampleDataById);
+//     this.router.post('/', this.sampleController.createSampleData);
+//   }
+
+//   getRouter(): Router {
+//     return this.router;
+//   }
+// }

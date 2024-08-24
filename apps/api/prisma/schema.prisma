@@ -19,8 +19,8 @@ model User {
   referral    String? @unique
   verified    Boolean @default(false)
 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  created_at DateTime?  @default(now())
+  updated_at DateTime?  @updatedAt
   deleted_at DateTime?
 
   verifications Verifications[] @relation("user_verification")
@@ -494,7 +494,6 @@ model UsersVoucher {
   deletedAt DateTime?
 
   @@index([id])
-
   @@map("users_vouchers")
 }
 
@@ -511,7 +510,6 @@ model OrderHasVoucher {
   deletedAt DateTime?
 
   @@index([id])
-
   @@map("order_has_vouchers")
 }
 
@@ -532,7 +530,6 @@ model ProductDiscount {
   discount_type DiscountType
 
   @@index([id])
-
   @@map("product_discounts")
 }
 
@@ -554,6 +551,5 @@ model OrderHasProductDiscount {
   deletedAt DateTime?
 
   @@index([id])
-  
   @@map("order_has_product_discounts")
 }

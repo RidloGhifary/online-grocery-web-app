@@ -10,9 +10,9 @@ export default function NavbarItem() {
   const router = useRouter();
 
   return (
-    <div>
+    <div className="mt-10 h-full w-full md:mt-0 md:w-fit">
       {NavbarItems.map((item, i) => (
-        <div key={i} className="flex items-center gap-4">
+        <div key={i} className="flex flex-col items-center gap-4 md:flex-row">
           {isLoggedIn &&
             item?.requireAuth?.map((item, i) => (
               <div key={i} className="mr-auto cursor-pointer hover:underline">

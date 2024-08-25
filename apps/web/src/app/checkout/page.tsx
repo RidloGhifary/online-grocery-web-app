@@ -7,7 +7,7 @@ const CheckoutPage: React.FC = () => {
   const [deliveryNotes, setDeliveryNotes] = useState('');
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 h-screen">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-3">
           <div className="bg-white p-4 mb-4 shadow-md rounded-md">
@@ -17,6 +17,7 @@ const CheckoutPage: React.FC = () => {
             <p>{mockAddress.addressLine2}</p>
             <p>{mockAddress.city}, {mockAddress.state} {mockAddress.postalCode}</p>
           </div>
+          <h2 className='font-bold text-xl'>Your Orders</h2>
           {mockCartItems.map(item => (
             <div key={item.id} className="bg-white p-4 mb-4 shadow-md rounded-md">
               <h3 className="text-lg font-semibold">{item.name}</h3>
@@ -24,7 +25,10 @@ const CheckoutPage: React.FC = () => {
               <p>Quantity: {item.quantity}</p>
             </div>
           ))}
-          <div className="bg-white p-4 mb-4 shadow-md rounded-md">
+        </div>
+        <div className="lg:col-span-2">
+          <div className="bg-white p-4 shadow-md rounded-md">
+            <h2 className="text-xl font-bold">Total Price</h2>
             <label htmlFor="deliveryService" className="block font-semibold">Delivery Service</label>
             <select
               id="deliveryService"
@@ -36,11 +40,6 @@ const CheckoutPage: React.FC = () => {
               <option value="POS Indonesia">POS Indonesia</option>
               <option value="TIKI">TIKI</option>
             </select>
-          </div>
-        </div>
-        <div className="lg:col-span-2">
-          <div className="bg-white p-4 shadow-md rounded-md">
-            <h2 className="text-xl font-bold">Total Price</h2>
             <p>${
               mockCartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)
             }</p>

@@ -8,6 +8,10 @@ import express, {
 } from 'express';
 import cors from 'cors';
 import { PORT } from './config';
+import passport from 'passport';
+import session from 'express-session';
+
+import './auth';
 import { SampleRouter } from './routers/sample.router';
 import { AuthRouter } from './routers/auth.router';
 
@@ -25,6 +29,11 @@ export default class App {
     this.app.use(cors());
     this.app.use(json());
     this.app.use(urlencoded({ extended: true }));
+    this.app.use(
+      session({ secret: 'cats', resave: false, saveUninitialized: true }),
+    );
+    this.app.use(passport.initialize());
+    this.app.use(passport.session());
   }
 
   private handleError(): void {

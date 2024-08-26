@@ -61,7 +61,7 @@ const PaymentStatusPage: React.FC = () => {
         </div>
       )}
 
-      {/* Can Stage */}
+      {/* Cancelled Stage */}
       {paymentStage === 'Dibatalkan' && (
         <div className="flex justify-center items-center mb-8">
           <div className="text-4xl text-red-500">

@@ -2,8 +2,9 @@
 
 import { Provinces } from "@/constants";
 import { UseFormRegister } from "react-hook-form";
-import { RegisterFormData } from "../register/page";
-import GoogleLoginButton from "./GoogleLoginButton";
+import { RegisterFormData } from "../page";
+import GoogleLoginButton from "../../_components/GoogleLoginButton";
+import InputField from "./Input";
 
 interface RegisterFormProps {
   isLoading: boolean;
@@ -33,70 +34,36 @@ export default function RegisterForm({
 }: RegisterFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div>
-        <label
-          htmlFor="first_name"
-          className="block text-sm font-medium leading-6 text-gray-900"
-        >
-          First name
-        </label>
-        <div className="mt-2">
-          <input
-            id="first_name"
-            type="first_name"
-            required
-            placeholder="John"
-            disabled={isLoading}
-            className="block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-primary placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 sm:text-sm sm:leading-6"
-            {...register("first_name")}
-          />
-        </div>
-        <p className="mt-2 text-sm text-red-600">
-          {errors.first_name?.message}
-        </p>
+      <div className="grid grid-cols-2 gap-2">
+        <InputField
+          id="first_name"
+          label="First name"
+          type="text"
+          placeholder="John"
+          disabled={isLoading}
+          register={register}
+          errors={errors.first_name?.message}
+        />
+        <InputField
+          id="last_name"
+          label="Last name"
+          type="text"
+          placeholder="Doe"
+          disabled={isLoading}
+          register={register}
+          errors={errors.last_name?.message}
+        />
       </div>
 
-      <div>
-        <label
-          htmlFor="last_name"
-          className="block text-sm font-medium leading-6 text-gray-900"
-        >
-          Last name
-        </label>
-        <div className="mt-2">
-          <input
-            id="last_name"
-            type="last_name"
-            required
-            placeholder="Doe"
-            disabled={isLoading}
-            className="block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-primary placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 sm:text-sm sm:leading-6"
-            {...register("last_name")}
-          />
-        </div>
-        <p className="mt-2 text-sm text-red-600">{errors.last_name?.message}</p>
-      </div>
-
-      <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium leading-6 text-gray-900"
-        >
-          Email
-        </label>
-        <div className="mt-2">
-          <input
-            id="email"
-            type="email"
-            required
-            placeholder="johndoe@john.com"
-            disabled={isLoading}
-            className="block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-primary placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 sm:text-sm sm:leading-6"
-            {...register("email")}
-          />
-        </div>
-        <p className="mt-2 text-sm text-red-600">{errors.email?.message}</p>
-      </div>
+      <InputField
+        id="email"
+        label="Email"
+        type="email"
+        placeholder="johndoe@john.com"
+        disabled={isLoading}
+        register={register}
+        errors={errors.email?.message}
+      />
 
       <div className="grid grid-cols-2 gap-2">
         <div>
@@ -115,7 +82,10 @@ export default function RegisterForm({
             >
               <option value="">Select Province</option>
               {Provinces.map((province) => (
-                <option key={province.province_id} value={province.province_id}>
+                <option
+                  key={province.province_id}
+                  value={`${province.province_id},${province.province}`}
+                >
                   {province.province}
                 </option>
               ))}
@@ -143,7 +113,10 @@ export default function RegisterForm({
               <option value="">Select city</option>
               {filteredCities.map(
                 (city: { city_id: string; city_name: string }) => (
-                  <option key={city.city_id} value={city.city_id}>
+                  <option
+                    key={city.city_id}
+                    value={`${city.city_id},${city.city_name}`}
+                  >
                     {city.city_name}
                   </option>
                 ),
@@ -153,6 +126,25 @@ export default function RegisterForm({
           <p className="mt-2 text-sm text-red-600">{errors.city?.message}</p>
         </div>
       </div>
+
+      <InputField
+        id="kelurahan"
+        label="kelurahan"
+        type="text"
+        placeholder="kelurahan"
+        disabled={isLoading}
+        register={register}
+        errors={errors.kelurahan?.message}
+      />
+      <InputField
+        id="kecamatan"
+        label="Kecamatan"
+        type="text"
+        placeholder="Kecamatan"
+        disabled={isLoading}
+        register={register}
+        errors={errors.kecamatan?.message}
+      />
 
       <div>
         <label
@@ -189,7 +181,7 @@ export default function RegisterForm({
         </button>
       </div>
       <hr />
-      <GoogleLoginButton />
+      <GoogleLoginButton disabled={isLoading} />
     </form>
   );
 }

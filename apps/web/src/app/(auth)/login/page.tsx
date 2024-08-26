@@ -9,6 +9,9 @@ import { toast } from "react-toastify";
 import GoogleLoginButton from "../_components/GoogleLoginButton";
 import AuthHeader from "../_components/AuthHeader";
 import AuthWrapper from "../_components/AuthWrapper";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
+import { setCookies } from "@/actions/cookies";
 
 const schema = z.object({
   email: z.string().email({ message: "Enter valid email!" }),
@@ -23,6 +26,11 @@ type FormData = {
 export default function LoginPage() {
   const [isLoading, startTransition] = useTransition();
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const callbackUrl = searchParams.get("callbackUrl");
+  const queryClient = useQueryClient();
+
   const {
     register,
     handleSubmit,
@@ -35,12 +43,48 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit: SubmitHandler<FormData> = (data) => {
-    startTransition(() => {
-      console.log(data);
+  const mutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await fetch("http://localhost:8000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        // Handle HTTP errors
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message || "Something went wrong!");
+      }
+
+      return await response.json();
+    },
+    onSuccess: (res) => {
+      if (!res.ok) {
+        return toast.error(res?.message || "Something went wrong!", {
+          position: "top-center",
+        });
+      }
+
       toast.success("Login success!", {
         position: "top-center",
       });
+
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setCookies("token", res.token);
+
+      router.push(callbackUrl ? callbackUrl : "/");
+    },
+    onError: (res) => {
+      toast.error("Something went wrong!", { position: "top-center" });
+    },
+  });
+
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    startTransition(() => {
+      mutation.mutate(data);
     });
   };
 
@@ -48,7 +92,7 @@ export default function LoginPage() {
     <AuthWrapper>
       <AuthHeader title="Sign in to your account" />
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label

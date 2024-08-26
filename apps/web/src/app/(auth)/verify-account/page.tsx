@@ -5,9 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTransition } from "react";
 import { toast } from "react-toastify";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthHeader from "../_components/AuthHeader";
 import AuthWrapper from "../_components/AuthWrapper";
+import { useMutation } from "@tanstack/react-query";
 
 const schema = z
   .object({
@@ -29,6 +30,7 @@ export default function VerifyAccountPage() {
   const searchParams = useSearchParams();
 
   const key = searchParams.get("key");
+  const router = useRouter();
 
   const {
     register,
@@ -42,12 +44,42 @@ export default function VerifyAccountPage() {
     },
   });
 
+  const mutation = useMutation({
+    mutationFn: async (data: { key: string; password: string }) => {
+      const response = await fetch(
+        "http://localhost:8000/api/auth/verify-account",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        },
+      );
+
+      return await response.json();
+    },
+    onSuccess: (res) => {
+      if (!res.ok) {
+        toast.error(res.message || "Something went wrong!", {
+          position: "top-center",
+        });
+        return;
+      }
+      toast.success("Verify account success!", { position: "top-center" });
+      router.push("/login")
+    },
+    onError: () => {
+      toast.error("Something went wrong!", { position: "top-center" });
+    },
+  });
+
   const onSubmit: SubmitHandler<FormData> = (data) => {
+    if (!key) return;
+
     startTransition(() => {
-      console.log({ ...data, key });
-      toast.success("Verify Account success!", {
-        position: "top-center",
-      });
+      const formattedData = { key, password: data.password };
+      mutation.mutate(formattedData);
     });
   };
 
@@ -55,7 +87,7 @@ export default function VerifyAccountPage() {
     <AuthWrapper>
       <AuthHeader title="Verify your account" />
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label

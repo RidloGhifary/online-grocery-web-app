@@ -7,10 +7,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "react-toastify";
 
+// import { Provinces } from "@/constants";
 import { Cities } from "@/constants";
-import RegisterForm from "../_components/RegisterForm";
+import RegisterForm from "./_components/RegisterForm";
 import AuthHeader from "../_components/AuthHeader";
 import AuthWrapper from "../_components/AuthWrapper";
+import { useMutation } from "@tanstack/react-query";
+// import GoogleLoginButton from "../_components/GoogleLoginButton";
 
 const schema = z.object({
   first_name: z.string().max(25, { message: "First name too long!" }),
@@ -23,6 +26,8 @@ const schema = z.object({
     message: "Please select a city!",
   }),
   address: z.string().max(255, { message: "Address too long!" }),
+  kelurahan: z.string().max(255, { message: "Kelurahan too long!" }),
+  kecamatan: z.string().max(255, { message: "Kecamatan too long!" }),
 });
 
 export type RegisterFormData = {
@@ -32,6 +37,8 @@ export type RegisterFormData = {
   city: string;
   email: string;
   address: string;
+  kelurahan: string;
+  kecamatan: string;
 };
 
 export default function RegisterPage() {
@@ -51,6 +58,8 @@ export default function RegisterPage() {
       province: "",
       city: "",
       address: "",
+      kecamatan: "",
+      kelurahan: "",
     },
   });
 
@@ -59,16 +68,49 @@ export default function RegisterPage() {
     name: "province",
   });
 
-  const filteredCities = Cities.filter(
-    (city) => city.province_id === selectedProvince,
-  );
+  const filteredCities = Cities.filter((city) => {
+    const provinceId = selectedProvince.split(",")[0];
+    return city.province_id === provinceId;
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (data: RegisterFormData) => {
+      const response = await fetch("http://localhost:8000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      return await response.json();
+    },
+    onSuccess: (res) => {
+      if (!res.ok) {
+        toast.error(res.message || "Something went wrong!", {
+          position: "top-center",
+        });
+        return;
+      }
+      toast.success("Check your email!", { position: "top-center" });
+    },
+    onError: () => {
+      toast.error("Something went wrong!", { position: "top-center" });
+    },
+  });
 
   const onSubmit: SubmitHandler<RegisterFormData> = (data) => {
     startTransition(() => {
-      console.log(data);
-      toast.success("Register success!", {
-        position: "top-center",
-      });
+      const [city_id, city] = data.city.split(",");
+      const [province_id, province] = data.province.split(",");
+      const formattedData = {
+        ...data,
+        city_id: parseInt(city_id),
+        city,
+        province_id: parseInt(province_id),
+        province,
+      };
+      mutation.mutate(formattedData);
     });
   };
 
@@ -76,7 +118,7 @@ export default function RegisterPage() {
     <AuthWrapper>
       <AuthHeader title="Sign up your account" />
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
         <RegisterForm
           isLoading={isLoading}
           register={register}

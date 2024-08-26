@@ -5,7 +5,6 @@ import prisma from '@/prisma';
 
 import getUserByEmail from '@/utils/getUserByEmail';
 import createReferralCode from '@/utils/createReferralCode';
-import createKeyVerification from '@/utils/createKeyVerification';
 import { sendVerificationEmail } from '@/utils/send-mail/sendMail';
 import getUserCoordinates from '@/utils/getUserCoordinates';
 import {
@@ -47,7 +46,7 @@ export class AuthController {
         });
       }
 
-      const isPasswordMatch = bcrypt.compare(password, user.password!);
+      const isPasswordMatch = await bcrypt.compare(password, user.password!);
 
       if (!isPasswordMatch) {
         return res

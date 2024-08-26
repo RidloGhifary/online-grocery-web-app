@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 
+import QueryProvider from "./provider";
 import { ToastContainer } from "react-toastify";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/Footer";
@@ -23,10 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={font.className}>
-        <ToastContainer />
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <QueryProvider>
+          <ToastContainer />
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </QueryProvider>
       </body>
     </html>
   );

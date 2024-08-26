@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 
 interface GoogleLoginButtonProps {
@@ -9,8 +10,10 @@ interface GoogleLoginButtonProps {
 export default function GoogleLoginButton({
   disabled,
 }: GoogleLoginButtonProps) {
+  const router = useRouter();
+
   const onClick = () => {
-    alert("Login with google");
+    router.push("http://localhost:8000/api/auth/google");
   };
 
   return (

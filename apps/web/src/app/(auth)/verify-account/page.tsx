@@ -60,14 +60,16 @@ export default function VerifyAccountPage() {
       return await response.json();
     },
     onSuccess: (res) => {
-      if (!res.ok) {
-        toast.error(res.message || "Something went wrong!", {
-          position: "top-center",
-        });
-        return;
-      }
-      toast.success("Verify account success!", { position: "top-center" });
-      router.push("/login")
+      startTransition(() => {
+        if (!res.ok) {
+          toast.error(res.message || "Something went wrong!", {
+            position: "top-center",
+          });
+          return;
+        }
+        toast.success("Verify account success!", { position: "top-center" });
+        router.push("/login");
+      });
     },
     onError: () => {
       toast.error("Something went wrong!", { position: "top-center" });

@@ -20,10 +20,10 @@ export default function Page() {
         }
       >
         <div className="flex flex-row max-w-full items-center justify-start mx-5 my-5">
-          <div className="flex-1 mr-2 lg:mr-0">
+          <div className="grow mr-2 lg:mr-0">
             <SearchBar />
           </div>
-          <button onClick={(e)=> {setModalActive(true)} } className="btn lg:hidden">Filter</button>
+          <button onClick={(e)=> {setModalActive(true)} } className="btn lg:hidden " >Filter</button>
         </div>
         {/* <Card/> */}
         <PublicProductList />

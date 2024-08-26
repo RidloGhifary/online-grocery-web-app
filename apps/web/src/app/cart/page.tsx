@@ -1,12 +1,18 @@
 'use client'
-import React, {useState} from 'react';
-import CartItem from './components/cartItems';
+import React, { useState } from 'react';
+import CartItem from '@/components/cartItems';
 import { mockCartItems, mockCartItem } from '@/constants/index';
-import CheckoutSummary from './components/checkoutSummary';
+import CheckoutSummary from '@/components/checkoutSummary';
 
 const CartPage: React.FC = () => {
   const [items, setItems] = useState<mockCartItem[]>(mockCartItems);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
+
+  const handleVoucherSelect = (voucher: string) => {
+    setSelectedVoucher(voucher);
+  };
+
   return (
     <div className="min-h-screen">
       <div className="container mx-auto p-4">
@@ -27,20 +33,31 @@ const CartPage: React.FC = () => {
             Delete Selected
           </button>
         </div>
-        <div className="bg-white shadow-lg rounded-lg p-6">
-        {items.length > 0 ? (
-            <>
-              {items.map(item => (
-                <CartItem
-                  key={item.id}
-                  item={item}
-                />
-              ))}
-              <CheckoutSummary items={items} />
-            </>
-          ) : (
-            <p className="text-center text-gray-500">Your cart is empty.</p>
-          )}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          <div className="lg:col-span-3">
+            <div className="bg-white shadow-lg rounded-lg p-6">
+              {items.length > 0 ? (
+                <>
+                  {items.map(item => (
+                    <CartItem
+                      key={item.id}
+                      item={item}
+                    />
+                  ))}
+                </>
+              ) : (
+                <p className="text-center text-gray-500">Your cart is empty.</p>
+              )}
+            </div>
+          </div>
+          <div className="lg:col-span-2">
+            <CheckoutSummary 
+            buttonText='Proceed to Checkout'
+              items={items} 
+              selectedVoucher={selectedVoucher} 
+              onVoucherSelect={handleVoucherSelect} 
+            />
+          </div>
         </div>
       </div>
     </div>

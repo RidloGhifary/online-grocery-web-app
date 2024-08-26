@@ -11,10 +11,11 @@ interface CartItem {
 
 interface CartItemProps {
   item: CartItem;
-  showControls?: boolean;
+  showQuantityPrice?: boolean;
+  showButtons?: boolean;
 }
 
-const CartItem: React.FC<CartItemProps> = ({ item, showControls = true }) => {
+const CartItem: React.FC<CartItemProps> = ({ item, showQuantityPrice = false, showButtons = true }) => {
   return (
     <div className="flex items-center mb-4">
       <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-md mr-4" />
@@ -25,22 +26,24 @@ const CartItem: React.FC<CartItemProps> = ({ item, showControls = true }) => {
           Weight: {item.weight} kg (Total: {(item.weight * item.quantity).toFixed(2)} kg)
         </p>
         <div className="flex items-center mt-2">
-          {showControls ? (
+          {showButtons ? (
             <>
               <button className="btn btn-sm btn-outline mr-2">-</button>
               <span className="font-semibold">{item.quantity}</span>
               <button className="btn btn-sm btn-outline ml-2">+</button>
             </>
-          ) : (
+          ) : showQuantityPrice ? (
             <span className="font-semibold">
               {item.quantity} X ${item.price.toFixed(2)}
             </span>
+          ) : (
+            <span className="font-semibold">{item.quantity}</span>
           )}
         </div>
       </div>
       <div className="text-right">
         <p className="text-xl font-bold">${(item.price * item.quantity).toFixed(2)}</p>
-        {showControls && <button className="btn btn-error mt-2">Remove</button>}
+        {showButtons && <button className="btn btn-error mt-2">Remove</button>}
       </div>
     </div>
   );

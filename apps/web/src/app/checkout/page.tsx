@@ -22,7 +22,7 @@ const CheckoutPage: React.FC = () => {
   const selectedDeliveryOption = deliveryOptions.find(option => option.id === selectedDeliveryService);
 
   return (
-    <div className="container mx-auto p-4 h-screen">
+    <div className="container mx-auto p-4 h-screen mb-20">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-3">
           <AddressCard address={mockAddress} />

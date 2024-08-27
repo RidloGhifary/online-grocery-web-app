@@ -14,7 +14,7 @@ const CartPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen mb-20">
+    <div className="min-h-screen">
       <div className="container mx-auto p-4">
         <h1 className="text-2xl flex justify-center font-bold mb-4">Your Shopping Cart</h1>
         <div className="flex justify-between items-center bg-gray-100 p-4 mb-4 rounded-md shadow-md">

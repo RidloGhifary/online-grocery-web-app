@@ -38,7 +38,7 @@ const PaymentStatusPage: React.FC = () => {
   const subTotal = totalItemPrice + mockTransactionDetails.deliveryPrice;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 mb-20">
       <MainLink href="/transaction-history" text="Back to Transaction History" Icon={MdArrowBack} />
       {/* Detailed Payment Information */}
       <PaymentDetail

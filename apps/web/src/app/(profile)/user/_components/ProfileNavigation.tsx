@@ -17,11 +17,6 @@ export default function ProfileNavigation() {
       href: "/user/address",
       isActive: path === "/user/address",
     },
-    {
-      name: "Credentials",
-      href: "/user/credentials",
-      isActive: path === "/user/credentials",
-    },
   ];
 
   return (

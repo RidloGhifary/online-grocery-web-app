@@ -12,12 +12,9 @@ export default function LeftSideProfile() {
         className="aspect-square rounded-full object-cover"
       />
       <div className="space-y-1 text-sm">
-        <p>
-          Ridlo achmad ghifary{" "}
-          <span className="badge badge-primary text-white">male</span>
-        </p>
-        <p>29 February 2006</p>
-        <p>ridloachm@gmail.com</p>
+        <p className="line-clamp-1 truncate">Ridlo achmad ghifary</p>
+        <p className="line-clamp-1 truncate">ridloach@gmail.com</p>
+        <span className="badge badge-primary text-white">male</span>
       </div>
     </div>
   );

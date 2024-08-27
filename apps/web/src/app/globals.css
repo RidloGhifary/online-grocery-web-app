@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Zoom-out effect if the image is larger than the container */
+.carousel-image:hover {
+  transform: scale(1.1);
+}

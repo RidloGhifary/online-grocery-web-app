@@ -14,5 +14,6 @@ export interface ModalPropsInterface {
   scrollable?: boolean;
   actions?: ReactNode[] | undefined;
   theRef?: MutableRefObject<HTMLDialogElement | null> | undefined | null;
+  useTCustomContentWidthClass ?: string
 }
 

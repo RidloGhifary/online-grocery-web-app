@@ -23,7 +23,7 @@ export const products: ProductInterface[] = [
     current_stock: 120,
     unit: 'kg',
     price: 37000, // Price in IDR
-    image: 'https://example.com/images/bananas.jpg',
+    image: 'https://images.unsplash.com/photo-1709884732294-90379fee354c?q=80&w=1528&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -38,7 +38,7 @@ export const products: ProductInterface[] = [
     current_stock: 80,
     unit: 'liter',
     price: 45000, // Price in IDR
-    image: 'https://example.com/images/almond-milk.jpg',
+    image: 'https://images.unsplash.com/photo-1544894079-e81a9eb1da8b?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -53,7 +53,7 @@ export const products: ProductInterface[] = [
     current_stock: 50,
     unit: 'loaf',
     price: 27000, // Price in IDR
-    image: 'https://example.com/images/bread.jpg',
+    image: 'https://images.unsplash.com/photo-1721132447246-5d33f3008b05?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -68,7 +68,7 @@ export const products: ProductInterface[] = [
     current_stock: 200,
     unit: 'pack',
     price: 67500, // Price in IDR
-    image: 'https://example.com/images/eggs.jpg',
+    image: 'https://images.unsplash.com/photo-1673297180075-411992cad941?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -83,7 +83,7 @@ export const products: ProductInterface[] = [
     current_stock: 100,
     unit: 'cup',
     price: 18000, // Price in IDR
-    image: 'https://example.com/images/yogurt.jpg',
+    image: 'https://plus.unsplash.com/premium_photo-1684445034763-013f0525c40c?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -98,7 +98,7 @@ export const products: ProductInterface[] = [
     current_stock: 75,
     unit: 'kg',
     price: 105000, // Price in IDR
-    image: 'https://example.com/images/chicken.jpg',
+    image: 'https://images.unsplash.com/photo-1709884732273-c20d3347aa40?q=80&w=1529&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -113,7 +113,7 @@ export const products: ProductInterface[] = [
     current_stock: 60,
     unit: 'kg',
     price: 34500, // Price in IDR
-    image: 'https://example.com/images/broccoli.jpg',
+    image: 'https://plus.unsplash.com/premium_photo-1661849963038-7a735f000ae0?q=80&w=1515&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -128,7 +128,7 @@ export const products: ProductInterface[] = [
     current_stock: 40,
     unit: 'kg',
     price: 75000, // Price in IDR
-    image: 'https://example.com/images/quinoa.jpg',
+    image: 'https://img.daisyui.com/images/stock/photo-1609621838510-5ad474b7d25d.webp',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -143,7 +143,7 @@ export const products: ProductInterface[] = [
     current_stock: 110,
     unit: 'liter',
     price: 48000, // Price in IDR
-    image: 'https://example.com/images/orange-juice.jpg',
+    image: 'https://images.unsplash.com/photo-1713520074829-2e862fa8f8ac?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -158,7 +158,7 @@ export const products: ProductInterface[] = [
     current_stock: 90,
     unit: 'bar',
     price: 30000, // Price in IDR
-    image: 'https://example.com/images/dark-chocolate.jpg',
+    image: 'https://images.unsplash.com/photo-1547405602-cdafbb1d8a44?q=80&w=1450&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,

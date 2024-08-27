@@ -1,7 +1,10 @@
+'use client'
+
 export default function PublicProductDetail() {
+
   return (
-    <>
-      <h1>Check</h1>
-    </>
+    <div>
+      <h1>My Carousel</h1>
+    </div>
   );
 }

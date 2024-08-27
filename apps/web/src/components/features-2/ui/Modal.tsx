@@ -14,6 +14,7 @@ export function Modal({
   scrollable = false,
   show = false,
   theRef,
+  useTCustomContentWidthClass,
   onClose,
 }: ModalPropsInterface) {
   const localRef = useRef<HTMLDialogElement | null>(null);
@@ -62,7 +63,7 @@ export function Modal({
 
   return (
     <dialog className={`modal ${scrollable ? "overflow-y-auto" : ""}`} ref={modalRef}>
-      <div className={`modal-box relative ${scrollable ? "max-h-[90%]" : ""}`}>
+      <div className={`modal-box ${useTCustomContentWidthClass||''} relative ${scrollable ? "max-h-[90%]" : ""}`}>
         <form method="dialog">
           <button
             type="button"
@@ -72,8 +73,8 @@ export function Modal({
             ✕
           </button>
         </form>
-        <div className="py-8">{children}</div>
-        <div className="flex flex-wrap gap-2 justify-end">
+        <div className="pt-8">{children}</div>
+        <div className="flex flex-wrap gap-2 justify-end ">
           {actions && actions.map((action) => <div key={Date.now()} className="modal-action">{action}</div>)}
           {closeButton && (
             <div className="modal-action">

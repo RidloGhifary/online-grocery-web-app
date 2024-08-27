@@ -65,14 +65,14 @@ const Carousel: FC<CarouselProps> = ({
             displayedImages.map((image, index) => (
               <div
                 key={index}
-                className={`w-full ${index === currentSlide ? 'block' : 'hidden'}`}
+                className={`w-full bg-white ${index === currentSlide ? 'block' : 'hidden'}`}
               >
                 <Image
                   src={image}
-                  className="min-[1100px]:w-[50vw] w-full h-auto aspect-[6/4] object-scale-down"
+                  className="min-[500px]:w-[50vw] w-full h-auto aspect-[6/4] object-scale-down"
                   alt={`Slide ${index + 1}`}
-                  width={828}
-                  height={828}
+                  width={1800}
+                  height={1200}
                   priority
                 />
               </div>

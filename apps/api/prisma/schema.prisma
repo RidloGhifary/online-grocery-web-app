@@ -26,10 +26,7 @@ model User {
   updated_at DateTime?  @updatedAt
   deleted_at DateTime?
 
-  // verifications Verifications[] @relation("user_verification")
-
   role             UserHasRole[]
-  // auth_provider    UsersAuthProvider[]
   addresses        UsersAddress[]
   store_admins     StoreHasAdmin[]
   carts            Cart[]
@@ -45,63 +42,6 @@ model User {
   @@index([referral])
   @@map("users")
 }
-
-// model Verifications {
-//   id                 Int                @id @default(autoincrement())
-//   user_id            Int?
-//   validated_at       DateTime?
-//   validation_sent_at DateTime?
-//   expired_at         DateTime?
-//   email              String
-//   unique_identifier  String             @unique
-//   status             VerificationStatus
-//   user               User?              @relation("user_verification", fields: [user_id], references: [id])
-
-//   createdAt DateTime? @default(now())
-//   updatedAt DateTime? @updatedAt
-//   deletedAt DateTime?
-
-//   @@index([id])
-//   @@index([unique_identifier])
-//   @@map("verifications")
-// }
-
-// enum VerificationStatus {
-//   activated
-//   on_progress
-//   deactivated
-//   expired
-// }
-
-// model UsersAuthProvider {
-//   id               Int           @id @default(autoincrement())
-//   user             User?         @relation(fields: [user_id], references: [id])
-//   user_id          Int?
-//   identifier String?
-//   auth_provider    AuthProvider? @relation(fields: [auth_provider_id], references: [id])
-//   auth_provider_id Int?
-
-//   createdAt DateTime? @default(now())
-//   updatedAt DateTime? @updatedAt
-//   deletedAt DateTime?
-
-//   @@index([id])
-//   @@map("users_auth_providers")
-// }
-
-// model AuthProvider {
-//   id       Int    @id @default(autoincrement())
-//   provider String
-
-//   users_auth_provider UsersAuthProvider[]
-
-//   createdAt DateTime? @default(now())
-//   updatedAt DateTime? @updatedAt
-//   deletedAt DateTime?
-
-//   @@index([id])
-//   @@map("auth_providers")
-// }
 
 model Permission {
   id           Int     @id @default(autoincrement())
@@ -172,8 +112,6 @@ model UsersAddress {
   user_id     Int
   city        City     @relation(fields: [city_id], references: [id])
   city_id     Int
-  // province    Province @relation(fields: [province_id], references: [id])
-  // province_id Int
   is_primary  Boolean
   address     String
   kecamatan   String
@@ -200,7 +138,6 @@ model Province {
 
   cities          City[]
   stores          Store[]
-  // users_addresses UsersAddress[]
 
   @@index([id])
   @@map("provinces")

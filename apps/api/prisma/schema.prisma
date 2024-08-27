@@ -17,16 +17,16 @@ model User {
   middle_name String?
   image       String?
   referral    String? @unique
-  verified    Boolean @default(false)
+  is_google_linked Boolean?
 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  validated_at       DateTime?
+  validation_sent_at DateTime?
+
+  created_at DateTime?  @default(now())
+  updated_at DateTime?  @updatedAt
   deleted_at DateTime?
 
-  verifications Verifications[] @relation("user_verification")
-
   role             UserHasRole[]
-  auth_provider    UsersAuthProvider[]
   addresses        UsersAddress[]
   store_admins     StoreHasAdmin[]
   carts            Cart[]
@@ -41,62 +41,6 @@ model User {
   @@index([email])
   @@index([referral])
   @@map("users")
-}
-
-model Verifications {
-  id                 Int                @id @default(autoincrement())
-  user_id            Int?
-  validated_at       DateTime?
-  validation_sent_at DateTime?
-  expired_at         DateTime?
-  email              String
-  unique_identifier  String             @unique
-  status             VerificationStatus
-  user               User?              @relation("user_verification", fields: [user_id], references: [id])
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
-
-  @@index([id])
-  @@index([unique_identifier])
-  @@map("verifications")
-}
-
-enum VerificationStatus {
-  activated
-  on_progress
-  deactivated
-  expired
-}
-
-model UsersAuthProvider {
-  id               Int           @id @default(autoincrement())
-  user             User?         @relation(fields: [user_id], references: [id])
-  user_id          Int?
-  auth_provider    AuthProvider? @relation(fields: [auth_provider_id], references: [id])
-  auth_provider_id Int?
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
-
-  @@index([id])
-  @@map("users_auth_providers")
-}
-
-model AuthProvider {
-  id       Int    @id @default(autoincrement())
-  provider String
-
-  users_auth_provider UsersAuthProvider[]
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
-
-  @@index([id])
-  @@map("auth_providers")
 }
 
 model Permission {
@@ -168,12 +112,11 @@ model UsersAddress {
   user_id     Int
   city        City     @relation(fields: [city_id], references: [id])
   city_id     Int
-  province    Province @relation(fields: [province_id], references: [id])
-  province_id Int
   is_primary  Boolean
   address     String
   kecamatan   String
   kelurahan   String
+  postal_code String
   latitude    Decimal? @db.Decimal(9, 6)
   longtitude  Decimal? @db.Decimal(9, 6)
 
@@ -195,7 +138,6 @@ model Province {
 
   cities          City[]
   stores          Store[]
-  users_addresses UsersAddress[]
 
   @@index([id])
   @@map("provinces")
@@ -494,7 +436,6 @@ model UsersVoucher {
   deletedAt DateTime?
 
   @@index([id])
-
   @@map("users_vouchers")
 }
 
@@ -511,7 +452,6 @@ model OrderHasVoucher {
   deletedAt DateTime?
 
   @@index([id])
-
   @@map("order_has_vouchers")
 }
 
@@ -532,7 +472,6 @@ model ProductDiscount {
   discount_type DiscountType
 
   @@index([id])
-
   @@map("product_discounts")
 }
 
@@ -554,6 +493,5 @@ model OrderHasProductDiscount {
   deletedAt DateTime?
 
   @@index([id])
-  
   @@map("order_has_product_discounts")
 }

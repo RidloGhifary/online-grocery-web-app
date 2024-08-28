@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { MdEmail } from "react-icons/md";
-import { BsGenderFemale, BsGenderMale } from "react-icons/bs";
 import { FaUser } from "react-icons/fa";
 
 export default function LeftSideProfile() {

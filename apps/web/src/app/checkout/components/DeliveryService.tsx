@@ -1,5 +1,5 @@
-import React from 'react';
-import { deliveryOptions } from '@/constants/index';
+import React from "react";
+import { deliveryOptions } from "@/constants/index";
 
 interface DeliveryServiceProps {
   selectedDeliveryService: string;
@@ -12,24 +12,28 @@ const DeliveryService: React.FC<DeliveryServiceProps> = ({
   selectedDeliveryService,
   onSelect,
   deliveryNotes,
-  onNotesChange
+  onNotesChange,
 }) => {
   return (
     <div>
-      <label htmlFor="deliveryService" className="block font-semibold">Delivery Service</label>
+      <label htmlFor="deliveryService" className="block font-semibold">
+        Delivery Service
+      </label>
       <select
         id="deliveryService"
         value={selectedDeliveryService}
         onChange={(e) => onSelect(e.target.value)}
         className="select select-bordered w-full"
       >
-        {deliveryOptions.map(option => (
+        {deliveryOptions.map((option) => (
           <option key={option.id} value={option.id}>
-            {option.name} - ${option.price}
+            {option.name} - Rp. {option.price}
           </option>
         ))}
       </select>
-      <label htmlFor="deliveryNotes" className="block font-semibold mt-4">Delivery Notes</label>
+      <label htmlFor="deliveryNotes" className="mt-4 block font-semibold">
+        Delivery Notes
+      </label>
       <textarea
         id="deliveryNotes"
         value={deliveryNotes}

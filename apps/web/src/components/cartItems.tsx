@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+import MainButton from "./MainButton";
 
 interface CartItem {
   id: number;
@@ -13,28 +14,51 @@ interface CartItemProps {
   item: CartItem;
   showQuantityPrice?: boolean;
   showButtons?: boolean;
+  showCheckbox?: boolean;
+  isChecked?: boolean;
+  onCheckboxChange?: (id: number) => void;
 }
 
-const CartItem: React.FC<CartItemProps> = ({ item, showQuantityPrice = false, showButtons = true }) => {
+const CartItem: React.FC<CartItemProps> = ({
+  item,
+  showQuantityPrice = false,
+  showButtons = true,
+  showCheckbox = true,
+  isChecked = false,
+  onCheckboxChange,
+}) => {
   return (
-    <div className="flex items-center mb-4">
-      <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-md mr-4" />
+    <div className="mb-4 flex items-center rounded-lg p-4 shadow-md">
+      {showCheckbox && (
+        <input
+          type="checkbox"
+          checked={isChecked}
+          onChange={() => onCheckboxChange && onCheckboxChange(item.id)}
+          className="mr-4"
+        />
+      )}
+      <img
+        src={item.image}
+        alt={item.name}
+        className="mr-4 h-24 w-24 rounded-md object-cover"
+      />
       <div className="flex-grow">
         <h2 className="text-xl font-semibold">{item.name}</h2>
-        <p className="text-gray-500">Price: ${item.price.toFixed(2)}</p>
+        <p className="text-gray-500">Price: Rp. {item.price.toFixed(2)}</p>
         <p className="text-gray-500">
-          Weight: {item.weight} kg (Total: {(item.weight * item.quantity).toFixed(2)} kg)
+          Weight: {item.weight} kg (Total:{" "}
+          {(item.weight * item.quantity).toFixed(2)} kg)
         </p>
-        <div className="flex items-center mt-2">
+        <div className="mt-2 flex items-center">
           {showButtons ? (
             <>
-              <button className="btn btn-sm btn-outline mr-2">-</button>
-              <span className="font-semibold">{item.quantity}</span>
-              <button className="btn btn-sm btn-outline ml-2">+</button>
+              <MainButton text="-" variant="primary" />
+              <span className="mx-2 font-semibold">{item.quantity}</span>
+              <MainButton text="+" variant="primary" />
             </>
           ) : showQuantityPrice ? (
             <span className="font-semibold">
-              {item.quantity} X ${item.price.toFixed(2)}
+              {item.quantity} X Rp. {item.price.toFixed(2)}
             </span>
           ) : (
             <span className="font-semibold">{item.quantity}</span>
@@ -42,8 +66,12 @@ const CartItem: React.FC<CartItemProps> = ({ item, showQuantityPrice = false, sh
         </div>
       </div>
       <div className="text-right">
-        <p className="text-xl font-bold">${(item.price * item.quantity).toFixed(2)}</p>
-        {showButtons && <button className="btn btn-error mt-2">Remove</button>}
+        <p className="text-xl font-bold">
+          Rp. {(item.price * item.quantity).toFixed(2)}
+        </p>
+        {showButtons && (
+          <MainButton text="Remove" variant="error" onClick={() => {}} />
+        )}
       </div>
     </div>
   );

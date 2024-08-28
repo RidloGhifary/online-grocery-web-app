@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function LeftSideProfile() {
   return (
-    <div className="mt-4 hidden w-[300px] space-y-4 md:block">
+    <div className="mt-4 hidden w-[300px] space-y-4 rounded-md p-4 shadow md:block">
       <Image
         src="/400.svg"
         alt="user-photo"

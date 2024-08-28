@@ -21,12 +21,12 @@ const CarouselWithMaxShow: FC<{
       <div className="w-full max-w-full">
         <Carousel
           images={images}
-          maxDefaultShow={4}
-          moreAction={handleMoreAction}
+          // maxDefaultShow={4}
+          // moreAction={handleMoreAction}
         />
-        <Modal useTCustomContentWidthClass='max-w-full' show={isModalOpen} onClose={handleCloseModal}>
+        {/* <Modal useTCustomContentWidthClass='max-w-full' show={isModalOpen} onClose={handleCloseModal}>
           <Carousel tLayout={tLayout} images={images} />
-        </Modal>
+        </Modal> */}
       </div>
     </>
   );

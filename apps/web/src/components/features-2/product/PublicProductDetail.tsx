@@ -23,10 +23,6 @@ export default function PublicProductDetail() {
             <table className="w-full text-gray-800">
               <tbody>
                 <tr className="border-b">
-                  <td className="py-2 text-sm">ID</td>
-                  <td className="py-2 text-right text-sm">1</td>
-                </tr>
-                <tr className="border-b">
                   <td className="py-2 text-sm">SKU</td>
                   <td className="py-2 text-right text-sm">PROD001</td>
                 </tr>
@@ -69,7 +65,7 @@ export default function PublicProductDetail() {
         <div className="flex w-full max-w-full justify-end">
           <div className="flex w-80 flex-col items-center rounded justify-end">
             <div className="mt-2 inline-flex self-end">
-              <QuantityBox qty={10} />
+              <QuantityBox />
             </div>
             <button className="mt-4 flex w-40 items-center justify-center rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 self-end">
               Add to order

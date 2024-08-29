@@ -14,6 +14,7 @@ import session from 'express-session';
 import './auth';
 import { SampleRouter } from './routers/sample.router';
 import { AuthRouter } from './routers/auth.router';
+import { CartRouter } from './routers/cart.router';
 
 export default class App {
   private app: Express;
@@ -62,6 +63,7 @@ export default class App {
   private routes(): void {
     const sampleRouter = new SampleRouter();
     const authRouter = new AuthRouter();
+    const cartRouter = new CartRouter();
 
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, Purwadhika Student API!`);
@@ -69,6 +71,7 @@ export default class App {
 
     this.app.use('/api/samples', sampleRouter.getRouter());
     this.app.use('/api/auth', authRouter.getRouter());
+    this.app.use('/api/cart', cartRouter.getRouter());
   }
 
   public start(): void {

@@ -1,13 +1,32 @@
 import { Request, Response } from 'express';
 import prisma from '@/prisma';
 
-interface CustomRequest extends Request {
+export interface CustomRequest extends Request {
   user?: {
     id: number;
   };
 }
 
 export class CartController {
+  getCartItems = async (req: CustomRequest, res: Response) => {
+    if (!req.user || typeof req.user.id !== 'number') {
+      return res.status(401).json({ error: 'Pengguna tidak terauthentikasi' });
+    }
+
+    const userId = req.user.id;
+
+    try {
+      const cartItems = await prisma.cart.findMany({
+        where: { user_id: userId },
+      });
+      return res.json(cartItems);
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ error: 'Terjadi error saat mengambil item dari keranjang' });
+    }
+  };
+
   addItem = async (req: CustomRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Pengguna tidak terauthentikasi' });

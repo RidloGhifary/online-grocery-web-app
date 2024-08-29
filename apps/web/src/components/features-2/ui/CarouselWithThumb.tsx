@@ -45,14 +45,14 @@ const CarouselWithThumbs: React.FC = () => {
         navigation={true}
         thumbs={{ swiper: thumbsSwiper }}
         modules={[FreeMode, Navigation, Thumbs]}
-        className="mySwiper2 h-80 outline outline-1 outline-black dark:outline-neutral-300 "
+        className="mySwiper2 h-80"
       >
         {images.map((src, index) => (
           <SwiperSlide key={index}>
             <Image
               src={src}
               alt={`Image ${index + 1}`}
-              className="aspect-square w-full object-scale-down cursor-pointer"
+              className="aspect-square w-full object-scale-down"
               width={800}
               height={800}
               priority

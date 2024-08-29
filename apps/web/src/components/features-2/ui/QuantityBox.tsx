@@ -33,7 +33,7 @@ export default function ({
   }
   
   return (
-    <>
+    <div className="flex">
       <button
         onClick={handleDecrement}
         className="inline-flex items-center rounded-l border border-r border-gray-200 bg-white px-2 py-1 text-gray-600 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-50"
@@ -83,6 +83,6 @@ export default function ({
           />
         </svg>
       </button>
-    </>
+    </div>
   );
 }

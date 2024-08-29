@@ -12,12 +12,14 @@ export default function Page() {
   return (
     <>
       <div className="w-full max-w-full items-center justify-center">
-        <div className="flex w-full max-w-full flex-wrap justify-center">
-          <div className="max-w-xl w-full">
+        <div className="flex w-full max-w-full flex-wrap justify-center shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
+          <div className="w-full max-w-xl">
             {/* <Carousel images={images} /> */}
-            <CarouselWithThumb/>
+            <CarouselWithThumb />
           </div>
-          <PublicProductDetail />
+          <div className="w-full max-w-xl">
+            <PublicProductDetail />
+          </div>
         </div>
       </div>
     </>

@@ -7,7 +7,7 @@ import Logo from "../Logo";
 import InputSearch from "./InputSearch";
 import NavbarItem from "./NavbarItem";
 import { useState } from "react";
-import { UserProps } from "@/interface/user";
+import { UserProps } from "@/interfaces/user";
 
 interface NavbarProps {
   user?: UserProps;

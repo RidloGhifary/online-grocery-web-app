@@ -6,6 +6,8 @@ export interface UserProps {
   email: string;
   password: string;
   middle_name: string | null;
+  gender: "male" | "female";
+  phone_number: string;
   image: string | null;
   referral: string;
   is_google_linked: boolean;

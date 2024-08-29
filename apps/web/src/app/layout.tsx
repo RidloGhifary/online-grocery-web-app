@@ -5,7 +5,7 @@ import { ToastContainer } from "react-toastify";
 import QueryProvider from "./provider";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/Footer";
-import { UserProps } from "@/interface/user";
+import { UserProps } from "@/interfaces/user";
 
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";

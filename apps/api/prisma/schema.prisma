@@ -7,33 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum GENDER {
+  male
+  female
+}
+
 model User {
-  id          Int     @id @default(autoincrement())
-  username    String  @unique
-  first_name  String
-  last_name   String
-  email       String  @unique
-  password    String?
-  middle_name String?
-  image       String?
-  referral    String? @unique
+  id               Int      @id @default(autoincrement())
+  username         String   @unique
+  first_name       String
+  last_name        String
+  email            String   @unique
+  phone_number     String?
+  gender           GENDER   @default(male)
+  password         String?
+  middle_name      String?
+  image            String?
+  referral         String?  @unique
   is_google_linked Boolean?
 
   validated_at       DateTime?
   validation_sent_at DateTime?
 
-  created_at DateTime?  @default(now())
-  updated_at DateTime?  @updatedAt
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
   deleted_at DateTime?
 
   role             UserHasRole[]
   addresses        UsersAddress[]
   store_admins     StoreHasAdmin[]
   carts            Cart[]
-  orders           Order[]             @relation("OrderCustomer")
-  managed_orders   Order[]             @relation("OrderManager")
+  orders           Order[]            @relation("OrderCustomer")
+  managed_orders   Order[]            @relation("OrderManager")
   inventory        StocksAdjustment[]
-  vouchers_created Voucher[]           @relation("VoucherCreator")
+  vouchers_created Voucher[]          @relation("VoucherCreator")
   vouchers_used    UsersVoucher[]
 
   @@index([id])
@@ -136,8 +143,8 @@ model Province {
   updatedAt DateTime? @updatedAt
   deletedAt DateTime?
 
-  cities          City[]
-  stores          Store[]
+  cities City[]
+  stores Store[]
 
   @@index([id])
   @@map("provinces")

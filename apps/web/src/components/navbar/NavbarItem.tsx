@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 
 import { NavbarItems, NavbarItemAuth } from "@/constants";
 import ProfileItem from "./ProfileItem";
-import { UserProps } from "@/interface/user";
+import { UserProps } from "@/interfaces/user";
 
 interface NavbarItemProps {
   user?: UserProps;

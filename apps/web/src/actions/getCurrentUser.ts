@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getCookies } from "@/actions/cookies";
-import { UserProps } from "@/interface/user";
+import { UserProps } from "@/interfaces/user";
 
 const API_URL =
   process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api";

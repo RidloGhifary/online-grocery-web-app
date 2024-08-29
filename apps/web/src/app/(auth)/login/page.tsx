@@ -29,6 +29,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const callbackUrl = searchParams.get("callbackUrl");
+  console.log("🚀 ~ LoginPage ~ callbackUrl:", callbackUrl);
   const queryClient = useQueryClient();
 
   const {
@@ -75,7 +76,12 @@ export default function LoginPage() {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       setCookies("token", res.token);
 
-      router.push(callbackUrl ? callbackUrl : "/");
+      if (callbackUrl) {
+        router.push(callbackUrl);
+      } else {
+        router.push("/");
+      }
+
       router.refresh();
     },
     onError: (res) => {

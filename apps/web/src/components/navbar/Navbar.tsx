@@ -7,8 +7,13 @@ import Logo from "../Logo";
 import InputSearch from "./InputSearch";
 import NavbarItem from "./NavbarItem";
 import { useState } from "react";
+import { UserProps } from "@/interface/user";
 
-export default function Navbar() {
+interface NavbarProps {
+  user?: UserProps;
+}
+
+export default function Navbar({ user }: NavbarProps) {
   const [showNavbar, setShowNavbar] = useState<boolean>(false);
 
   return (
@@ -32,12 +37,12 @@ export default function Navbar() {
               className={`absolute bottom-0 left-0 top-0 z-50 h-screen w-1/2 border-r bg-white p-4 ${showNavbar ? "translate-x-0" : "-translate-x-full"} transition`}
             >
               <Logo />
-              <NavbarItem />
+              <NavbarItem user={user} />
             </div>
           </div>
 
           <div className="hidden flex-1 justify-end md:flex">
-            <NavbarItem />
+            <NavbarItem user={user} />
           </div>
         </div>
       </Container>

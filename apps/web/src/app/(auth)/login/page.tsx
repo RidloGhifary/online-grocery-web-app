@@ -72,10 +72,11 @@ export default function LoginPage() {
         position: "top-center",
       });
 
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
       setCookies("token", res.token);
 
       router.push(callbackUrl ? callbackUrl : "/");
+      router.refresh();
     },
     onError: (res) => {
       toast.error("Something went wrong!", { position: "top-center" });

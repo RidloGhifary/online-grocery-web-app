@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { FaTrash } from "react-icons/fa";
 import { FiPlus } from "react-icons/fi";
 import { FaCheck } from "react-icons/fa6";
+
 import AddAddressForm from "./AddAddressForm";
 
 export default function AddressContent({ userAddresses }: any) {
@@ -44,15 +46,17 @@ export default function AddressContent({ userAddresses }: any) {
                 <p className="max-w-[70%] text-sm font-light">
                   {userAddress.address}
                 </p>
-                {userAddress.is_primary ? (
+                <div className="flex items-center gap-2">
+                  {!userAddress.is_primary && (
+                    <button className="btn btn-primary btn-xs text-white">
+                      Use as a primary address
+                    </button>
+                  )}
                   <button className="btn btn-primary btn-xs text-white">
-                    Primary address
+                    <FaTrash size={12} />
+                    Delete
                   </button>
-                ) : (
-                  <button className="btn btn-primary btn-xs text-white">
-                    Use as a primary address
-                  </button>
-                )}
+                </div>
               </div>
             ))}
           </div>

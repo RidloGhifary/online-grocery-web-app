@@ -1,21 +1,5 @@
 export const NavbarItems = [
   {
-    requireAuth: [
-      {
-        name: "Cart",
-        href: "/cart",
-      },
-      {
-        name: "My Vouchers",
-        href: "/my-vouchers",
-      },
-      {
-        name: "Profile",
-        href: "/profile",
-      },
-    ],
-  },
-  {
     name: "Cart",
     href: "/cart",
   },
@@ -29,10 +13,25 @@ export const NavbarItems = [
   },
 ];
 
-export const ProfileDropDownItems = [
+export const NavbarItemAuth = [
+  {
+    name: "Cart",
+    href: "/cart",
+  },
+  {
+    name: "My Vouchers",
+    href: "/my-vouchers",
+  },
   {
     name: "Profile",
     href: "/profile",
+  },
+];
+
+export const ProfileDropDownItems = [
+  {
+    name: "Profile",
+    href: "/user/settings",
     requireAuth: true,
   },
   {
@@ -43,11 +42,6 @@ export const ProfileDropDownItems = [
   {
     name: "Create Store",
     href: "/create-store",
-    requireAuth: true,
-  },
-  {
-    name: "Logout",
-    href: "/logout",
     requireAuth: true,
   },
 ];

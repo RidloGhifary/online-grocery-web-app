@@ -3,8 +3,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { getCookies } from "@/actions/cookies";
+import { toast } from "react-toastify";
 
 const schema = z.object({
   email: z.string().min(1, "Name is required").max(50, "Name is too long"),
@@ -15,13 +18,13 @@ interface ChangeNameProps {
 }
 
 export default function ChangeEmail({ email }: ChangeNameProps) {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
+    watch,
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -29,8 +32,41 @@ export default function ChangeEmail({ email }: ChangeNameProps) {
     },
   });
 
-  const onSubmit: (data: z.infer<typeof schema>) => void = (data) => {
-    console.log(data);
+  const watchedEmail = watch("email");
+
+  const { mutate, isPending: isLoading } = useMutation({
+    mutationFn: async (data: { email: string }) => {
+      const cookie = await getCookies("token");
+
+      const response = await axios.post(
+        "http://localhost:8000/api/credentials/change-email",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${cookie}`,
+          },
+        },
+      );
+
+      return response.data;
+    },
+    onSuccess: (res) => {
+      if (res.ok) {
+        toast.success(res.message || "Email verification sent!");
+      } else {
+        toast.error(res.message || "Something went wrong!");
+      }
+    },
+    onError: (err) => {
+      toast.error(err.message || "Something went wrong!");
+    },
+  });
+
+  const isEmailChanged = watchedEmail !== email;
+
+  const onSubmit: (data: z.infer<typeof schema>) => void = async (data) => {
+    console.log("🚀 ~ data:", data);
+    mutate(data);
   };
 
   return (
@@ -61,15 +97,19 @@ export default function ChangeEmail({ email }: ChangeNameProps) {
 
       <div className="space-x-2">
         <button
-          disabled={isLoading}
+          disabled={isLoading || !isEmailChanged || isSubmitting}
           type="button"
           className="btn btn-error btn-sm text-white"
           onClick={() => router.back()}
         >
-          Cancel
+          {isLoading ? (
+            <span className="loading loading-spinner loading-sm"></span>
+          ) : (
+            "Cancel"
+          )}
         </button>
         <button
-          disabled={isLoading}
+          disabled={isLoading || !isEmailChanged || isSubmitting}
           type="submit"
           className="btn btn-primary btn-sm text-white"
         >

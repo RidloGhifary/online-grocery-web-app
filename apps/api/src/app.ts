@@ -15,6 +15,7 @@ import './auth';
 import { SampleRouter } from './routers/sample.router';
 import { AuthRouter } from './routers/auth.router';
 import { UserRouter } from './routers/user.router';
+import { CredentialRouter } from './routers/credential.router';
 
 export default class App {
   private app: Express;
@@ -64,6 +65,7 @@ export default class App {
     const sampleRouter = new SampleRouter();
     const authRouter = new AuthRouter();
     const userRouter = new UserRouter();
+    const credentialRouter = new CredentialRouter();
 
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, Purwadhika Student API!`);
@@ -72,6 +74,7 @@ export default class App {
     this.app.use('/api/samples', sampleRouter.getRouter());
     this.app.use('/api/auth', authRouter.getRouter());
     this.app.use('/api/users', userRouter.getRouter());
+    this.app.use('/api/credentials', credentialRouter.getRouter());
   }
 
   public start(): void {

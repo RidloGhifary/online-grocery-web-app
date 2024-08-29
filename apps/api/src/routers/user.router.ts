@@ -18,6 +18,11 @@ export class UserRouter {
       verifyToken,
       this.userController.getCurrentUser,
     );
+    this.router.patch(
+      '/biodata',
+      verifyToken,
+      this.userController.updateUserBiodata,
+    );
   }
 
   getRouter(): Router {

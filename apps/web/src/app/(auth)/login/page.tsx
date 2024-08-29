@@ -24,12 +24,9 @@ type FormData = {
 };
 
 export default function LoginPage() {
-  const [isLoading, startTransition] = useTransition();
-
   const searchParams = useSearchParams();
   const router = useRouter();
   const callbackUrl = searchParams.get("callbackUrl");
-  console.log("🚀 ~ LoginPage ~ callbackUrl:", callbackUrl);
   const queryClient = useQueryClient();
 
   const {
@@ -44,7 +41,7 @@ export default function LoginPage() {
     },
   });
 
-  const mutation = useMutation({
+  const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await fetch("http://localhost:8000/api/auth/login", {
         method: "POST",
@@ -78,8 +75,10 @@ export default function LoginPage() {
 
       if (callbackUrl) {
         router.push(callbackUrl);
+        router.refresh();
       } else {
         router.push("/");
+        router.refresh();
       }
 
       router.refresh();
@@ -90,9 +89,7 @@ export default function LoginPage() {
   });
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
-    startTransition(() => {
-      mutation.mutate(data);
-    });
+    mutate(data);
   };
 
   return (

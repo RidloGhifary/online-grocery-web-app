@@ -3,7 +3,6 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useTransition } from "react";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthHeader from "../_components/AuthHeader";
@@ -26,7 +25,6 @@ type FormData = {
 };
 
 export default function VerifyAccountPage() {
-  const [isLoading, startTransition] = useTransition();
   const searchParams = useSearchParams();
 
   const key = searchParams.get("key");
@@ -44,7 +42,7 @@ export default function VerifyAccountPage() {
     },
   });
 
-  const mutation = useMutation({
+  const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: { key: string; password: string }) => {
       const response = await fetch(
         "http://localhost:8000/api/auth/verify-account",
@@ -60,16 +58,14 @@ export default function VerifyAccountPage() {
       return await response.json();
     },
     onSuccess: (res) => {
-      startTransition(() => {
-        if (!res.ok) {
-          toast.error(res.message || "Something went wrong!", {
-            position: "top-center",
-          });
-          return;
-        }
-        toast.success("Verify account success!", { position: "top-center" });
-        router.push("/login");
-      });
+      if (!res.ok) {
+        toast.error(res.message || "Something went wrong!", {
+          position: "top-center",
+        });
+        return;
+      }
+      toast.success("Verify account success!", { position: "top-center" });
+      router.push("/login");
     },
     onError: () => {
       toast.error("Something went wrong!", { position: "top-center" });
@@ -79,10 +75,8 @@ export default function VerifyAccountPage() {
   const onSubmit: SubmitHandler<FormData> = (data) => {
     if (!key) return;
 
-    startTransition(() => {
-      const formattedData = { key, password: data.password };
-      mutation.mutate(formattedData);
-    });
+    const formattedData = { key, password: data.password };
+    mutate(formattedData);
   };
 
   return (

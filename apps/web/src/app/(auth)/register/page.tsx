@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -42,8 +41,6 @@ export type RegisterFormData = {
 };
 
 export default function RegisterPage() {
-  const [isLoading, startTransition] = useTransition();
-
   const {
     register,
     handleSubmit,
@@ -73,7 +70,7 @@ export default function RegisterPage() {
     return city.province_id === provinceId;
   });
 
-  const mutation = useMutation({
+  const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: RegisterFormData) => {
       const response = await fetch("http://localhost:8000/api/auth/register", {
         method: "POST",
@@ -100,18 +97,16 @@ export default function RegisterPage() {
   });
 
   const onSubmit: SubmitHandler<RegisterFormData> = (data) => {
-    startTransition(() => {
-      const [city_id, city] = data.city.split(",");
-      const [province_id, province] = data.province.split(",");
-      const formattedData = {
-        ...data,
-        city_id: parseInt(city_id),
-        city,
-        province_id: parseInt(province_id),
-        province,
-      };
-      mutation.mutate(formattedData);
-    });
+    const [city_id, city] = data.city.split(",");
+    const [province_id, province] = data.province.split(",");
+    const formattedData = {
+      ...data,
+      city_id: parseInt(city_id),
+      city,
+      province_id: parseInt(province_id),
+      province,
+    };
+    mutate(formattedData);
   };
 
   return (

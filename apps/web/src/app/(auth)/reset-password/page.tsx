@@ -3,7 +3,6 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useTransition } from "react";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthHeader from "../_components/AuthHeader";
@@ -34,7 +33,6 @@ type EmailFormData = {
 };
 
 export default function ForgotPassword() {
-  const [isLoading, startTransition] = useTransition();
   const searchParams = useSearchParams();
 
   const key = searchParams.get("key");
@@ -53,7 +51,7 @@ export default function ForgotPassword() {
     formState: { errors },
   } = useForm<PasswordResetFormData | EmailFormData | any>(formOptions);
 
-  const mutation = useMutation({
+  const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: {
       key?: string | null;
       password?: string;
@@ -73,20 +71,18 @@ export default function ForgotPassword() {
       return await response.json();
     },
     onSuccess: (res) => {
-      startTransition(() => {
-        if (!res.ok) {
-          toast.error(res.message || "Something went wrong!", {
-            position: "top-center",
-          });
-          return;
-        }
-        toast.success("Password reset successfully!", {
+      if (!res.ok) {
+        toast.error(res.message || "Something went wrong!", {
           position: "top-center",
         });
-        if (key) {
-          router.push("/login");
-        }
+        return;
+      }
+      toast.success("Password reset successfully!", {
+        position: "top-center",
       });
+      if (key) {
+        router.push("/login");
+      }
     },
     onError: () => {
       toast.error("Something went wrong!", { position: "top-center" });
@@ -96,9 +92,7 @@ export default function ForgotPassword() {
   const onSubmit: SubmitHandler<PasswordResetFormData | EmailFormData> = (
     data,
   ) => {
-    startTransition(() => {
-      mutation.mutate({ ...data, key });
-    });
+    mutate({ ...data, key });
   };
 
   return (

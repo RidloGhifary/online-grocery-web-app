@@ -12,6 +12,7 @@
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@tanstack/react-query": "^5.52.1",
+    "@uploadthing/react": "^6.7.2",
     "axios": "^1.7.5",
     "cross-env": "^7.0.3",
     "daisyui": "^4.12.10",
@@ -22,6 +23,7 @@
     "react-spinners": "^0.14.1",
     "react-toastify": "^10.0.5",
     "swiper": "^11.1.10",
+    "uploadthing": "^6.13.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {

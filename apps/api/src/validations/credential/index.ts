@@ -13,3 +13,11 @@ export const forgotPasswordVerifySchema = z.object({
     .string()
     .min(8, { message: 'Password must be at least 8 characters' }),
 });
+
+export const changeImageSchema = z.object({
+  image: z.string().url({ message: 'Invalid image url' }),
+});
+
+export const removeImageSchema = z.object({
+  image: z.nullable(z.string()),
+});

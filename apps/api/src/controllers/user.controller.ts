@@ -1,4 +1,5 @@
 import prisma from '@/prisma';
+import { changeImageSchema, removeImageSchema } from '@/validations/credential';
 import {
   updateGenderSchema,
   updatePhoneNumberSchema,
@@ -102,6 +103,49 @@ export class UserController {
         res
           .status(200)
           .json({ ok: true, message: 'Update user success', data: user });
+      } else if (field === 'image') {
+        const validatedRequest = changeImageSchema.safeParse(req.body);
+        if (!validatedRequest.success) {
+          return res.status(400).json({
+            ok: false,
+            message: validatedRequest.error.issues[0].message,
+          });
+        }
+
+        const { image } = validatedRequest.data;
+        const user = await prisma.user.update({
+          where: {
+            id: Number(req.currentUser?.id),
+          },
+          data: {
+            image,
+          },
+        });
+
+        res
+          .status(200)
+          .json({ ok: true, message: 'Update image success', data: user });
+      } else if (field === 'remove_image') {
+        const validatedRequest = removeImageSchema.safeParse(req.body);
+        if (!validatedRequest.success) {
+          return res.status(400).json({
+            ok: false,
+            message: validatedRequest.error.issues[0].message,
+          });
+        }
+
+        const user = await prisma.user.update({
+          where: {
+            id: Number(req.currentUser?.id),
+          },
+          data: {
+            image: null,
+          },
+        });
+
+        res
+          .status(200)
+          .json({ ok: true, message: 'Success remove image', data: user });
       } else {
         return res.status(400).json({ ok: false, message: 'Field not found' });
       }

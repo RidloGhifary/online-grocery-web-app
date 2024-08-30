@@ -9,7 +9,7 @@ export default async function SettingsPage() {
   return (
     <UserContainer>
       <div className="flex flex-col items-start gap-5 pb-10 md:flex-row">
-        <UserPhotoBox />
+        <UserPhotoBox userImage={user?.image} />
         <UserDetail user={user} />
       </div>
     </UserContainer>

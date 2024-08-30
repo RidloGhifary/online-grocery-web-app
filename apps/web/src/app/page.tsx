@@ -14,6 +14,7 @@ export default function Home() {
         <ProductBasedNearestStore />
         <hr />
         <ProductsList />
+        
       </Container>
     </div>
   );

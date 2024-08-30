@@ -2,12 +2,14 @@ import { ReactNode } from 'react';
 
 export default function SidePanel({
   children,
+  extraContentTWClass
 }: {
   children?: ReactNode;
+  extraContentTWClass ?: string
 }) {
   return (
     <>
-      <div className="drawer-side">
+      <div className="drawer-side no-scrollbar">
         <label
           htmlFor="my-drawer-3"
           aria-label="close sidebar"
@@ -22,7 +24,7 @@ export default function SidePanel({
             <a>Sidebar Item 2</a>
           </li>
         </ul> */}
-        <div className="bg-base min-h-full w-64 p-4">{children}</div>
+        <div className={`w-64 p-4 ${extraContentTWClass||''}`}>{children}</div>
       </div>
     </>
   );

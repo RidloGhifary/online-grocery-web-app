@@ -102,7 +102,7 @@ export default function PublicProductDetail() {
                 </p>
                 <QuantityBox />
               </div>
-              <button className="mt-4 flex w-full items-center justify-center self-end rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50">
+              <button className="mt-4 flex w-full items-center justify-center self-end rounded bg-primary px-4 py-2 text-white hover:bg-[#46c073] active:bg-[#0ea345] disabled:opacity-50">
                 +
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

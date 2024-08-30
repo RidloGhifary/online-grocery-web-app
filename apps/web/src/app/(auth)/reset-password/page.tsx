@@ -58,8 +58,8 @@ export default function ForgotPassword() {
       email?: string;
     }) => {
       const endpoint = key
-        ? `/api/credentials/forgot-password?key=${key}`
-        : "/api/credentials/forgot-password";
+        ? `/api/credentials/reset-password?key=${key}`
+        : "/api/credentials/reset-password";
       const response = await fetch(`http://localhost:8000${endpoint}`, {
         method: "POST",
         headers: {

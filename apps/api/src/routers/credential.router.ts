@@ -23,7 +23,7 @@ export class CredentialRouter {
       this.credentialController.storeChangeEmailToken,
     );
     this.router.post(
-      '/forgot-password',
+      '/reset-password',
       this.credentialController.forgotPassword,
     );
   }

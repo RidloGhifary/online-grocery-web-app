@@ -187,11 +187,11 @@ export class CredentialController {
           },
         );
 
-        // TODO: SEND EMAIL FORGOT PASSWORD
+        // TODO: SEND EMAIL RESET PASSWORD
         await sendResetPasswordEmail({
           email: validatedRequest.data.email,
           key,
-          path: 'forgot-password',
+          path: 'reset-password',
         });
 
         res.status(200).json({ ok: true, message: 'Email sent' });

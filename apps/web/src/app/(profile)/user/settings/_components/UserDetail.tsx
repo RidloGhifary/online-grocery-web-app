@@ -9,6 +9,9 @@ import ChangePhoneNumber from "./form/ChangePhoneNumber";
 import { useState } from "react";
 import { Modal } from "@/components/Modal";
 import ChangeEmail from "./form/ChangeEmail";
+import { toast } from "react-toastify";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 interface UserDetailProps {
   user: UserProps | null;
@@ -19,6 +22,37 @@ export default function UserDetail({ user }: UserDetailProps) {
 
   const searchParams = useSearchParams();
   const action = searchParams.get("action");
+
+  const { mutate, isPending: isLoading } = useMutation({
+    mutationFn: async () => {
+      const { data } = await axios.post(
+        "http://localhost:8000/api/credentials/reset-password",
+        {
+          email: user?.email,
+        },
+      );
+
+      return data;
+    },
+    onSuccess: (res) => {
+      setModalActive(false);
+      if (res.ok) {
+        toast.success("Email sent to " + user?.email, {
+          position: "top-center",
+        });
+      } else {
+        toast.error(res.message || "Something went wrong!");
+      }
+    },
+    onError: (err) => {
+      setModalActive(false);
+      toast.error(err.message || "Something went wrong!");
+    },
+  });
+
+  const confirmSendEmailResetPassword = () => {
+    mutate();
+  };
 
   if (action === "edit-name") {
     return <ChangeName username={user?.username} />;
@@ -55,6 +89,7 @@ export default function UserDetail({ user }: UserDetailProps) {
       <button
         className="btn btn-secondary btn-sm md:btn-md"
         onClick={() => setModalActive(true)}
+        disabled={isLoading}
       >
         Change Password
       </button>
@@ -64,7 +99,14 @@ export default function UserDetail({ user }: UserDetailProps) {
           setModalActive(false);
         }}
         actions={[
-          <button className="btn btn-primary text-white">Confirm</button>,
+          <button
+            disabled={isLoading}
+            type="button"
+            className="btn btn-primary text-white"
+            onClick={confirmSendEmailResetPassword}
+          >
+            Confirm
+          </button>,
         ]}
       >
         <div className="space-y-2">

@@ -29,7 +29,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={font.className}>
         <QueryProvider>
-          <ToastContainer />
+          <ToastContainer position="top-center" draggable={true} />
           <Navbar user={user as UserProps} />
           <main>{children}</main>
           <Footer />

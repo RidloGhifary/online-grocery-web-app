@@ -4,9 +4,13 @@ import Link from "next/link";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useTransition } from "react";
 import InputField from "./Input";
 import { Cities, Provinces } from "@/constants";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getCookies } from "@/actions/cookies";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 const schema = z.object({
   label: z.string().min(1, { message: "Label is required" }),
@@ -15,6 +19,7 @@ const schema = z.object({
   subdistrict: z.string().min(1, { message: "Subdistrict is required" }),
   city: z.string().min(1, { message: "City is required" }),
   province: z.string().min(1, { message: "Province is required" }),
+  is_primary: z.boolean(),
 });
 
 type FormData = {
@@ -24,10 +29,12 @@ type FormData = {
   subdistrict: string;
   city: string;
   province: string;
+  is_primary: boolean;
 };
 
 export default function AddAddressForm() {
-  const [isLoading, startTransition] = useTransition();
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -43,6 +50,7 @@ export default function AddAddressForm() {
       subdistrict: "",
       city: "",
       province: "",
+      is_primary: false,
     },
   });
 
@@ -56,8 +64,59 @@ export default function AddAddressForm() {
     return city.province_id === provinceId;
   });
 
+  const { mutate, isPending: isLoading } = useMutation({
+    mutationFn: async (data: FormData) => {
+      const cookie = await getCookies("token");
+      const response = await axios.post(
+        "http://localhost:8000/api/users/addresses",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${cookie}`,
+          },
+        },
+      );
+
+      return response.data;
+    },
+    onSuccess: (res) => {
+      if (res.ok) {
+        toast.success(res.message || "Success create address!", {
+          position: "top-center",
+        });
+        router.push("/user/address");
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+      } else {
+        toast.error(res.message || "Something went wrong!", {
+          position: "top-center",
+        });
+      }
+    },
+    onError: (res) => {
+      toast.error(res.message || "Something went wrong!", {
+        position: "top-center",
+      });
+    },
+  });
+
   const onSubmit: SubmitHandler<FormData> = (data) => {
-    console.log(data);
+    const [city_id, city] = data.city.split(",");
+    const [province_id, province] = data.province.split(",");
+
+    const formattedData = {
+      ...data,
+      city_id: parseInt(city_id),
+      city,
+      province_id: parseInt(province_id),
+      province,
+      kecamatan: data.subdistrict as string | undefined,
+      kelurahan: data.village as string | undefined,
+    } as { [key: string]: any };
+
+    delete formattedData.subdistrict;
+    delete formattedData.village;
+
+    mutate(formattedData as any);
   };
 
   return (
@@ -175,6 +234,18 @@ export default function AddAddressForm() {
             />
           </div>
           <p className="mt-2 text-sm text-red-600">{errors.address?.message}</p>
+        </div>
+        <div className="flex items-center justify-start gap-2">
+          <input
+            type="checkbox"
+            id="is_primary"
+            disabled={isLoading}
+            className=""
+            {...register("is_primary")}
+          />
+          <label htmlFor="is_primary" className="label cursor-pointer">
+            Use as a default address
+          </label>
         </div>
 
         <div className="flex items-center justify-end gap-3">

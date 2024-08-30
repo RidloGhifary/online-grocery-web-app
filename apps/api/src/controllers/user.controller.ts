@@ -17,7 +17,15 @@ export class UserController {
           id: Number(req.currentUser?.id),
         },
         include: {
-          addresses: true,
+          addresses: {
+            include: {
+              city: {
+                include: {
+                  province: true,
+                },
+              },
+            },
+          },
           carts: true,
         },
       });

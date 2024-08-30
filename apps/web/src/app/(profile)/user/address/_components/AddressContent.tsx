@@ -2,13 +2,19 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { FaTrash } from "react-icons/fa";
 import { FiPlus } from "react-icons/fi";
 import { FaCheck } from "react-icons/fa6";
 
 import AddAddressForm from "./AddAddressForm";
+import { UserAddressProps } from "@/interfaces/user";
+import DeleteAddress from "./DeleteAddress";
+import UsePrimaryAddressButton from "./UsePrimaryAddressButton";
 
-export default function AddressContent({ userAddresses }: any) {
+export default function AddressContent({
+  userAddresses,
+}: {
+  userAddresses: UserAddressProps[];
+}) {
   const searchParams = useSearchParams();
   const action = searchParams.get("action");
 
@@ -27,35 +33,33 @@ export default function AddressContent({ userAddresses }: any) {
           </Link>
 
           <div className="max-h-[100vh] space-y-4 overflow-y-auto">
-            {userAddresses.map((userAddress: any, i: number) => (
+            {userAddresses?.map((userAddress: any, i: number) => (
               <div
                 key={i}
                 className="w-full space-y-2 rounded-md border border-primary bg-primary/10 p-4 shadow"
               >
                 <div className="flex items-center gap-2">
-                  <p className="badge badge-primary badge-sm text-white">
-                    {userAddress.label}
+                  <p className="badge badge-primary badge-sm capitalize text-white">
+                    {userAddress?.label}
                   </p>
                   <span>
-                    {userAddress.is_primary && (
+                    {userAddress?.is_primary && (
                       <FaCheck className="text-primary" />
                     )}
                   </span>
                 </div>
                 <p className="font-semibold">Ridlo achmad ghifary</p>
                 <p className="max-w-[70%] text-sm font-light">
-                  {userAddress.address}
+                  {userAddress?.address}
+                  <br />
+                  {userAddress?.city.city_name},{" "}
+                  {userAddress?.city.province.province}
                 </p>
                 <div className="flex items-center gap-2">
-                  {!userAddress.is_primary && (
-                    <button className="btn btn-primary btn-xs text-white">
-                      Use as a primary address
-                    </button>
+                  {!userAddress?.is_primary && (
+                    <UsePrimaryAddressButton id={userAddress?.id} />
                   )}
-                  <button className="btn btn-primary btn-xs text-white">
-                    <FaTrash size={12} />
-                    Delete
-                  </button>
+                  <DeleteAddress id={userAddress?.id} />
                 </div>
               </div>
             ))}

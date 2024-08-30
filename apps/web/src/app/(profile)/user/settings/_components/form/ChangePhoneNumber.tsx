@@ -3,8 +3,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import { useMutation } from "@tanstack/react-query";
+import { getCookies } from "@/actions/cookies";
+import { toast } from "react-toastify";
 
 const schema = z.object({
   phone_number: z
@@ -18,7 +21,6 @@ interface ChangeNameProps {
 }
 
 export default function ChangePhoneNumber({ phone_number }: ChangeNameProps) {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
   const {
@@ -32,8 +34,37 @@ export default function ChangePhoneNumber({ phone_number }: ChangeNameProps) {
     },
   });
 
+  const { mutate, isPending: isLoading } = useMutation({
+    mutationFn: async (data: { phone_number: string }) => {
+      const cookie = await getCookies("token");
+      const response = await axios.patch(
+        "http://localhost:8000/api/users/biodata?field=phone_number",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${cookie}`,
+          },
+        },
+      );
+
+      return response.data;
+    },
+    onSuccess: (res) => {
+      if (res.ok) {
+        toast.success(res.message || "Phone Number updated!");
+        router.push("/user/settings");
+        router.refresh();
+      } else {
+        toast.error(res.message || "Something went wrong!");
+      }
+    },
+    onError: (res) => {
+      toast.error(res.message || "Something went wrong!");
+    },
+  });
+
   const onSubmit: (data: z.infer<typeof schema>) => void = (data) => {
-    console.log(data);
+    mutate(data);
   };
 
   return (
@@ -71,7 +102,11 @@ export default function ChangePhoneNumber({ phone_number }: ChangeNameProps) {
           className="btn btn-error btn-sm text-white"
           onClick={() => router.back()}
         >
-          Cancel
+          {isLoading ? (
+            <span className="loading loading-spinner loading-sm"></span>
+          ) : (
+            "Cancel"
+          )}
         </button>
         <button
           disabled={isLoading}

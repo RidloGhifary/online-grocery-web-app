@@ -83,6 +83,9 @@ export default function UserDetail({ user }: UserDetailProps) {
       <div className="space-y-4">
         <h2 className="font-bold">Credentials</h2>
         <div className="space-y-2">
+          <UserProfileDetail label="Referral" value={user?.referral} />
+        </div>
+        <div className="space-y-2">
           <UserProfileDetail label="Email" value={user?.email} />
         </div>
       </div>

@@ -3,8 +3,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import { getCookies } from "@/actions/cookies";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 const schema = z.object({
   gender: z.enum(["male", "female"]),
@@ -15,7 +18,6 @@ interface ChangeGenderProps {
 }
 
 export default function ChangeGender({ gender }: ChangeGenderProps) {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
   const {
@@ -29,8 +31,37 @@ export default function ChangeGender({ gender }: ChangeGenderProps) {
     },
   });
 
+  const { mutate, isPending: isLoading } = useMutation({
+    mutationFn: async (data: { gender: string }) => {
+      const cookie = await getCookies("token");
+      const response = await axios.patch(
+        "http://localhost:8000/api/users/biodata?field=gender",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${cookie}`,
+          },
+        },
+      );
+
+      return response.data;
+    },
+    onSuccess: (res) => {
+      if (res.ok) {
+        toast.success(res.message || "Gender updated!");
+        router.push("/user/settings");
+        router.refresh();
+      } else {
+        toast.error(res.message || "Something went wrong!");
+      }
+    },
+    onError: (res) => {
+      toast.error(res.message || "Something went wrong!");
+    },
+  });
+
   const onSubmit: (data: z.infer<typeof schema>) => void = (data) => {
-    console.log(data);
+    mutate(data);
   };
 
   return (
@@ -67,7 +98,11 @@ export default function ChangeGender({ gender }: ChangeGenderProps) {
           className="btn btn-error btn-sm text-white"
           onClick={() => router.back()}
         >
-          Cancel
+          {isLoading ? (
+            <span className="loading loading-spinner loading-sm"></span>
+          ) : (
+            "Cancel"
+          )}
         </button>
         <button
           disabled={isLoading}

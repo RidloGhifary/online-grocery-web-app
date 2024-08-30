@@ -23,6 +23,21 @@ export class UserRouter {
       verifyToken,
       this.userController.updateUserBiodata,
     );
+    this.router.post(
+      '/addresses',
+      verifyToken,
+      this.userController.insertUserAddress,
+    );
+    this.router.delete(
+      '/addresses/:address_id',
+      verifyToken,
+      this.userController.deleteUserAddress,
+    );
+    this.router.patch(
+      '/addresses/:address_id',
+      verifyToken,
+      this.userController.useAddressAsPrimary,
+    );
   }
 
   getRouter(): Router {

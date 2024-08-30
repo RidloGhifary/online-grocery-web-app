@@ -16,3 +16,15 @@ export const updatePhoneNumberSchema = z.object({
     message: 'Invalid phone number',
   }),
 });
+
+export const insertUserAddressSchema = z.object({
+  label: z.string({ required_error: 'Label is required' }),
+  province: z.string({ required_error: 'Province is required' }),
+  province_id: z.number({ required_error: 'Province is required' }),
+  city: z.string({ required_error: 'City is required' }),
+  city_id: z.number({ required_error: 'City is required' }),
+  address: z.string({ required_error: 'Address is required' }),
+  kelurahan: z.string({ required_error: 'Kelurahan is required' }),
+  kecamatan: z.string({ required_error: 'Kecamatan is required' }),
+  is_primary: z.boolean(),
+});

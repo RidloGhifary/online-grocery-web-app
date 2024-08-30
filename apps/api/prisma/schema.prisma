@@ -119,12 +119,13 @@ model UsersAddress {
   user_id     Int
   city        City     @relation(fields: [city_id], references: [id])
   city_id     Int
+  label       String   @default("home")
   is_primary  Boolean
   address     String
   kecamatan   String
   kelurahan   String
   postal_code String
-  latitude    Decimal? @db.Decimal(9, 6)
+  latitude    Decimal? @db.Decimal(8, 6)
   longtitude  Decimal? @db.Decimal(9, 6)
 
   createdAt DateTime? @default(now())

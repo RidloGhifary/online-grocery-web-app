@@ -89,13 +89,15 @@ export default function UserDetail({ user }: UserDetailProps) {
           <UserProfileDetail label="Email" value={user?.email} />
         </div>
       </div>
-      <button
-        className="btn btn-secondary btn-sm md:btn-md"
-        onClick={() => setModalActive(true)}
-        disabled={isLoading}
-      >
-        Change Password
-      </button>
+      {!user?.is_google_linked && (
+        <button
+          className="btn btn-secondary btn-sm md:btn-md"
+          onClick={() => setModalActive(true)}
+          disabled={isLoading}
+        >
+          Change Password
+        </button>
+      )}
       <Modal
         show={modalActive}
         onClose={(e) => {

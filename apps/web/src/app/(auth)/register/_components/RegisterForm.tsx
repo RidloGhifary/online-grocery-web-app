@@ -129,18 +129,18 @@ export default function RegisterForm({
 
       <InputField
         id="kelurahan"
-        label="kelurahan"
+        label="Village"
         type="text"
-        placeholder="kelurahan"
+        placeholder="Village"
         disabled={isLoading}
         register={register}
         errors={errors.kelurahan?.message}
       />
       <InputField
         id="kecamatan"
-        label="Kecamatan"
+        label="Subdistrict"
         type="text"
-        placeholder="Kecamatan"
+        placeholder="Subdistrict"
         disabled={isLoading}
         register={register}
         errors={errors.kecamatan?.message}

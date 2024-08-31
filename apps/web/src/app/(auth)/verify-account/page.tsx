@@ -8,6 +8,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AuthHeader from "../_components/AuthHeader";
 import AuthWrapper from "../_components/AuthWrapper";
 import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { GetCaptchaToken } from "@/utils/captcha";
+import VerifyCaptchaToken from "@/actions/verifyCaptcha";
 
 const schema = z
   .object({
@@ -44,39 +47,37 @@ export default function VerifyAccountPage() {
 
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: { key: string; password: string }) => {
-      const response = await fetch(
+      const response = await axios.post(
         "http://localhost:8000/api/auth/verify-account",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        },
+        data,
       );
-
-      return await response.json();
+      return response.data;
     },
     onSuccess: (res) => {
       if (!res.ok) {
-        toast.error(res.message || "Something went wrong!", {
-          position: "top-center",
-        });
-        return;
+        return toast.error(res.message || "Something went wrong!");
       }
-      toast.success("Verify account success!", { position: "top-center" });
+      toast.success("Verify account success!");
       router.push("/login");
     },
-    onError: () => {
-      toast.error("Something went wrong!", { position: "top-center" });
+    onError: (res: any) => {
+      toast.error(res?.response.data.message || "Something went wrong!");
     },
   });
 
-  const onSubmit: SubmitHandler<FormData> = (data) => {
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
     if (!key) return;
 
     const formattedData = { key, password: data.password };
-    mutate(formattedData);
+
+    const token = await GetCaptchaToken();
+    const isVerified = await VerifyCaptchaToken({ token: token as string });
+    if (!isVerified.success) {
+      toast.error("Captcha verification failed!");
+      return;
+    } else {
+      mutate(formattedData);
+    }
   };
 
   return (

@@ -8,6 +8,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AuthHeader from "../_components/AuthHeader";
 import AuthWrapper from "../_components/AuthWrapper";
 import { useMutation } from "@tanstack/react-query";
+import { GetCaptchaToken } from "@/utils/captcha";
+import VerifyCaptchaToken from "@/actions/verifyCaptcha";
+import axios from "axios";
 
 const passwordResetSchema = z
   .object({
@@ -60,39 +63,38 @@ export default function ForgotPassword() {
       const endpoint = key
         ? `/api/credentials/reset-password?key=${key}`
         : "/api/credentials/reset-password";
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      return await response.json();
+      const response = await axios.post(
+        `http://localhost:8000${endpoint}`,
+        data,
+      );
+      return response.data;
     },
     onSuccess: (res) => {
       if (!res.ok) {
-        toast.error(res.message || "Something went wrong!", {
-          position: "top-center",
-        });
+        toast.error(res.message || "Something went wrong!");
         return;
       }
-      toast.success("Password reset successfully!", {
-        position: "top-center",
-      });
+      toast.success("Password reset successfully!");
       if (key) {
         router.push("/login");
       }
     },
-    onError: () => {
-      toast.error("Something went wrong!", { position: "top-center" });
+    onError: (res: any) => {
+      toast.error(res?.response.data.message || "Something went wrong!");
     },
   });
 
-  const onSubmit: SubmitHandler<PasswordResetFormData | EmailFormData> = (
+  const onSubmit: SubmitHandler<PasswordResetFormData | EmailFormData> = async (
     data,
   ) => {
-    mutate({ ...data, key });
+    const token = await GetCaptchaToken();
+    const isVerified = await VerifyCaptchaToken({ token: token as string });
+
+    if (!isVerified.success) {
+      return toast.error("Captcha verification failed!");
+    } else {
+      mutate({ ...data, key });
+    }
   };
 
   return (

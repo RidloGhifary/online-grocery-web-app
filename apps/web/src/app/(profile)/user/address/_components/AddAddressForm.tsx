@@ -81,21 +81,15 @@ export default function AddAddressForm() {
     },
     onSuccess: (res) => {
       if (res.ok) {
-        toast.success(res.message || "Success create address!", {
-          position: "top-center",
-        });
+        toast.success(res.message || "Success create address!");
         router.push("/user/address");
         queryClient.invalidateQueries({ queryKey: ["user"] });
       } else {
-        toast.error(res.message || "Something went wrong!", {
-          position: "top-center",
-        });
+        toast.error(res.message || "Something went wrong!");
       }
     },
     onError: (res) => {
-      toast.error(res.message || "Something went wrong!", {
-        position: "top-center",
-      });
+      toast.error(res.message || "Something went wrong!");
     },
   });
 

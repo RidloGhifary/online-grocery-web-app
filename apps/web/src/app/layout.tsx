@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
+import Script from "next/script";
 import { ToastContainer } from "react-toastify";
 
 import QueryProvider from "./provider";
@@ -28,6 +29,10 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={font.className}>
+        <Script
+          strategy="beforeInteractive"
+          src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
+        />
         <QueryProvider>
           <ToastContainer position="top-center" draggable={true} />
           <Navbar user={user as UserProps} />

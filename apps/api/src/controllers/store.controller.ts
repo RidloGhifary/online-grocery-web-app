@@ -39,7 +39,7 @@ export class StoreController {
       // TODO: CREATE STORE
       await prisma.store.create({
         data: {
-          created_by: req.currentUser?.id,
+          created_by: Number(req.currentUser?.id),
           name,
           image,
           store_type,

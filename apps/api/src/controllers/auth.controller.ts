@@ -15,7 +15,9 @@ export class AuthController {
       const user = await getUserByEmail(email);
 
       if (!user) {
-        return res.status(404).json({ ok: false, message: 'User not found' });
+        return res
+          .status(404)
+          .json({ ok: false, message: 'Invalid credentials' });
       }
 
       if (!user.validated_at) {

@@ -2,8 +2,21 @@ import React from "react";
 import VoucherButton from "@/components/VoucherButton";
 import MainButton from "@/components/MainButton";
 
+interface Product {
+  name: string;
+  price: number;
+  image: string | null;
+  description: string;
+}
+
+interface CartItem {
+  id: number;
+  qty: number;
+  product: Product;
+}
+
 interface CheckoutSummaryProps {
-  items: { id: number; price: number; quantity: number }[];
+  items: CartItem[]; // Updated to use CartItem interface
   selectedVoucher: string | null;
   onVoucherSelect: (voucher: string) => void;
   buttonText: string;
@@ -22,7 +35,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
   disableButton = false,
 }) => {
   const totalPrice = items.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) => total + item.product.price * item.qty,
     0,
   );
 

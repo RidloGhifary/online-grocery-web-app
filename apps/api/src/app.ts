@@ -12,7 +12,6 @@ import passport from 'passport';
 import session from 'express-session';
 
 import './auth';
-import { SampleRouter } from './routers/sample.router';
 import { AuthRouter } from './routers/auth.router';
 import { CartRouter } from './routers/cart.router';
 import { UserRouter } from './routers/user.router';
@@ -62,7 +61,6 @@ export default class App {
   }
 
   private routes(): void {
-    const sampleRouter = new SampleRouter();
     const authRouter = new AuthRouter();
     const cartRouter = new CartRouter();
     const userRouter = new UserRouter();
@@ -71,7 +69,6 @@ export default class App {
       res.send(`Hello, Purwadhika Student API!`);
     });
 
-    this.app.use('/api/samples', sampleRouter.getRouter());
     this.app.use('/api/auth', authRouter.getRouter());
     this.app.use('/api/cart', cartRouter.getRouter());
     this.app.use('/api/users', userRouter.getRouter());

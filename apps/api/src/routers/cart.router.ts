@@ -1,6 +1,6 @@
 import { CartController } from '@/controllers/cart.controller';
 import { Router } from 'express';
-import passport from 'passport';
+import { verifyToken } from '@/middlewares/verifyToken';
 import { CustomRequest } from '@/controllers/cart.controller';
 
 export class CartRouter {
@@ -14,36 +14,24 @@ export class CartRouter {
   }
 
   private initializeRoutes(): void {
-    this.router.post(
-      '/items',
-      passport.authenticate('jwt', { session: false }),
-      (req, res) => this.cartController.addItem(req as CustomRequest, res),
+    this.router.post('/items', verifyToken, (req, res) =>
+      this.cartController.addItem(req as CustomRequest, res),
     );
 
-    this.router.patch(
-      '/items/:itemId',
-      passport.authenticate('jwt', { session: false }),
-      (req, res) =>
-        this.cartController.updateQuantity(req as CustomRequest, res),
+    this.router.patch('/items/:productId', verifyToken, (req, res) =>
+      this.cartController.updateQuantity(req as CustomRequest, res),
     );
 
-    this.router.delete(
-      '/items/:itemId',
-      passport.authenticate('jwt', { session: false }),
-      (req, res) => this.cartController.removeItem(req as CustomRequest, res),
+    this.router.delete('/items/:productId', verifyToken, (req, res) =>
+      this.cartController.removeItem(req as CustomRequest, res),
     );
 
-    this.router.get(
-      '/items',
-      passport.authenticate('jwt', { session: false }),
-      (req, res) => this.cartController.getCartItems(req as CustomRequest, res),
+    this.router.get('/items', verifyToken, (req, res) =>
+      this.cartController.getCartItems(req as CustomRequest, res),
     );
 
-    this.router.post(
-      '/checkout',
-      passport.authenticate('jwt', { session: false }),
-      (req, res) =>
-        this.cartController.selectForCheckout(req as CustomRequest, res),
+    this.router.post('/checkout', verifyToken, (req, res) =>
+      this.cartController.selectForCheckout(req as CustomRequest, res),
     );
   }
 

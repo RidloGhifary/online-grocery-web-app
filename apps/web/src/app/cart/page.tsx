@@ -1,13 +1,53 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CartItem from "@/components/CartItems";
-import { mockCartItems, mockCartItem } from "@/constants/index";
+import {
+  getCartItems,
+  addItemToCart,
+  updateCartItemQuantity,
+  removeItemFromCart,
+} from "@/api/cart/route";
 import CheckoutSummary from "@/components/CheckoutSummary";
 
+interface CartItemData {
+  id: number;
+  product_id: number;
+  quantity: number;
+  qty: number;
+  user_id: number;
+  store_id: number;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+}
+
+interface GetCartItemsResponse {
+  data: CartItemData[];
+}
+
 const CartPage: React.FC = () => {
-  const [items, setItems] = useState<mockCartItem[]>(mockCartItems);
+  const [items, setItems] = useState<CartItemData[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const response: GetCartItemsResponse = await getCartItems();
+        const cartItems = response.data;
+        const mappedItems = cartItems.map((item) => ({
+          ...item,
+          quantity: item.qty,
+        }));
+        setItems(mappedItems);
+      } catch (error) {
+        console.error("Error fetching cart items:", error);
+      }
+    };
+
+    fetchCartItems();
+  }, []);
 
   const handleVoucherSelect = (voucher: string) => {
     setSelectedVoucher(voucher);
@@ -26,6 +66,41 @@ const CartPage: React.FC = () => {
       setSelectedItems([]);
     } else {
       setSelectedItems(items.map((item) => item.id));
+    }
+  };
+
+  const handleQuantityChange = async (productId: number, quantity: number) => {
+    try {
+      await updateCartItemQuantity(productId, quantity);
+      setItems((prevItems) =>
+        prevItems.map((item) =>
+          item.product_id === productId ? { ...item, qty: quantity } : item,
+        ),
+      );
+    } catch (error) {
+      console.error("Error updating item quantity:", error);
+    }
+  };
+
+  const handleRemoveItem = async (productId: number) => {
+    try {
+      await removeItemFromCart(productId);
+      setItems((prevItems) =>
+        prevItems.filter((item) => item.product_id !== productId),
+      );
+    } catch (error) {
+      console.error("Error removing item from cart:", error);
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    try {
+      for (const id of selectedItems) {
+        await handleRemoveItem(id);
+      }
+      setSelectedItems([]);
+    } catch (error) {
+      console.error("Error deleting selected items:", error);
     }
   };
 
@@ -52,12 +127,7 @@ const CartPage: React.FC = () => {
           <button
             className="btn btn-error"
             disabled={selectedItems.length === 0}
-            onClick={() => {
-              setItems(
-                items.filter((item) => !selectedItems.includes(item.id)),
-              );
-              setSelectedItems([]);
-            }}
+            onClick={handleDeleteSelected}
           >
             Delete Selected
           </button>
@@ -74,6 +144,8 @@ const CartPage: React.FC = () => {
                       showCheckbox={true}
                       isChecked={selectedItems.includes(item.id)}
                       onCheckboxChange={handleCheckboxChange}
+                      onQuantityChange={handleQuantityChange}
+                      onRemoveItem={handleRemoveItem}
                     />
                   ))}
                 </>

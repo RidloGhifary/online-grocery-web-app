@@ -15,18 +15,7 @@ import { sendResetPasswordEmail } from '@/utils/send-mail/sendMailResetPassword'
 export class CredentialController {
   async changeEmail(req: Request, res: Response) {
     try {
-      const validatedRequest = changeEmailSchema.safeParse(req.body);
-
-      if (!validatedRequest.success) {
-        return res.status(400).json({
-          ok: false,
-          message: validatedRequest.error.issues[0].message,
-        });
-      }
-
-      const { email } = validatedRequest.data;
-
-      console.log(req.currentUser);
+      const { email } = req.body;
 
       if (!req.currentUser) {
         return res.status(400).json({ ok: false, message: 'User not found' });
@@ -57,14 +46,9 @@ export class CredentialController {
 
       const payload = { currentEmail: currentUser.email, newEmail: email };
 
-      console.log(
-        '🚀 ~ CredentialController ~ changeEmail ~ payload:',
-        payload,
-      );
       const token = jwt.sign(payload, process.env.JWT_SECRET!, {
         expiresIn: '1h',
       });
-      console.log('🚀 ~ CredentialController ~ changeEmail ~ token:', token);
 
       // TODO: Send email
       await sendMailChangeEmail({ email, key: token });

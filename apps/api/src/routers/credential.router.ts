@@ -1,5 +1,7 @@
 import { CredentialController } from '@/controllers/credential.controller';
+import validateRequest from '@/middlewares/validateRequest';
 import { verifyToken } from '@/middlewares/verifyToken';
+import { changeEmailSchema } from '@/validations/credential';
 import { Router } from 'express';
 
 export class CredentialRouter {
@@ -15,6 +17,7 @@ export class CredentialRouter {
   private initializeRoutes(): void {
     this.router.post(
       '/change-email',
+      validateRequest(changeEmailSchema),
       verifyToken,
       this.credentialController.changeEmail,
     );

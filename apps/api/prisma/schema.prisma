@@ -42,6 +42,7 @@ model User {
   inventory        StocksAdjustment[]
   vouchers_created Voucher[]          @relation("VoucherCreator")
   vouchers_used    UsersVoucher[]
+  Store            Store?
 
   @@index([id])
   @@index([username])
@@ -192,6 +193,8 @@ model Expedition {
 
 model Store {
   id          Int       @id @default(autoincrement())
+  created_by  Int
+  creator     User      @relation(fields: [id], references: [id])
   name        String
   store_type  StoreType
   city        City      @relation(fields: [city_id], references: [id])

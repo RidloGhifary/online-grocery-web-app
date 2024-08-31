@@ -7,26 +7,11 @@ import getUserByEmail from '@/utils/getUserByEmail';
 import createReferralCode from '@/utils/createReferralCode';
 import { sendVerificationEmail } from '@/utils/send-mail/sendMailVerification';
 import getUserCoordinates from '@/utils/getUserCoordinates';
-import {
-  loginSchema,
-  registerSchema,
-  verifyAccountSchema,
-} from '@/validations/auth';
 
 export class AuthController {
   async login(req: Request, res: Response) {
     try {
-      const validatedRequest = loginSchema.safeParse(req.body);
-
-      if (!validatedRequest.success) {
-        return res.status(400).json({
-          ok: false,
-          message: validatedRequest.error.issues[0].message,
-        });
-      }
-
       const { email, password } = req.body;
-
       const user = await getUserByEmail(email);
 
       if (!user) {
@@ -66,17 +51,7 @@ export class AuthController {
 
   async register(req: Request, res: Response) {
     try {
-      const validatedRequest = registerSchema.safeParse(req.body);
-
-      if (!validatedRequest.success) {
-        return res.status(400).json({
-          ok: false,
-          message: validatedRequest.error.issues[0].message,
-        });
-      }
-
       const user = await getUserByEmail(req.body.email);
-
       if (user) {
         return res
           .status(400)
@@ -98,15 +73,6 @@ export class AuthController {
 
   async verifyAccount(req: Request, res: Response) {
     try {
-      const validatedRequest = verifyAccountSchema.safeParse(req.body);
-
-      if (!validatedRequest.success) {
-        return res.status(400).json({
-          ok: false,
-          message: validatedRequest.error.issues[0].message,
-        });
-      }
-
       const { key, password } = req.body;
 
       const decodedData: JwtPayload = jwt.verify(

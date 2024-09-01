@@ -15,7 +15,7 @@ export class ProductRouter {
     this.router.get('/', this.productController.getAllProducts);
     this.router.get('/discounts', this.productController.getDiscountProduct);
     this.router.get(
-      '/closest',
+      '/nearest-distance',
       this.productController.getProductByClosestDistance,
     );
   }

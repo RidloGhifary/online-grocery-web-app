@@ -1,21 +1,11 @@
 import prisma from '@/prisma';
 import calculateDistance from '@/utils/calculateDistance';
 import { Request, Response } from 'express';
-import redisClient from '@/redis';
 
 export class ProductController {
   async getAllProducts(req: Request, res: Response) {
     try {
       const { page = 1, limit = 20 } = req.query;
-
-      const dataFromRedis = await redisClient.get('allProducts');
-      if (dataFromRedis) {
-        return res.status(200).json({
-          ok: true,
-          message: 'Success get products',
-          data: JSON.parse(dataFromRedis),
-        });
-      }
 
       const pageNumber = Number(page);
       const limitNumber = Number(limit);
@@ -27,9 +17,19 @@ export class ProductController {
       const products = await prisma.product.findMany({
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber,
+        where: {
+          current_stock: {
+            gt: 0,
+          },
+        },
         include: {
           product_discounts: true,
-          store: true,
+          store: {
+            include: {
+              city: true,
+              province: true,
+            },
+          },
         },
       });
 
@@ -45,7 +45,6 @@ export class ProductController {
         pagination,
       };
 
-      await redisClient.set('allProducts', JSON.stringify(formattedResponse));
       res.status(200).json({
         ok: true,
         message: 'Success get products',
@@ -58,15 +57,6 @@ export class ProductController {
 
   async getDiscountProduct(req: Request, res: Response) {
     try {
-      const dataFromRedis = await redisClient.get('discountProducts');
-      if (dataFromRedis) {
-        return res.status(200).json({
-          ok: true,
-          message: 'Success get discount product',
-          data: JSON.parse(dataFromRedis),
-        });
-      }
-
       const now = new Date();
 
       const products = await prisma.product.findMany({
@@ -81,6 +71,9 @@ export class ProductController {
               },
             },
           },
+          current_stock: {
+            gt: 0,
+          },
         },
         include: {
           product_discounts: {
@@ -93,11 +86,15 @@ export class ProductController {
               },
             },
           },
-          store: true,
+          store: {
+            include: {
+              city: true,
+              province: true,
+            },
+          },
         },
       });
 
-      await redisClient.set('discountProducts', JSON.stringify(products));
       res.status(200).json({
         ok: true,
         message: 'Success get discount product',
@@ -110,15 +107,6 @@ export class ProductController {
 
   async getProductByClosestDistance(req: Request, res: Response) {
     try {
-      const dataFromRedis = await redisClient.get('productsByClosestDistance');
-      if (dataFromRedis) {
-        return res.status(200).json({
-          ok: true,
-          message: 'Success get products by closest distance',
-          data: JSON.parse(dataFromRedis),
-        });
-      }
-
       const { latitude, longitude } = req.query;
 
       if (!latitude || !longitude) {
@@ -132,8 +120,19 @@ export class ProductController {
       const userLongitude = parseFloat(longitude as string);
 
       const products = await prisma.product.findMany({
+        where: {
+          current_stock: {
+            gt: 0,
+          },
+        },
         include: {
-          store: true,
+          product_discounts: true,
+          store: {
+            include: {
+              city: true,
+              province: true,
+            },
+          },
         },
       });
 
@@ -155,10 +154,6 @@ export class ProductController {
         (a: any, b: any) => (a.distance || 0) - (b.distance || 0),
       );
 
-      await redisClient.set(
-        'productsByClosestDistance',
-        JSON.stringify(productsWithDistance),
-      );
       res.status(200).json({
         ok: true,
         message:

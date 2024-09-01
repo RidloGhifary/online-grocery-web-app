@@ -11,6 +11,7 @@ import { UserProps } from "@/interfaces/user";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 import { getCurrentUser } from "@/actions/getCurrentUser";
+import Marquee from "@/components/Marquee";
 
 const font = Nunito({ subsets: ["latin"] });
 
@@ -35,6 +36,7 @@ export default async function RootLayout({
         />
         <QueryProvider>
           <ToastContainer position="top-center" draggable={true} />
+          <Marquee />
           <Navbar user={user as UserProps} />
           <main>{children}</main>
           <Footer />

@@ -4,16 +4,19 @@ import ProductsList from "@/components/ProductsList";
 import ProductBasedDiscount from "@/components/sections/ProductBasedDiscount";
 import ProductBasedNearestStore from "@/components/sections/ProductBasedNearestStore";
 
+const API_URL =
+  process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api";
+
 export default function Home() {
   return (
     <div className="">
       <Container>
         <Hero />
-        <ProductBasedDiscount />
+        <ProductBasedDiscount api_url={API_URL as string} />
         <hr />
-        <ProductBasedNearestStore />
+        <ProductBasedNearestStore api_url={API_URL as string} />
         <hr />
-        <ProductsList />
+        <ProductsList api_url={API_URL as string} />
       </Container>
     </div>
   );

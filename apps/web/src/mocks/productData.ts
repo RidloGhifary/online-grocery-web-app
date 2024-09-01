@@ -1,19 +1,8 @@
-export interface ProductInterface {
-  id: number;
-  sku: string;
-  name: string;
-  product_category_id: number;
-  description: string | null;
-  current_stock: number;
-  unit: string;
-  price: number;
-  image: string | null;
-  createdAt: Date | null;
-  updatedAt: Date | null;
-  deletedAt: Date | null;
-  store_id: number | null;
-}
-export const products: ProductInterface[] = [
+import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
+import { productsCategories } from "./productCategory";
+
+
+export const productDefault: ProductCompleteInterface[] = [
   {
     id: 1,
     sku: 'PROD001',
@@ -28,6 +17,8 @@ export const products: ProductInterface[] = [
     updatedAt: new Date(),
     deletedAt: null,
     store_id: 1,
+    slug: 'organic-bananas',
+    product_category: productsCategories.find(cat => cat.id === 1) ,
   },
   {
     id: 2,
@@ -43,6 +34,8 @@ export const products: ProductInterface[] = [
     updatedAt: new Date(),
     deletedAt: null,
     store_id: 1,
+    slug: 'almond-milk',
+    product_category: productsCategories.find(cat => cat.id === 2) ,
   },
   {
     id: 3,
@@ -58,6 +51,8 @@ export const products: ProductInterface[] = [
     updatedAt: new Date(),
     deletedAt: null,
     store_id: 2,
+    slug: 'whole-grain-bread',
+    product_category: productsCategories.find(cat => cat.id === 3) ,
   },
   {
     id: 4,
@@ -73,6 +68,8 @@ export const products: ProductInterface[] = [
     updatedAt: new Date(),
     deletedAt: null,
     store_id: 2,
+    slug: 'organic-eggs',
+    product_category: productsCategories.find(cat => cat.id === 4) ,
   },
   {
     id: 5,
@@ -88,6 +85,8 @@ export const products: ProductInterface[] = [
     updatedAt: new Date(),
     deletedAt: null,
     store_id: 3,
+    slug: 'greek-yogurt',
+    product_category: productsCategories.find(cat => cat.id === 5) ,
   },
   {
     id: 6,
@@ -103,6 +102,8 @@ export const products: ProductInterface[] = [
     updatedAt: new Date(),
     deletedAt: null,
     store_id: 3,
+    slug: 'chicken-breast',
+    product_category: productsCategories.find(cat => cat.id === 6) ,
   },
   {
     id: 7,
@@ -118,50 +119,24 @@ export const products: ProductInterface[] = [
     updatedAt: new Date(),
     deletedAt: null,
     store_id: 4,
+    slug: 'broccoli',
+    product_category: productsCategories.find(cat => cat.id === 7) ,
   },
-  {
-    id: 8,
-    sku: 'PROD008',
-    name: 'Quinoa',
-    product_category_id: 8,
-    description: 'Organic quinoa, a healthy grain alternative.',
-    current_stock: 40,
-    unit: 'kg',
-    price: 75000, // Price in IDR
-    image: 'https://img.daisyui.com/images/stock/photo-1609621838510-5ad474b7d25d.webp',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-    store_id: 4,
-  },
-  {
-    id: 9,
-    sku: 'PROD009',
-    name: 'Orange Juice',
-    product_category_id: 9,
-    description: 'Freshly squeezed orange juice, no added sugar.',
-    current_stock: 110,
-    unit: 'liter',
-    price: 48000, // Price in IDR
-    image: 'https://images.unsplash.com/photo-1713520074829-2e862fa8f8ac?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-    store_id: 5,
-  },
-  {
-    id: 10,
-    sku: 'PROD010',
-    name: 'Dark Chocolate',
-    product_category_id: 10,
-    description: 'Rich and smooth dark chocolate, 70% cocoa.',
-    current_stock: 90,
-    unit: 'bar',
-    price: 30000, // Price in IDR
-    image: 'https://images.unsplash.com/photo-1547405602-cdafbb1d8a44?q=80&w=1450&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-    store_id: 5,
-  }
+  // {
+  //   id: 8,
+  //   sku: 'PROD008',
+  //   name: 'Dark Chocolate',
+  //   product_category_id: 8,
+  //   description: 'Rich and smooth dark chocolate with 70% cocoa.',
+  //   current_stock: 150,
+  //   unit: 'bar',
+  //   price: 22000, // Price in IDR
+  //   image: 'https://images.unsplash.com/photo-1706467915222-86b69f2dd5b5?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //   createdAt: new Date(),
+  //   updatedAt: new Date(),
+  //   deletedAt: null,
+  //   store_id: 5,
+  //   slug: 'dark-chocolate',
+  //   product_category: productsCategories.find(cat => cat.id === 8) ,
+  // }
 ];

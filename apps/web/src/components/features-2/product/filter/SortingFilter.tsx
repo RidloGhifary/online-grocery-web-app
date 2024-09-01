@@ -2,18 +2,18 @@ export default function SortingFilter() {
   return (
     <>
       <select className="select select-bordered w-full max-w-xs my-3">
-        <option disabled defaultChecked>
+        <option disabled >
           Filtered by . . .
         </option>
-        <option value={'category'}>By Category</option>
         <option value={'product_name'}>By Product Name</option>
+        <option value={'category'}>By Category</option>
       </select>
       <select className="select select-bordered w-full max-w-xs">
-        <option disabled defaultChecked>
+        <option disabled >
           Choose order . . .
         </option>
-        <option value={'ASC'}>Ascending</option>
-        <option value={'DSC'}>Descending</option>
+        <option value={'asc'}>Ascending</option>
+        <option value={'desc'}>Descending</option>
       </select>
     </>
   );

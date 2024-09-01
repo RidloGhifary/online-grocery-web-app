@@ -1,27 +1,39 @@
-"use client";
+'use client'
 import React from "react";
 import PublicProductDetail from "@/components/features-2/product/PublicProductDetail";
-import { products } from "@/mocks/productData";
 import CarouselWithThumb from "@/components/features-2/ui/CarouselWithThumb";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import { getSingleProduct } from "@/actions/products";
+import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
 
 export default function Page() {
-  const images = products
-    .map((e) => e.image)
-    .filter((image): image is string => image !== null);
+  const { slug } = useParams<{ slug: string }>();
+
+  const { isLoading, error, data: product } = useQuery({
+    queryKey: ['publicProduct', slug],
+    queryFn: async () => {
+      const response = await getSingleProduct({ slug });
+      return response.data;
+    },
+    enabled: !!slug, // Only run the query if slug is defined
+  });
+
+  if (error) {
+    return <div>Error: {error instanceof Error ? error.message : 'An error occurred'}</div>;
+  }
 
   return (
-    <>
-      <div className="w-full max-w-full items-center justify-center">
-        <div className="flex w-full max-w-full flex-wrap justify-center shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
-          <div className="w-full max-w-xl">
-            {/* <Carousel images={images} /> */}
-            <CarouselWithThumb />
-          </div>
-          <div className="w-full max-w-xl">
-            <PublicProductDetail />
-          </div>
+    <div className="w-full max-w-full items-center justify-center">
+      <div className="flex w-full max-w-full flex-wrap justify-center shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
+        <div className="w-full max-w-xl">
+          <CarouselWithThumb />
+        </div>
+        <div className="w-full max-w-xl">
+          {/* {product && <PublicProductDetail productDetail={product as ProductCompleteInterface} isLoading={isLoading} />} */}
+          <PublicProductDetail productDetail={product as ProductCompleteInterface} isLoading={isLoading} />
         </div>
       </div>
-    </>
+    </div>
   );
 }

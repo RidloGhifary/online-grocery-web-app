@@ -1,18 +1,30 @@
-import { products } from "@/mocks/productData";
+'use client';
+
+import { productDefault } from "@/mocks/productData";
+import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
 import ProductCardF2 from "../ui/ProductCardF2";
 
-export default function PublicProductList() {
+export default function PublicProductList({
+  products = productDefault,
+  isLoading,
+}: {
+  products: ProductCompleteInterface[];
+  isLoading: boolean;
+}) {
   return (
-    <>
-      <div className="mx-[0.6rem] sm:flex sm:flex-wrap grid grid-cols-2 justify-center sm:gap-5 sm:mx-5 ">
-        {products.map((e, i) => (
-          // <Card extraCardCSSClassName='lg:w-56 sm:w-44' baseSizeClassName='w-36 h-auto' key={i} />
-          // <ProductCard/>
-          <div className="flex items-center justify-center my-2" key={i}>
-          <ProductCardF2  />
+    <div className="mx-[0.6rem] grid grid-cols-2 justify-center sm:mx-5 sm:flex sm:flex-wrap sm:gap-5">
+      {isLoading ? (
+        // Show a primary color spinner while loading
+        <div className="flex w-full justify-center py-5">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      ) : (
+        products.map((e, i) => (
+          <div className="my-2 flex items-center justify-center" key={i}>
+            <ProductCardF2 name={e.name} price={e.price} slug={e.slug!} />
           </div>
-        ))}
-      </div>
-    </>
+        ))
+      )}
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import CommonResultInterface from '@/interfaces/CommonResultSpecs';
+import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import prisma from '@/prisma';
 import searchFriendlyForLikeQuery from '@/utils/searchFriendlyForLikeQuery';
 import { Product } from '@prisma/client';
@@ -95,6 +95,27 @@ class ProductRepository {
       result.message = 'Error'
     }
     return result;
+  }
+  async getSingleProduct ({slug}:{slug:string}) : Promise<CommonResultInterface<Product>> {
+    const result: CommonResultInterface<Product> = {
+      ok: false,
+    };
+    try {
+      const res = await prisma.product.findFirstOrThrow({
+        where : {
+          slug : slug
+        }, include: {
+          product_category: true,
+        },
+      })
+      result.data = res
+      result.ok = true
+      result.message = 'Query Success'
+    } catch (error) {
+      result.error = error
+      result.message = 'Error'
+    }
+    return result
   }
 }
 

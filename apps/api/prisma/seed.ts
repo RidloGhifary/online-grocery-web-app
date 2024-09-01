@@ -96,8 +96,8 @@ async function main() {
           process.env.SUPERUSER_PASSWORD!,
           await bcrypt.genSalt(),
         ),
-        validated_at : Date.now().toString(),
-        validation_sent_at : Date.now().toString(),
+        validated_at: new Date().toISOString(),
+        validation_sent_at: new Date().toISOString(),
         referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
       },
     });
@@ -169,6 +169,7 @@ async function main() {
           image: '',
           description: 'High-quality UHT milk from Ultramilk.',
           current_stock: 50,
+          slug: 'susu-uht-ultramilk-500ml',
         },
         {
           id: 2,
@@ -180,6 +181,7 @@ async function main() {
           image: '',
           description: 'Rich and creamy cheese from Kraft.',
           current_stock: 30,
+          slug: 'keju-kraft-250gr',
         },
         {
           id: 3,
@@ -191,6 +193,7 @@ async function main() {
           image: '',
           description: 'Delicious yogurt from Cimory.',
           current_stock: 40,
+          slug: 'yogurt-cimory-200ml',
         },
         {
           id: 4,
@@ -202,6 +205,7 @@ async function main() {
           image: '',
           description: 'High-quality butter from Blue Band.',
           current_stock: 20,
+          slug: 'butter-blue-band-200gr',
         },
         {
           id: 5,
@@ -213,6 +217,7 @@ async function main() {
           image: '',
           description: 'Smooth and creamy cheese from Philadelphia.',
           current_stock: 25,
+          slug: 'cream-cheese-philadelphia-150gr',
         },
 
         // Vegetable Products
@@ -226,6 +231,7 @@ async function main() {
           image: '',
           description: 'Fresh potatoes, perfect for cooking.',
           current_stock: 100,
+          slug: 'kentang-1kg',
         },
         {
           id: 7,
@@ -237,6 +243,7 @@ async function main() {
           image: '',
           description: 'Crunchy and fresh carrots.',
           current_stock: 80,
+          slug: 'wortel-500gr',
         },
         {
           id: 8,
@@ -248,6 +255,7 @@ async function main() {
           image: '',
           description: 'Fresh broccoli, rich in nutrients.',
           current_stock: 70,
+          slug: 'brokoli-250gr',
         },
         {
           id: 9,
@@ -259,6 +267,7 @@ async function main() {
           image: '',
           description: 'Fresh long beans, great for soups.',
           current_stock: 90,
+          slug: 'kacang-panjang-300gr',
         },
         {
           id: 10,
@@ -270,6 +279,7 @@ async function main() {
           image: '',
           description: 'Fresh green beans, crunchy and tasty.',
           current_stock: 60,
+          slug: 'buncis-250gr',
         },
 
         // Fruit Products
@@ -283,6 +293,7 @@ async function main() {
           image: '',
           description: 'Crisp and sweet Fuji apples.',
           current_stock: 50,
+          slug: 'apel-fuji-1kg',
         },
         {
           id: 12,
@@ -294,6 +305,7 @@ async function main() {
           image: '',
           description: 'Sweet and ripe Cavendish bananas.',
           current_stock: 60,
+          slug: 'pisang-cavendish-1kg',
         },
         {
           id: 13,
@@ -305,6 +317,7 @@ async function main() {
           image: '',
           description: 'Fresh and juicy Santang oranges.',
           current_stock: 40,
+          slug: 'jeruk-santang-1kg',
         },
         {
           id: 14,
@@ -316,6 +329,7 @@ async function main() {
           image: '',
           description: 'Sweet and delicious red grapes.',
           current_stock: 35,
+          slug: 'anggur-merah-500gr',
         },
         {
           id: 15,
@@ -327,6 +341,7 @@ async function main() {
           image: '',
           description: 'Creamy and rich butter avocados.',
           current_stock: 25,
+          slug: 'alpukat-mentega-1kg',
         },
 
         // Additional products for variety
@@ -340,6 +355,7 @@ async function main() {
           image: '',
           description: 'Fresh and ripe tomatoes.',
           current_stock: 100,
+          slug: 'tomat-1kg',
         },
         {
           id: 17,
@@ -351,6 +367,7 @@ async function main() {
           image: '',
           description: 'Sweet and fresh California papayas.',
           current_stock: 40,
+          slug: 'pepaya-california-1kg',
         },
         {
           id: 18,
@@ -362,6 +379,7 @@ async function main() {
           image: '',
           description: 'Healthy and delicious soy milk.',
           current_stock: 50,
+          slug: 'susu-kedelai-v-soy-300ml',
         },
         {
           id: 19,
@@ -373,6 +391,7 @@ async function main() {
           image: '',
           description: 'Fresh eggs, perfect for daily consumption.',
           current_stock: 150,
+          slug: 'telur-ayam-1-lusin',
         },
         {
           id: 20,
@@ -384,6 +403,7 @@ async function main() {
           image: '',
           description: 'Juicy and fresh pears.',
           current_stock: 50,
+          slug: 'pear-1kg',
         },
       ],
     });
@@ -410,7 +430,10 @@ async function main() {
     });
 
     // console.log({...[...seedRes]});
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    
+  }
 }
 main()
   .then(async () => {

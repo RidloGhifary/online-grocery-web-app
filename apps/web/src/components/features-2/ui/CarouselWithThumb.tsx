@@ -10,7 +10,7 @@ import "swiper/css/navigation";
 import "swiper/css/thumbs";
 import "./css/carouselFeat2.css";
 import Image from "next/image";
-import { products } from "@/mocks/productData";
+import { productDefault as products } from "@/mocks/productData";
 
 const CarouselWithThumbs: React.FC = () => {
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);

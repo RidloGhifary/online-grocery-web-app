@@ -1,9 +1,8 @@
-"use client";
-
-import { useId, useState } from "react";
+'use client'
+import { useId } from "react";
 import Select from "react-select";
-import { products } from "@/mocks/productData";
 import QuantityBox from "../ui/QuantityBox";
+import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
 
 const mockStores = [
   { id: 0, value: "store1", label: "Store 1" },
@@ -11,21 +10,21 @@ const mockStores = [
   { id: 2, value: "store3", label: "Store 3" },
 ];
 
-const product = products[0]; // Example product
-
-export default function PublicProductDetail() {
-  const [selectedStore, setSelectedStore] = useState(null);
+export default function PublicProductDetail({
+  productDetail,
+  isLoading,
+}: {
+  productDetail: ProductCompleteInterface;
+  isLoading: boolean;
+}) {
+  const product = productDetail;
   const instanceId = useId();
-
-  const handleStoreChange = (selectedOption: any) => {
-    setSelectedStore(selectedOption);
-  };
 
   return (
     <div className="mt-6 w-full max-w-3xl">
       <div className="flex justify-center pb-2">
         <h1 className="mt-5 text-center text-3xl font-bold text-gray-800 lg:text-4xl">
-          {product.name}
+          {isLoading ? <span className="loading loading-spinner loading-md text-primary"></span> : product.name}
         </h1>
       </div>
 
@@ -35,32 +34,57 @@ export default function PublicProductDetail() {
             <tbody>
               <tr className="border-b">
                 <td className="py-2 text-sm font-bold">SKU</td>
-                <td className="py-2 text-right text-sm">{product.sku}</td>
+                <td className="py-2 text-right text-sm">
+                  {isLoading ? <span className="loading loading-spinner loading-sm text-primary"></span> : product.sku}
+                </td>
               </tr>
               <tr className="border-b">
                 <td className="py-2 text-sm font-bold">Category</td>
-                <td className="py-2 text-right text-sm">Lorem</td>
+                <td className="py-2 text-right text-sm">
+                  {isLoading ? (
+                    <span className="loading loading-spinner loading-sm text-primary"></span>
+                  ) : (
+                    product.product_category?.display_name
+                  )}
+                </td>
               </tr>
               <tr className="border-b">
                 <td className="py-2 text-sm font-bold">Price</td>
                 <td className="py-2 text-right text-sm">
-                  {product.price.toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                  })}
+                  {isLoading ? (
+                    <span className="loading loading-spinner loading-sm text-primary"></span>
+                  ) : (
+                    product.price?.toLocaleString("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                    })
+                  )}
                 </td>
               </tr>
               <tr className="border-b">
                 <td className="py-2 text-sm font-bold">Last Update</td>
                 <td className="py-2 text-right text-sm">
-                  {product.updatedAt && product.updatedAt.toDateString()}
+                  {isLoading ? (
+                    <span className="loading loading-spinner loading-sm text-primary"></span>
+                  ) : (
+                    new Date(product?.updatedAt as string).toLocaleDateString('en-US', {
+                      weekday: 'long',  // "Sunday"
+                      year: 'numeric',  // "2024"
+                      month: 'long',    // "September"
+                      day: 'numeric'    // "1"
+                  })
+                  )}
                 </td>
               </tr>
             </tbody>
           </table>
           <div className="mb-8 flex w-full justify-start">
             <p className="text-justify text-base leading-normal text-gray-600 lg:leading-tight dark:text-slate-600">
-              {product.description}
+              {isLoading ? (
+                <span className="loading loading-spinner loading-md text-primary"></span>
+              ) : (
+                product.description
+              )}
             </p>
           </div>
           <div className="flex w-full max-w-full p-3 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
@@ -70,14 +94,16 @@ export default function PublicProductDetail() {
                   Nearest Store
                 </p>
                 <div className="inline-flex w-1/2 items-center">
-                  <Select
-                    instanceId={instanceId}
-                    options={mockStores}
-                    value={selectedStore}
-                    onChange={handleStoreChange}
-                    placeholder="Select store..."
-                    className="w-full"
-                  />
+                  {isLoading ? (
+                    <span className="loading loading-spinner loading-sm text-primary"></span>
+                  ) : (
+                    <Select
+                      instanceId={instanceId}
+                      options={mockStores}
+                      placeholder="Select store..."
+                      className="w-full"
+                    />
+                  )}
                 </div>
               </div>
               <div className="mt-2 inline-flex w-full justify-between">
@@ -85,7 +111,7 @@ export default function PublicProductDetail() {
                   Avalaible Stock
                 </p>
                 <p className="inline-flex items-center">
-                  {product.current_stock}
+                  {isLoading ? <span className="loading loading-spinner loading-sm text-primary"></span> : product.current_stock}
                 </p>
               </div>
               <div className="mt-2 inline-flex w-full justify-between">
@@ -93,14 +119,19 @@ export default function PublicProductDetail() {
                   Last Update
                 </p>
                 <p className="inline-flex items-center">
-                  {product.updatedAt && product.updatedAt.toDateString()}
+                  {isLoading ? <span className="loading loading-spinner loading-sm text-primary"></span> : new Date(product?.updatedAt as string).toLocaleDateString('en-US', {
+                      weekday: 'long',  // "Sunday"
+                      year: 'numeric',  // "2024"
+                      month: 'long',    // "September"
+                      day: 'numeric'    // "1"
+                  })}
                 </p>
               </div>
               <div className="mt-2 inline-flex w-full justify-between">
                 <p className="mr-8 inline-flex items-center font-semibold">
                   Buy quantity
                 </p>
-                <QuantityBox />
+                {isLoading ? <span className="loading loading-spinner loading-sm text-primary"></span> : <QuantityBox />}
               </div>
               <button className="mt-4 flex w-full items-center justify-center self-end rounded bg-primary px-4 py-2 text-white hover:bg-[#46c073] active:bg-[#0ea345] disabled:opacity-50">
                 +

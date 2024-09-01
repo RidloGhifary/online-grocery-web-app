@@ -276,6 +276,9 @@ model Product {
   order_detail      OrderDetail[]
 
   @@index([id])
+  @@index([sku])
+  @@index([name])
+  @@index([slug])
   @@map("products")
 }
 

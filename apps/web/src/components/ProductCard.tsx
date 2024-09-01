@@ -16,7 +16,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Link
       href={`/products/${product?.id}?name=${product?.name}?store=${product?.store?.id}-${product?.store?.name}`}
-      className="card h-[340px] w-56 bg-white shadow"
+      className="card h-[300px] w-44 bg-white shadow md:h-[340px] md:w-56"
     >
       <figure>
         <Image
@@ -24,7 +24,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           height={300}
           src={product?.image || "/sample-product-image.jpg"}
           alt="Placeholder"
-          className="aspect-square max-h-[180px] w-full object-contain"
+          className="aspect-square max-h-[140px] w-full object-contain md:max-h-[180px]"
           loading="lazy"
         />
       </figure>

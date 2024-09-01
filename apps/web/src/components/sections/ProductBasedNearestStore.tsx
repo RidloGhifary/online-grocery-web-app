@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import SectionSkeleton from "@/skeletons/SectionSkeleton";
 import { ProductProps } from "@/interfaces/product";
 import { useEffect, useState } from "react";
+import ErrorInfo from "../ErrorInfo";
 
 interface ProductBasedDiscountProps {
   api_url: string;
@@ -27,7 +28,6 @@ export default function ProductBasedNearestStore({
         localStorage.setItem("locationAccess", "granted");
       },
       (error) => {
-        console.error("Error getting geolocation:", error);
         localStorage.setItem("locationAccess", "denied");
       },
       { enableHighAccuracy: true, timeout: 10000 },
@@ -38,7 +38,6 @@ export default function ProductBasedNearestStore({
     data: products,
     isLoading,
     isError,
-    error,
   } = useQuery({
     queryKey: ["nearest-products"],
     queryFn: async () => {
@@ -58,9 +57,7 @@ export default function ProductBasedNearestStore({
           Enable your location to get nearest product
         </div>
       ) : isError ? (
-        <div className="w-full rounded-md bg-red-500/20 p-6 text-center text-red-500">
-          Ups, something went wrong!
-        </div>
+        <ErrorInfo />
       ) : isLoading ? (
         <SectionSkeleton />
       ) : (

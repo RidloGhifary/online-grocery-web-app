@@ -7,6 +7,8 @@ const protectedRoutes = [
   "/user/address",
   "/cart",
   "/my-vouchers",
+  "/checkout",
+  "/transaction",
 ];
 const authRoutes = ["/login", "/register", "/verify-account"];
 

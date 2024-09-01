@@ -154,11 +154,14 @@ export class ProductController {
         (a: any, b: any) => (a.distance || 0) - (b.distance || 0),
       );
 
+      // Limit products to 60
+      const limitedProducts = productsWithDistance.slice(0, 60);
+
       res.status(200).json({
         ok: true,
         message:
           'Successfully retrieved products sorted by distance from your location.',
-        data: productsWithDistance,
+        data: limitedProducts,
       });
     } catch {
       res.status(500).json({ ok: false, message: 'Internal server error' });

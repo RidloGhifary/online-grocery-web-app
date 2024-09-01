@@ -11,9 +11,13 @@ import { ProductProps } from "@/interfaces/product";
 import SectionSkeleton from "@/skeletons/SectionSkeleton";
 import { useState } from "react";
 import ErrorInfo from "@/components/ErrorInfo";
+import { BsArrowLeft } from "react-icons/bs";
+import { useRouter } from "next/navigation";
 
 export default function PageContent({ api_url }: Props) {
   const [slice, setSlice] = useState<number>(10);
+
+  const router = useRouter();
 
   const {
     data: products,
@@ -31,6 +35,13 @@ export default function PageContent({ api_url }: Props) {
 
   return (
     <div>
+      <button
+        className="btn btn-secondary btn-sm"
+        onClick={() => router.back()}
+      >
+        <BsArrowLeft />
+        Back
+      </button>
       {isError && <ErrorInfo />}
       {isLoading ? (
         <SectionSkeleton />

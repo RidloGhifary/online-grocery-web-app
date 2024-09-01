@@ -50,7 +50,6 @@ export class CartController {
     }
 
     const validationResult = addItemSchema.safeParse(req.body);
-
     if (!validationResult.success) {
       return res.status(400).json({ error: validationResult.error.errors });
     }
@@ -81,28 +80,40 @@ export class CartController {
           },
         });
 
-        const totalQuantity = existingCart
-          ? existingCart.qty + quantity
-          : quantity;
-
-        if (totalQuantity > product.current_stock) {
-          throw new Error(
-            `Maksimal jumlah yang bisa ditambahkan ke keranjang adalah ${product.current_stock} untuk produk ini`,
-          );
-        }
-
-        const updatedProduct = await prisma.product.update({
-          where: { id: productId },
-          data: { current_stock: product.current_stock - quantity },
-        });
+        const additionalQuantityNeeded = quantity;
 
         if (existingCart) {
+          if (additionalQuantityNeeded > product.current_stock) {
+            throw new Error(
+              `Jumlah stok produk yang tersedia hanya ${product.current_stock}, tidak bisa menambahkan lebih banyak.`,
+            );
+          }
+
+          const updatedProduct = await prisma.product.update({
+            where: { id: productId },
+            data: {
+              current_stock: product.current_stock - additionalQuantityNeeded,
+            },
+          });
+
           const updatedCart = await prisma.cart.update({
             where: { id: existingCart.id },
-            data: { qty: totalQuantity },
+            data: { qty: existingCart.qty + additionalQuantityNeeded },
           });
+
           return updatedCart;
         } else {
+          if (quantity > product.current_stock) {
+            throw new Error(
+              `Jumlah stok produk yang tersedia hanya ${product.current_stock}, tidak bisa menambahkan lebih banyak.`,
+            );
+          }
+
+          const updatedProduct = await prisma.product.update({
+            where: { id: productId },
+            data: { current_stock: product.current_stock - quantity },
+          });
+
           const newCartItem = await prisma.cart.create({
             data: {
               product_id: productId,
@@ -111,14 +122,17 @@ export class CartController {
               store_id: storeId,
             },
           });
+
           return newCartItem;
         }
       });
 
       return res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
-        error: 'Terjadi error saat menambahkan item ke dalam keranjang',
+        error:
+          error.message ||
+          'Terjadi error saat menambahkan item ke dalam keranjang',
       });
     }
   };

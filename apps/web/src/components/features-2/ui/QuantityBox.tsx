@@ -1,41 +1,42 @@
-export default function ({qty=0}:{qty?:number}) {
+export default function QuantityBox({
+  qty = 1,
+  setQty,
+  maxQty,
+}: {
+  qty?: number;
+  setQty: React.Dispatch<React.SetStateAction<number>>;
+  maxQty: number;
+}) {
+  const handleDecrement = () => {
+    if (qty > 1) setQty(qty - 1);
+  };
+
+  const handleIncrement = () => {
+    if (qty < maxQty) setQty(qty + 1);
+  };
+
   return (
-    <>
-      <button className="inline-flex items-center rounded-l border border-r border-gray-200 bg-white px-2 py-1 text-gray-600 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-50">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M20 12H4"
-          />
-        </svg>
+    <div className="inline-flex items-center rounded border border-gray-200">
+      <button
+        onClick={handleDecrement}
+        disabled={qty <= 1}
+        className="flex h-8 w-8 items-center justify-center bg-gray-100 disabled:bg-gray-200 disabled:opacity-50"
+      >
+        -
       </button>
-      <div className="inline-flex select-none items-center border-b border-t border-gray-100 bg-gray-100 px-4 py-1 text-gray-600 hover:bg-gray-100">
-        {qty}
-      </div>
-      <button className="inline-flex items-center rounded-r border border-r border-gray-200 bg-white px-2 py-1 text-gray-600 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-50">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
+      <input
+        type="text"
+        value={qty}
+        readOnly
+        className="h-8 w-10 border-l border-r border-gray-200 bg-white text-center"
+      />
+      <button
+        onClick={handleIncrement}
+        disabled={qty >= maxQty || maxQty === 0}
+        className="flex h-8 w-8 items-center justify-center bg-gray-100 disabled:bg-gray-200 disabled:opacity-50"
+      >
+        +
       </button>
-    </>
+    </div>
   );
 }

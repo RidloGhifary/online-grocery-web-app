@@ -1,9 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import QuantityBox from "../ui/QuantityBox";
+import { addItemToCart } from "@/api/cart/route";
 
 export default function PublicProductDetail({ product }) {
+  const [quantity, setQuantity] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentStock, setCurrentStock] = useState<number>(
+    product.current_stock,
+  );
+
+  const handleAddToCart = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (currentStock >= quantity) {
+        const response = await addItemToCart(
+          product.id,
+          quantity,
+          product.store_id,
+        );
+        console.log("Item added to cart:", response.data);
+        alert("Item added to cart!");
+        setCurrentStock((prevStock) => prevStock - quantity);
+        setQuantity(1);
+      }
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.error || "Failed to add item to cart.";
+      console.error("Failed to add item to cart:", errorMessage);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="mx-5 mt-6 max-w-xl">
       <div className="flex justify-center pb-2">
@@ -49,9 +83,7 @@ export default function PublicProductDetail({ product }) {
           <tbody>
             <tr>
               <td className="py-2 text-sm">Stock</td>
-              <td className="py-2 text-right text-sm">
-                {product.current_stock}
-              </td>
+              <td className="py-2 text-right text-sm">{currentStock}</td>
             </tr>
           </tbody>
         </table>
@@ -59,10 +91,18 @@ export default function PublicProductDetail({ product }) {
       <div className="flex w-full max-w-full justify-end">
         <div className="flex w-80 flex-col items-center justify-end rounded">
           <div className="mt-2 inline-flex self-end">
-            <QuantityBox qty={product.current_stock} />
+            <QuantityBox
+              qty={quantity}
+              setQty={setQuantity}
+              maxQty={currentStock}
+            />
           </div>
-          <button className="mt-4 flex w-40 items-center justify-center self-end rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50">
-            Add to order
+          <button
+            className="mt-4 flex w-40 items-center justify-center self-end rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50"
+            onClick={handleAddToCart}
+            disabled={loading || currentStock === 0}
+          >
+            {loading ? "Adding..." : "Add to order"}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="ml-2 h-6 w-6"
@@ -78,6 +118,7 @@ export default function PublicProductDetail({ product }) {
               />
             </svg>
           </button>
+          {error && <p className="mt-2 text-red-500">{error}</p>}
         </div>
       </div>
     </div>

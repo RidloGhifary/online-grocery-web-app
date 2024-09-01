@@ -50,6 +50,7 @@ export default function ProductBasedDiscount({
 
             <div className="flex w-full items-center gap-2 overflow-x-auto rounded-box md:ml-[-50px]">
               {!isLoading &&
+                !isError &&
                 products?.data?.slice(0, 10)?.map((product: ProductProps) => (
                   <div key={product.id}>
                     <ProductCard product={product} />

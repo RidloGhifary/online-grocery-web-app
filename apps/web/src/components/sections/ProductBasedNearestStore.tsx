@@ -30,6 +30,7 @@ export default function ProductBasedNearestStore({
         console.error("Error getting geolocation:", error);
         localStorage.setItem("locationAccess", "denied");
       },
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   }, []);
 

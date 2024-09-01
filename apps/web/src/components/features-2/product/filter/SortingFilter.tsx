@@ -1,7 +1,6 @@
 export default function SortingFilter() {
   return (
     <>
-    <h1 className="my-2 font-bold">Sort</h1>
       <select className="select select-bordered w-full max-w-xs my-3">
         <option disabled defaultChecked>
           Filtered by . . .

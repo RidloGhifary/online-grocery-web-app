@@ -4,7 +4,6 @@ import Radio from '../../ui/Radio';
 export default function CategoryFilter() {
   return (
     <>
-      <h1 className="my-2 font-bold">Category</h1>
       
       <Radio defaultChecked value={'all'}>
         All

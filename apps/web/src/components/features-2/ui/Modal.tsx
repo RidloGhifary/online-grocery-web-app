@@ -46,7 +46,7 @@ export function Modal({
       document.addEventListener("mousedown", handleOutsideClick);
       currentRef?.showModal();
     } else {
-      // currentRef?.close();
+      currentRef?.close();
       document.removeEventListener("mousedown", handleOutsideClick);
     }
 

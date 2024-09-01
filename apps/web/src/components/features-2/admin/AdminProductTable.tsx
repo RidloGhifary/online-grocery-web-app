@@ -24,7 +24,7 @@ export default function ({ products }: { products: ProductInterface[] }) {
           {products.map((product) => (
             <tr key={product.id}>
               <td>
-                <div className="flex flex-col items-center justify-start sm:flex-row sm:space-x-4 min-w-40">
+                <div className="flex flex-col sm:items-center items-start justify-start sm:flex-row sm:space-x-4 min-w-40">
                   <Image
                     src={product.image ?? "https://via.placeholder.com/150"}
                     alt={product.name}

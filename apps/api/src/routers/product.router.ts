@@ -13,6 +13,11 @@ export class ProductRouter {
 
   private initializeRoutes(): void {
     this.router.get('/', this.productController.getAllProducts);
+    this.router.get('/discounts', this.productController.getDiscountProduct);
+    this.router.get(
+      '/closest',
+      this.productController.getProductByClosestDistance,
+    );
   }
 
   getRouter(): Router {

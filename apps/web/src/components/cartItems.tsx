@@ -1,5 +1,6 @@
 import React from "react";
 import MainButton from "./MainButton";
+import { useCart } from "@/context/CartContext";
 
 interface Product {
   name: string;
@@ -38,15 +39,18 @@ const CartItem: React.FC<CartItemProps> = ({
   onQuantityChange,
   onRemoveItem,
 }) => {
+  const { refreshCart } = useCart();
   const handleDecrement = () => {
     if (onQuantityChange && item.qty > 1) {
       onQuantityChange(item.product_id, item.qty - 1);
+      refreshCart();
     }
   };
 
   const handleIncrement = () => {
     if (onQuantityChange) {
       onQuantityChange(item.product_id, item.qty + 1);
+      refreshCart();
     }
   };
 

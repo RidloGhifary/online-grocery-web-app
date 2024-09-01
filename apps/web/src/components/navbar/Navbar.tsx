@@ -6,14 +6,17 @@ import Container from "../Container";
 import Logo from "../Logo";
 import InputSearch from "./InputSearch";
 import NavbarItem from "./NavbarItem";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserProps } from "@/interface/user";
+import { getCartItems } from "@/api/cart/route";
+import { useCart } from "@/context/CartContext";
 
 interface NavbarProps {
   user?: UserProps;
 }
 
 export default function Navbar({ user }: NavbarProps) {
+  const { cartItemCount } = useCart();
   const [showNavbar, setShowNavbar] = useState<boolean>(false);
 
   return (
@@ -37,12 +40,12 @@ export default function Navbar({ user }: NavbarProps) {
               className={`absolute bottom-0 left-0 top-0 z-50 h-screen w-1/2 border-r bg-white p-4 ${showNavbar ? "translate-x-0" : "-translate-x-full"} transition`}
             >
               <Logo />
-              <NavbarItem user={user} />
+              <NavbarItem user={user} cartItemCount={cartItemCount} />
             </div>
           </div>
 
           <div className="hidden flex-1 justify-end md:flex">
-            <NavbarItem user={user} />
+            <NavbarItem user={user} cartItemCount={cartItemCount} />
           </div>
         </div>
       </Container>

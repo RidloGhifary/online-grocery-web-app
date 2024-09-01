@@ -43,7 +43,6 @@ export async function getCartItems(): Promise<
 > {
   try {
     const response = await api.get<GetCartItemsResponse>("/cart/items");
-    console.log(response);
     return response;
   } catch (error) {
     throw new Error(`Failed to fetch cart items: ${error}`);

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useCart } from "@/context/CartContext";
 import CartItem from "@/components/CartItems";
 import {
   getCartItems,
@@ -8,28 +9,17 @@ import {
   removeItemFromCart,
 } from "@/api/cart/route";
 import CheckoutSummary from "@/components/CheckoutSummary";
-
-interface CartItemData {
-  id: number;
-  product_id: number;
-  quantity: number;
-  qty: number;
-  user_id: number;
-  store_id: number;
-  name: string;
-  price: number;
-  image: string;
-  description: string;
-}
-
-interface GetCartItemsResponse {
-  data: CartItemData[];
-}
+import { Modal } from "@/components/features-2/ui/Modal"; // Import the modal
 
 const CartPage: React.FC = () => {
   const [items, setItems] = useState<CartItemData[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
+  const [cartQuantity, setCartQuantity] = useState<number>(0);
+  const [modalVisible, setModalVisible] = useState(false); // Modal visibility
+  const [modalContent, setModalContent] = useState<string>(""); // Modal content
+  const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {}); // Action to confirm
+  const { refreshCart } = useCart();
 
   useEffect(() => {
     const fetchCartItems = async () => {
@@ -77,6 +67,7 @@ const CartPage: React.FC = () => {
           item.product_id === productId ? { ...item, qty: quantity } : item,
         ),
       );
+      refreshCart();
     } catch (error) {
       console.error("Error updating item quantity:", error);
     }
@@ -88,6 +79,7 @@ const CartPage: React.FC = () => {
       setItems((prevItems) =>
         prevItems.filter((item) => item.product_id !== productId),
       );
+      refreshCart();
     } catch (error) {
       console.error("Error removing item from cart:", error);
     }
@@ -102,6 +94,13 @@ const CartPage: React.FC = () => {
     } catch (error) {
       console.error("Error deleting selected items:", error);
     }
+  };
+
+  // New: Show confirmation modal before deleting selected items
+  const confirmDeleteSelected = () => {
+    setModalContent("Apakah anda ingin menghapus semua produk terpilih?");
+    setActionToConfirm(handleDeleteSelected);
+    setModalVisible(true);
   };
 
   const cartIsEmpty = items.length === 0;
@@ -127,7 +126,7 @@ const CartPage: React.FC = () => {
           <button
             className="btn btn-error"
             disabled={selectedItems.length === 0}
-            onClick={handleDeleteSelected}
+            onClick={confirmDeleteSelected} // Use confirmDeleteSelected instead
           >
             Delete Selected
           </button>
@@ -145,7 +144,15 @@ const CartPage: React.FC = () => {
                       isChecked={selectedItems.includes(item.id)}
                       onCheckboxChange={handleCheckboxChange}
                       onQuantityChange={handleQuantityChange}
-                      onRemoveItem={handleRemoveItem}
+                      onRemoveItem={() => {
+                        setModalContent(
+                          `Apakah anda ingin menghapus ${item.product.name}?`,
+                        );
+                        setActionToConfirm(
+                          () => () => handleRemoveItem(item.product_id),
+                        );
+                        setModalVisible(true);
+                      }} // Show modal when removing an item
                     />
                   ))}
                 </>
@@ -167,6 +174,33 @@ const CartPage: React.FC = () => {
           </div>
         </div>
       </div>
+      {modalVisible && (
+        <Modal
+          show={modalVisible}
+          onClose={() => setModalVisible(false)}
+          actions={[
+            <button
+              key="cancel"
+              className="rounded-lg bg-gray-500 px-4 py-2 text-white"
+              onClick={() => setModalVisible(false)}
+            >
+              Batalkan
+            </button>,
+            <button
+              key="confirm"
+              className="rounded-lg bg-red-500 px-4 py-2 text-white"
+              onClick={() => {
+                actionToConfirm();
+                setModalVisible(false);
+              }}
+            >
+              Ya
+            </button>,
+          ]}
+        >
+          <p>{modalContent}</p>
+        </Modal>
+      )}
     </div>
   );
 };

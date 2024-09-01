@@ -1,3 +1,4 @@
+import { ENV } from '@/config';
 import { AuthController } from '@/controllers/auth.controller';
 import { Router } from 'express';
 import passport from 'passport';
@@ -30,7 +31,7 @@ export class AuthRouter {
       function (req, res) {
         const { token } = req.user as any;
         res.redirect(
-          `${process.env.NEXT_PUBLIC_APP_URL}/redirect?token=${token}`,
+          `${ENV.NEXT_PUBLIC_APP_URL}/redirect?token=${token}`,
         );
       },
     );
@@ -39,7 +40,7 @@ export class AuthRouter {
         (req.session as any).messages?.[0] ||
         'Google authentication failed or was canceled';
       res.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/redirect?error=${encodeURIComponent(failureMessage)}`,
+        `${ENV.NEXT_PUBLIC_APP_URL}/redirect?error=${encodeURIComponent(failureMessage)}`,
       );
     });
   }

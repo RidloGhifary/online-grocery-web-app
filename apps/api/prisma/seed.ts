@@ -96,6 +96,8 @@ async function main() {
           process.env.SUPERUSER_PASSWORD!,
           await bcrypt.genSalt(),
         ),
+        validated_at : Date.now().toString(),
+        validation_sent_at : Date.now().toString(),
         referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
       },
     });

@@ -13,7 +13,7 @@ export class ProductRouter {
   }
 
   private initializeRoutes(): void {
-    // this.router.get('/', this.productController.getSampleData);
+    this.router.get('/', this.productController.productList);
     // this.router.get('/:id', this.productController.getSampleDataById);
     // this.router.post('/', this.productController.createSampleData);
   }

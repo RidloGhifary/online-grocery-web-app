@@ -14,6 +14,7 @@ import session from 'express-session';
 import './auth';
 // import { SampleRouter } from './routers/sample.router';
 import { AuthRouter } from './routers/auth.router';
+import { ProductRouter } from './routers/product.router';
 
 export default class App {
   private app: Express;
@@ -64,14 +65,16 @@ export default class App {
     // this.app.use('/api/samples', sampleRouter.getRouter());
 
     const authRouter = new AuthRouter();
+    const productRouter = new ProductRouter();
 
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, Purwadhika Student API!`);
     });
 
     this.app.use('/api/auth', authRouter.getRouter());
+    this.app.use('/api/products', productRouter.getRouter())
 
-    
+
   }
 
   public start(): void {

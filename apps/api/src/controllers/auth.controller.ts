@@ -15,6 +15,7 @@ import {
   verifyAccountSchema,
 } from '@/validations/auth';
 import { sendResetPasswordEmail } from '@/utils/send-mail/sendMailResetPassword';
+import { ENV } from '@/config';
 
 export class AuthController {
   async login(req: Request, res: Response) {
@@ -57,7 +58,7 @@ export class AuthController {
           .json({ ok: false, message: 'Invalid credentials' });
       }
 
-      const token = jwt.sign(user, process.env.JWT_SECRET!, {
+      const token = jwt.sign(user, ENV.JWT_SECRET!, {
         expiresIn: '1d',
       });
 
@@ -87,7 +88,7 @@ export class AuthController {
       }
 
       // TODO: SEND EMAIL VERIFICATION
-      const token = jwt.sign(req.body, process.env.JWT_SECRET!, {
+      const token = jwt.sign(req.body, ENV.JWT_SECRET!, {
         expiresIn: '1h',
       });
 
@@ -114,7 +115,7 @@ export class AuthController {
 
       const decodedData: JwtPayload = jwt.verify(
         decodeURIComponent(key),
-        process.env.JWT_SECRET!,
+        ENV.JWT_SECRET!,
       ) as JwtPayload;
 
       if (decodedData.exp && decodedData.exp < Date.now() / 1000) {
@@ -203,7 +204,7 @@ export class AuthController {
 
         const decodedKey: JwtPayload = jwt.verify(
           decodeURIComponent(key as string),
-          process.env.JWT_SECRET!,
+          ENV.JWT_SECRET!,
         ) as JwtPayload;
 
         const user = await getUserByEmail(decodedKey.email);
@@ -258,7 +259,7 @@ export class AuthController {
 
         const key = jwt.sign(
           { email: validatedRequest.data.email },
-          process.env.JWT_SECRET!,
+          ENV.JWT_SECRET!,
           {
             expiresIn: '1d',
           },

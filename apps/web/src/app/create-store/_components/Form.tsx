@@ -8,6 +8,7 @@ export default function Form({
   errors,
   onSubmit,
   filteredCities,
+  isLoading,
 }: any) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
@@ -20,9 +21,12 @@ export default function Form({
           placeholder="Type here"
           className="input input-sm input-bordered w-full md:input-md"
           {...register("name")}
+          disabled={isLoading}
         />
         <div className="label">
-          <span className="label-text-alt">{errors.name?.message}</span>
+          <span className="label-text-alt text-rose-500">
+            {errors.name?.message}
+          </span>
         </div>
       </label>
       <label className="form-control w-full">
@@ -32,15 +36,18 @@ export default function Form({
         <select
           className="select select-bordered select-sm w-full md:select-md"
           {...register("store_type")}
+          disabled={isLoading}
         >
-          <option value="" disabled selected>
+          <option value="" disabled>
             Pick one
           </option>
           <option value="central">Central</option>
           <option value="branch">Branch</option>
         </select>
         <div className="label">
-          <span className="label-text-alt">{errors.store_type?.message}</span>
+          <span className="label-text-alt text-rose-500">
+            {errors.store_type?.message}
+          </span>
         </div>
       </label>
       <div className="grid grid-cols-2 gap-1">
@@ -53,9 +60,12 @@ export default function Form({
             placeholder="Village"
             className="input input-sm input-bordered w-full md:input-md"
             {...register("kelurahan")}
+            disabled={isLoading}
           />
           <div className="label">
-            <span className="label-text-alt">{errors.kelurahan?.message}</span>
+            <span className="label-text-alt text-rose-500">
+              {errors.kelurahan?.message}
+            </span>
           </div>
         </label>
         <label className="form-control w-full">
@@ -67,9 +77,12 @@ export default function Form({
             placeholder="Subdistrict"
             className="input input-sm input-bordered w-full md:input-md"
             {...register("kecamatan")}
+            disabled={isLoading}
           />
           <div className="label">
-            <span className="label-text-alt">{errors.kecamatan?.message}</span>
+            <span className="label-text-alt text-rose-500">
+              {errors.kecamatan?.message}
+            </span>
           </div>
         </label>
       </div>
@@ -81,8 +94,9 @@ export default function Form({
           <select
             className="select select-bordered select-sm w-full md:select-md"
             {...register("province")}
+            disabled={isLoading}
           >
-            <option value="" disabled selected>
+            <option value="" disabled>
               Pick one
             </option>
             {Provinces.map((province) => (
@@ -95,7 +109,9 @@ export default function Form({
             ))}
           </select>
           <div className="label">
-            <span className="label-text-alt">{errors.store_type?.message}</span>
+            <span className="label-text-alt text-rose-500">
+              {errors.store_type?.message}
+            </span>
           </div>
         </label>
         <label className="form-control w-full">
@@ -105,8 +121,9 @@ export default function Form({
           <select
             className="select select-bordered select-sm w-full md:select-md"
             {...register("city")}
+            disabled={isLoading}
           >
-            <option value="" disabled selected>
+            <option value="" disabled>
               Pick one
             </option>
             {filteredCities.map(
@@ -121,7 +138,9 @@ export default function Form({
             )}
           </select>
           <div className="label">
-            <span className="label-text-alt">{errors.store_type?.message}</span>
+            <span className="label-text-alt text-rose-500">
+              {errors.store_type?.message}
+            </span>
           </div>
         </label>
       </div>
@@ -133,16 +152,20 @@ export default function Form({
           className="textarea textarea-bordered textarea-sm h-24 resize-none md:textarea-md"
           placeholder="Detail address"
           {...register("address")}
+          disabled={isLoading}
         ></textarea>
         <div className="label">
-          <span className="label-text-alt">{errors.address?.message}</span>
+          <span className="label-text-alt text-rose-500">
+            {errors.address?.message}
+          </span>
         </div>
       </label>
       <button
+        disabled={isLoading}
         type="submit"
         className="btn btn-primary btn-sm w-full text-white md:btn-md"
       >
-        Create
+        {isLoading ? "Loading..." : "Create"}
       </button>
     </form>
   );

@@ -3,9 +3,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
-import { Provinces, Cities } from "@/constants";
+import { Cities } from "@/constants";
 import Form from "./Form";
 import Image from "next/image";
+import axios from "axios";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { getCookies } from "@/actions/cookies";
+import { GetCaptchaToken } from "@/utils/captcha";
+import VerifyCaptchaToken from "@/actions/verifyCaptcha";
+import { useUploadThing } from "@/utils/uploadthing";
+import { ChangeEvent, useState } from "react";
 
 interface Props {
   api_url: string;
@@ -16,7 +25,6 @@ const schema = z.object({
     .string()
     .min(3, { message: "Name must be at least 3 characters" })
     .max(50, { message: "Name must be less than 50 characters" }),
-  image: z.string().url({ message: "Invalid image url" }).optional(),
   store_type: z.enum(["central", "branch"]),
   province: z.string({ required_error: "Province is required" }),
   province_id: z.number({ required_error: "Province is required" }),
@@ -24,18 +32,20 @@ const schema = z.object({
   city_id: z.number({ required_error: "City is required" }),
   address: z
     .string({ required_error: "Address is required" })
+    .min(3, { message: "Address must be at least 3 characters" })
     .max(100, { message: "Address must be less than 100 characters" }),
   kelurahan: z
     .string({ required_error: "Kelurahan is required" })
-    .max(100, { message: "Address must be less than 100 characters" }),
+    .min(3, { message: "Village must be at least 3 characters" })
+    .max(100, { message: "Village must be less than 100 characters" }),
   kecamatan: z
     .string({ required_error: "Kecamatan is required" })
-    .max(100, { message: "Address must be less than 100 characters" }),
+    .min(3, { message: "Subdistrict must be at least 3 characters" })
+    .max(100, { message: "Subdistrict must be less than 100 characters" }),
 });
 
 type FormData = {
   name: string;
-  image: string;
   store_type: "central" | "branch";
   province: string;
   province_id: number;
@@ -47,6 +57,12 @@ type FormData = {
 };
 
 export default function CreateStoreForm({ api_url }: Props) {
+  const [image, setImage] = useState<File[]>([]);
+  const [isUploadImageLoading, setIsUploadImageLoading] =
+    useState<boolean>(false);
+  const router = useRouter();
+  const { startUpload } = useUploadThing("imageUploader");
+
   const {
     register,
     handleSubmit,
@@ -56,7 +72,6 @@ export default function CreateStoreForm({ api_url }: Props) {
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
-      image: "",
       store_type: "central",
       province: "",
       province_id: 0,
@@ -78,18 +93,89 @@ export default function CreateStoreForm({ api_url }: Props) {
     return city.province_id === provinceId;
   });
 
-  const onSubmit: SubmitHandler<FormData> = (data) => {
+  const { mutate, isPending: isLoading } = useMutation({
+    mutationFn: async (data: FormData) => {
+      const token = await getCookies("token");
+      if (!token) return;
+
+      const res = await axios.post(`${api_url}/stores`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return res.data;
+    },
+    onSuccess: (res) => {
+      if (!res.ok) {
+        return toast.error(res.message || "Something went wrong!");
+      } else {
+        toast.success(res.message || "Store created successfully!");
+        router.push("/user/settings");
+        return;
+      }
+    },
+    onError: (err) => {
+      toast.error(err.message || "Something went wrong!");
+    },
+  });
+
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    setIsUploadImageLoading(true);
     const [city_id, city] = data.city.split(",");
     const [province_id, province] = data.province.split(",");
+    let imageUrl;
+
+    if (image.length > 0) {
+      const imgRes = await startUpload(image);
+      if (imgRes) {
+        imageUrl = imgRes[0].url;
+      }
+    }
+
     const formattedData = {
       ...data,
       city_id: parseInt(city_id),
       city,
       province_id: parseInt(province_id),
       province,
+      image: imageUrl,
     };
 
-    console.log("🚀 ~ CreateStoreForm ~ formattedData:", formattedData);
+    const token = await GetCaptchaToken();
+    const isVerified = await VerifyCaptchaToken({ token: token as string });
+
+    if (!isVerified.success) {
+      return toast.error("Captcha verification failed!");
+    } else {
+      setIsUploadImageLoading(false);
+      mutate(formattedData);
+    }
+  };
+
+  const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const fileReader = new FileReader();
+
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+
+      // Set max size is 1 mb
+      if (file.size > 1000000) {
+        return toast.error("File size cannot exceed 1mb");
+      }
+
+      setImage([file]);
+
+      if (!file.type.includes("image")) return;
+
+      // fileReader.onload = (event) => {
+      //   const imageUrlData = event?.target?.result?.toString() || '';
+      //   // If you need to handle the image data further, you can do it here
+      // };
+
+      fileReader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -98,21 +184,35 @@ export default function CreateStoreForm({ api_url }: Props) {
         <label
           htmlFor="file"
           className="tooltip tooltip-bottom tooltip-info cursor-pointer"
-          data-tip="Click me to upload image"
+          data-tip={isLoading?"Uploading image...":"Click me to upload image"}
         >
-          <Image
-            alt="store-image"
-            src={`/400.svg`}
-            width={400}
-            height={400}
-            className="block aspect-square h-32 w-32 rounded-full object-cover md:h-40 md:w-40 lg:h-52 lg:w-52"
-          />
+          {image.length > 0 ? (
+            <Image
+              alt="store-image"
+              src={URL.createObjectURL(image[0])}
+              width={400}
+              height={400}
+              priority
+              className="block aspect-square h-32 w-32 rounded-full object-cover md:h-40 md:w-40 lg:h-52 lg:w-52"
+            />
+          ) : (
+            <Image
+              alt="store-image"
+              src={`/400.svg`}
+              width={400}
+              height={400}
+              priority
+              className="block aspect-square h-32 w-32 rounded-full object-cover md:h-40 md:w-40 lg:h-52 lg:w-52"
+            />
+          )}
         </label>
         <input
           id="file"
           type="file"
+          accept="image/*"
+          disabled={isLoading || isUploadImageLoading}
+          onChange={(e) => handleImage(e)}
           className="file-input file-input-bordered file-input-xs hidden w-full max-w-xs"
-          {...register("image")}
         />
       </div>
       <div>
@@ -122,6 +222,7 @@ export default function CreateStoreForm({ api_url }: Props) {
           register={register}
           errors={errors}
           filteredCities={filteredCities}
+          isLoading={isLoading || isUploadImageLoading}
         />
       </div>
     </div>

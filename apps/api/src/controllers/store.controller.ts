@@ -66,7 +66,7 @@ export class StoreController {
       }
 
       // TODO: CREATE STORE
-      await prisma.store.create({
+      const newStore = await prisma.store.create({
         data: {
           created_by: Number(req.currentUser?.id),
           name,
@@ -82,7 +82,9 @@ export class StoreController {
         },
       });
 
-      res.status(201).json({ ok: true, message: 'Store created' });
+      res
+        .status(201)
+        .json({ ok: true, message: 'Store created', data: newStore });
     } catch {
       res.status(500).json({ ok: false, message: 'Something went wrong' });
     }

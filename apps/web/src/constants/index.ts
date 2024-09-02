@@ -1,30 +1,49 @@
+import { IoCart } from "react-icons/io5";
+import { LuLogIn } from "react-icons/lu";
+import { FiSearch } from "react-icons/fi";
+import { FaUser } from "react-icons/fa";
+import { BiSolidCoupon } from "react-icons/bi";
+import { FaStore } from "react-icons/fa";
+import { IoMdCreate } from "react-icons/io";
+
 export const NavbarItems = [
   {
-    name: "Cart",
-    href: "/cart",
+    name: "Search",
+    href: "/products",
+    icon: FiSearch,
   },
   {
     name: "Login",
     href: "/login",
+    icon: LuLogIn,
   },
   {
     name: "Register",
     href: "/register",
+    icon: LuLogIn,
   },
 ];
 
 export const NavbarItemAuth = [
   {
-    name: "Cart",
-    href: "/cart",
+    name: "Search",
+    href: "/products",
+    icon: FiSearch,
   },
   {
-    name: "My Vouchers",
+    name: "Vouchers",
     href: "/my-vouchers",
+    icon: BiSolidCoupon,
+  },
+  {
+    name: "Cart",
+    href: "/cart",
+    icon: IoCart,
   },
   {
     name: "Profile",
     href: "/profile",
+    icon: FaUser,
   },
 ];
 
@@ -33,16 +52,19 @@ export const ProfileDropDownItems = [
     name: "Profile",
     href: "/user/settings",
     requireAuth: true,
+    icon: FaUser,
   },
   {
     name: "My Store",
     href: "/my-store",
     requireAuth: true,
+    icon: FaStore,
   },
   {
     name: "Create Store",
     href: "/create-store",
     requireAuth: true,
+    icon: IoMdCreate,
   },
 ];
 

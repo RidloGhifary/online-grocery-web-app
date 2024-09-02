@@ -1,11 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/pagination";
-import Image from "next/image";
+import "@/components/css/hero-section-swiper.css";
 
 export default function Hero() {
   return (
@@ -28,7 +29,7 @@ export default function Hero() {
             <Image
               width={1000}
               height={1000}
-              src="/banner-hero-sample.webp"
+              src={`/banners/${index + 1}.png`}
               alt="Placeholder"
               className="h-full w-full object-cover"
               priority

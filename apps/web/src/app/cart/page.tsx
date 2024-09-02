@@ -2,15 +2,17 @@
 import React, { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import CartItem from "@/components/CartItems";
+import { FaRegTrashAlt } from "react-icons/fa";
+import { IoMenu } from "react-icons/io5"; // Import IoMenu icon
 import {
   getCartItems,
   updateCartItemQuantity,
   removeItemFromCart,
   selectForCheckout,
 } from "@/api/cart/route";
-import { IoMenu } from "react-icons/io5"; /
 import CheckoutSummary from "@/components/CheckoutSummary";
 import { Modal } from "@/components/features-2/ui/Modal";
+import MainButton from "@/components/MainButton";
 
 const CartPage: React.FC = () => {
   const [items, setItems] = useState<CartItemData[]>([]);
@@ -25,20 +27,24 @@ const CartPage: React.FC = () => {
   const [order, setOrder] = useState<string>("asc");
   const [search, setSearch] = useState<string>("");
   const [hasMoreItems, setHasMoreItems] = useState<boolean>(true);
-  const [showSortModal, setShowSortModal] = useState(false); // New state to manage sorting modal visibility
+  const [sortModalVisible, setSortModalVisible] = useState(false); // State for sorting modal visibility
   const { refreshCart } = useCart();
 
+  // Fetching Cart Items
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response: GetCartItemsResponse = await getCartItems();
+        const response = await getCartItems(page, 8, sort, order, search);
         const cartItems = response.data.data;
         if (Array.isArray(cartItems)) {
           const mappedItems = cartItems.map((item) => ({
             ...item,
             quantity: item.qty,
           }));
-          setItems(mappedItems);
+          setItems((prevItems) =>
+            page === 1 ? mappedItems : [...prevItems, ...mappedItems],
+          );
+          setHasMoreItems(cartItems.length === 8);
         } else {
           throw new Error("Unexpected response format: data is not an array");
         }
@@ -48,7 +54,7 @@ const CartPage: React.FC = () => {
     };
 
     fetchCartItems();
-  }, []);
+  }, [page, sort, order, search]);
 
   const handleVoucherSelect = (voucher: string) => {
     setSelectedVoucher(voucher);
@@ -127,8 +133,58 @@ const CartPage: React.FC = () => {
     setModalVisible(true);
   };
 
-  const cartIsEmpty = items.length === 0;
+  const handleLoadMore = () => {
+    setPage((prevPage) => prevPage + 1);
+  };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setPage(1);
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setPage(1);
+    }, 1000);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
+
+  const handleSortByName = () => {
+    setSort("name");
+    setOrder(order === "asc" ? "desc" : "asc");
+    setPage(1);
+  };
+
+  const handleSortByPrice = () => {
+    setSort("price");
+    setOrder(order === "asc" ? "desc" : "asc");
+    setPage(1);
+  };
+
+  const toggleSortModal = () => {
+    setModalContent(
+      <div className="flex flex-col items-center gap-4">
+        <MainButton
+          text={`Sort by Name: ${order === "asc" ? "A-Z" : "Z-A"}`}
+          onClick={() => {
+            handleSortByName();
+            setModalVisible(false);
+          }}
+        />
+        <MainButton
+          text={`Sort by Price: ${order === "asc" ? "Asc" : "Desc"}`}
+          onClick={() => {
+            handleSortByPrice();
+            setModalVisible(false);
+          }}
+        />
+      </div>,
+    );
+    setModalVisible(true);
+  };
+
+  const cartIsEmpty = items.length === 0;
   return (
     <div className="min-h-screen">
       <div className="container mx-auto p-4">
@@ -147,13 +203,39 @@ const CartPage: React.FC = () => {
             />
             <span>Select All</span>
           </div>
-          <button
-            className="btn btn-error"
-            disabled={selectedItems.length === 0}
-            onClick={confirmDeleteSelected}
-          >
-            Delete Selected
-          </button>
+          <input
+            type="text"
+            value={search}
+            onChange={handleSearchChange}
+            placeholder="Search items..."
+            className="input input-bordered mr-4 w-1/2 rounded-xl"
+          />
+          <div className="flex items-center">
+            {/* Sorting Button for Small Screens */}
+            <MainButton
+              text={<IoMenu />}
+              onClick={toggleSortModal}
+              className="mx-2 lg:hidden"
+            />
+            {/* Sorting Buttons for Large Screens */}
+            <div className="hidden items-center lg:flex">
+              <MainButton
+                text={`Sort by Name: ${order === "asc" ? "A-Z" : "Z-A"}`}
+                onClick={handleSortByName}
+                className="mx-2"
+              />
+              <MainButton
+                text={`Sort by Price: ${order === "asc" ? "Asc" : "Desc"}`}
+                onClick={handleSortByPrice}
+              />
+            </div>
+            <MainButton
+              text={<FaRegTrashAlt />}
+              onClick={confirmDeleteSelected}
+              disabled={selectedItems.length === 0}
+              variant="error"
+            />
+          </div>
         </div>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
           <div className="lg:col-span-3">
@@ -179,59 +261,72 @@ const CartPage: React.FC = () => {
                       }}
                     />
                   ))}
+                  {hasMoreItems && (
+                    <MainButton
+                      text="Load More"
+                      onClick={handleLoadMore}
+                      className="mt-4 w-full"
+                    />
+                  )}
                 </>
               ) : (
-                <p className="text-center text-gray-500">
-                  Your cart is empty. Please add some items.
-                </p>
+                <div className="flex items-center justify-center py-6">
+                  <span className="text-xl font-semibold">
+                    Your cart is empty.
+                  </span>
+                </div>
               )}
             </div>
           </div>
           <div className="lg:col-span-2">
-            <CheckoutSummary
-              buttonText={`Proceed to Checkout (${selectedItems.reduce(
-                (total, itemId) =>
-                  total + items.find((item) => item.id === itemId)?.qty || 0,
-                0,
-              )})`}
-              items={items.filter((item) => selectedItems.includes(item.id))}
-              selectedVoucher={selectedVoucher}
-              onVoucherSelect={handleVoucherSelect}
-              disableButton={selectedItems.length === 0}
-              onCheckout={handleProceedToCheckout}
-            />
+            <div className="sticky top-0">
+              <CheckoutSummary
+                buttonText={`Proceed to Checkout (${selectedItems.reduce(
+                  (total, itemId) =>
+                    total +
+                    (items.find((item) => item.id === itemId)?.qty || 0),
+                  0,
+                )})`}
+                items={items.filter((item) => selectedItems.includes(item.id))}
+                selectedVoucher={selectedVoucher}
+                onVoucherSelect={handleVoucherSelect}
+                disableButton={selectedItems.length === 0}
+                onCheckout={handleProceedToCheckout}
+                showDeliveryPrice={false}
+              />
+            </div>
           </div>
         </div>
+        {modalVisible && (
+          <Modal
+            show={modalVisible}
+            onClose={() => setModalVisible(false)}
+            actions={[
+              <button
+                key="cancel"
+                className="rounded-lg bg-gray-500 px-4 py-2 text-white"
+                onClick={() => setModalVisible(false)}
+              >
+                Batalkan
+              </button>,
+              <button
+                key="confirm"
+                className="rounded-lg bg-red-500 px-4 py-2 text-white"
+                onClick={() => {
+                  if (typeof actionToConfirm === "function") {
+                    actionToConfirm();
+                  }
+                  setModalVisible(false);
+                }}
+              >
+                Ya
+              </button>,
+            ]}
+          >
+            <p>{modalContent}</p>
+          </Modal>
+        )}
       </div>
-      {modalVisible && (
-        <Modal
-          show={modalVisible}
-          onClose={() => setModalVisible(false)}
-          actions={[
-            <button
-              key="cancel"
-              className="rounded-lg bg-gray-500 px-4 py-2 text-white"
-              onClick={() => setModalVisible(false)}
-            >
-              Batalkan
-            </button>,
-            <button
-              key="confirm"
-              className="rounded-lg bg-red-500 px-4 py-2 text-white"
-              onClick={() => {
-                if (typeof actionToConfirm === "function") {
-                  actionToConfirm();
-                }
-                setModalVisible(false);
-              }}
-            >
-              Ya
-            </button>,
-          ]}
-        >
-          <p>{modalContent}</p>
-        </Modal>
-      )}
     </div>
   );
 };

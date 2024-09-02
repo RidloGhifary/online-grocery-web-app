@@ -1,5 +1,11 @@
 import { ENV } from '@/config';
 import { AuthController } from '@/controllers/auth.controller';
+import validateRequest from '@/middlewares/validateRequest';
+import {
+  loginSchema,
+  registerSchema,
+  verifyAccountSchema,
+} from '@/validations/auth';
 import { Router } from 'express';
 import passport from 'passport';
 
@@ -14,10 +20,21 @@ export class AuthRouter {
   }
 
   private initializeRoutes(): void {
-    this.router.post('/login', this.authController.login);
-    this.router.post('/register', this.authController.register);
-    this.router.post('/verify-account', this.authController.verifyAccount);
-    this.router.post('/forgot-password', this.authController.forgotPassword);
+    this.router.post(
+      '/login',
+      validateRequest(loginSchema),
+      this.authController.login,
+    );
+    this.router.post(
+      '/register',
+      validateRequest(registerSchema),
+      this.authController.register,
+    );
+    this.router.post(
+      '/verify-account',
+      validateRequest(verifyAccountSchema),
+      this.authController.verifyAccount,
+    );
     this.router.get(
       '/google',
       passport.authenticate('google', { scope: ['email', 'profile'] }),

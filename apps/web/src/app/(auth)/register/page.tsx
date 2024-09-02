@@ -1,19 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "react-toastify";
+import axios from "axios";
 
-// import { Provinces } from "@/constants";
 import { Cities } from "@/constants";
 import RegisterForm from "./_components/RegisterForm";
 import AuthHeader from "../_components/AuthHeader";
 import AuthWrapper from "../_components/AuthWrapper";
 import { useMutation } from "@tanstack/react-query";
-// import GoogleLoginButton from "../_components/GoogleLoginButton";
+import { GetCaptchaToken } from "@/utils/captcha";
+import VerifyCaptchaToken from "@/actions/verifyCaptcha";
 
 const schema = z.object({
   first_name: z.string().max(25, { message: "First name too long!" }),
@@ -42,8 +42,6 @@ export type RegisterFormData = {
 };
 
 export default function RegisterPage() {
-  const [isLoading, startTransition] = useTransition();
-
   const {
     register,
     handleSubmit,
@@ -73,45 +71,45 @@ export default function RegisterPage() {
     return city.province_id === provinceId;
   });
 
-  const mutation = useMutation({
+  const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: RegisterFormData) => {
-      const response = await fetch("http://localhost:8000/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      return await response.json();
+      const response = await axios.post(
+        "http://localhost:8000/api/auth/register",
+        data,
+      );
+      return response.data;
     },
     onSuccess: (res) => {
       if (!res.ok) {
-        toast.error(res.message || "Something went wrong!", {
-          position: "top-center",
-        });
+        toast.error(res.message || "Something went wrong!");
         return;
       }
-      toast.success("Check your email!", { position: "top-center" });
+      toast.success("Check your email!");
     },
-    onError: () => {
-      toast.error("Something went wrong!", { position: "top-center" });
+    onError: (res: any) => {
+      toast.error(res?.response.data.message || "Something went wrong!");
     },
   });
 
-  const onSubmit: SubmitHandler<RegisterFormData> = (data) => {
-    startTransition(() => {
-      const [city_id, city] = data.city.split(",");
-      const [province_id, province] = data.province.split(",");
-      const formattedData = {
-        ...data,
-        city_id: parseInt(city_id),
-        city,
-        province_id: parseInt(province_id),
-        province,
-      };
-      mutation.mutate(formattedData);
-    });
+  const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
+    const [city_id, city] = data.city.split(",");
+    const [province_id, province] = data.province.split(",");
+    const formattedData = {
+      ...data,
+      city_id: parseInt(city_id),
+      city,
+      province_id: parseInt(province_id),
+      province,
+    };
+
+    const token = await GetCaptchaToken();
+    const isVerified = await VerifyCaptchaToken({ token: token as string });
+
+    if (!isVerified.success) {
+      return toast.error("Captcha verification failed!");
+    } else {
+      mutate(formattedData);
+    }
   };
 
   return (

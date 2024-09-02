@@ -5,6 +5,7 @@ import { FaUser } from "react-icons/fa";
 import { RxCaretDown } from "react-icons/rx";
 
 import { ProfileDropDownItems } from "@/constants";
+import { deleteCookie } from "@/actions/cookies";
 
 export default function ProfileItem() {
   const router = useRouter();
@@ -14,10 +15,13 @@ export default function ProfileItem() {
       <div
         tabIndex={0}
         role="button"
-        className="md:avatar md:btn md:btn-circle md:btn-ghost"
+        className="md:avatar md:btn md:btn-circle md:btn-ghost hover:bg-transparent"
       >
-        <FaUser size={20} className="hidden md:block" />
-        <div className="flex items-center justify-between md:hidden">
+        <FaUser
+          size={20}
+          className="hidden transition hover:scale-105 md:block"
+        />
+        <div className="flex items-center gap-2 md:hidden">
           <p className="md:hidden">User Profile</p>
           <RxCaretDown size={25} className="md:hidden" />
         </div>
@@ -35,6 +39,15 @@ export default function ProfileItem() {
             {item.name}
           </li>
         ))}
+        <li
+          onClick={() => {
+            deleteCookie("token");
+            router.refresh();
+          }}
+          className="flex cursor-pointer capitalize transition hover:translate-x-1"
+        >
+          Logout
+        </li>
       </ul>
     </div>
   );

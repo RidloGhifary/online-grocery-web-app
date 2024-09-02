@@ -1,9 +1,14 @@
+import { getCurrentUser } from "@/actions/getCurrentUser";
 import UserContainer from "../_components/UserContainer";
+import AddressContent from "./_components/AddressContent";
+import { UserAddressProps } from "@/interfaces/user";
 
-export default function AddressPage() {
+export default async function AddressPage() {
+  const user = await getCurrentUser();
+
   return (
     <UserContainer>
-      <h1>Hallo address</h1>
+      <AddressContent userAddresses={user?.addresses as UserAddressProps[]} />
     </UserContainer>
   );
 }

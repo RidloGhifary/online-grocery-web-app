@@ -16,6 +16,9 @@ import './auth';
 import { AuthRouter } from './routers/auth.router';
 import { ProductRouter } from './routers/product.router';
 import { CategoryRouter } from './routers/category.router';
+import { UserRouter } from './routers/user.router';
+import { CredentialRouter } from './routers/credential.router';
+import { StoreRouter } from './routers/store.router';
 
 export default class App {
   private app: Express;
@@ -68,6 +71,9 @@ export default class App {
     const authRouter = new AuthRouter();
     const productRouter = new ProductRouter();
     const categoryRouter = new CategoryRouter()
+    const userRouter = new UserRouter();
+    const credentialRouter = new CredentialRouter();
+    const storeRouter = new StoreRouter();
 
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, Purwadhika Student API!`);
@@ -77,6 +83,9 @@ export default class App {
     this.app.use('/api/products', productRouter.getRouter())
     this.app.use('/api/categories', categoryRouter.getRouter())
 
+    this.app.use('/api/users', userRouter.getRouter());
+    this.app.use('/api/credentials', credentialRouter.getRouter());
+    this.app.use('/api/stores', storeRouter.getRouter());
   }
 
   public start(): void {

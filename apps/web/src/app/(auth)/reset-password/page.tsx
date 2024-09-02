@@ -3,12 +3,14 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useTransition } from "react";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthHeader from "../_components/AuthHeader";
 import AuthWrapper from "../_components/AuthWrapper";
 import { useMutation } from "@tanstack/react-query";
+import { GetCaptchaToken } from "@/utils/captcha";
+import VerifyCaptchaToken from "@/actions/verifyCaptcha";
+import axios from "axios";
 
 const passwordResetSchema = z
   .object({
@@ -34,7 +36,6 @@ type EmailFormData = {
 };
 
 export default function ForgotPassword() {
-  const [isLoading, startTransition] = useTransition();
   const searchParams = useSearchParams();
 
   const key = searchParams.get("key");
@@ -53,52 +54,47 @@ export default function ForgotPassword() {
     formState: { errors },
   } = useForm<PasswordResetFormData | EmailFormData | any>(formOptions);
 
-  const mutation = useMutation({
+  const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: {
       key?: string | null;
       password?: string;
       email?: string;
     }) => {
       const endpoint = key
-        ? `/api/auth/forgot-password?key=${key}`
-        : "/api/auth/forgot-password";
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      return await response.json();
+        ? `/api/credentials/reset-password?key=${key}`
+        : "/api/credentials/reset-password";
+      const response = await axios.post(
+        `http://localhost:8000${endpoint}`,
+        data,
+      );
+      return response.data;
     },
     onSuccess: (res) => {
-      startTransition(() => {
-        if (!res.ok) {
-          toast.error(res.message || "Something went wrong!", {
-            position: "top-center",
-          });
-          return;
-        }
-        toast.success("Password reset successfully!", {
-          position: "top-center",
-        });
-        if (key) {
-          router.push("/login");
-        }
-      });
+      if (!res.ok) {
+        toast.error(res.message || "Something went wrong!");
+        return;
+      }
+      toast.success("Password reset successfully!");
+      if (key) {
+        router.push("/login");
+      }
     },
-    onError: () => {
-      toast.error("Something went wrong!", { position: "top-center" });
+    onError: (res: any) => {
+      toast.error(res?.response.data.message || "Something went wrong!");
     },
   });
 
-  const onSubmit: SubmitHandler<PasswordResetFormData | EmailFormData> = (
+  const onSubmit: SubmitHandler<PasswordResetFormData | EmailFormData> = async (
     data,
   ) => {
-    startTransition(() => {
-      mutation.mutate({ ...data, key });
-    });
+    const token = await GetCaptchaToken();
+    const isVerified = await VerifyCaptchaToken({ token: token as string });
+
+    if (!isVerified.success) {
+      return toast.error("Captcha verification failed!");
+    } else {
+      mutate({ ...data, key });
+    }
   };
 
   return (

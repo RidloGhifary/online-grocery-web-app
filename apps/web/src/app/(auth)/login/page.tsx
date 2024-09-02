@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -12,6 +11,9 @@ import AuthWrapper from "../_components/AuthWrapper";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setCookies } from "@/actions/cookies";
+import { GetCaptchaToken } from "@/utils/captcha";
+import VerifyCaptchaToken from "@/actions/verifyCaptcha";
+import axios from "axios";
 
 const schema = z.object({
   email: z.string().email({ message: "Enter valid email!" }),
@@ -24,8 +26,6 @@ type FormData = {
 };
 
 export default function LoginPage() {
-  const [isLoading, startTransition] = useTransition();
-
   const searchParams = useSearchParams();
   const router = useRouter();
   const callbackUrl = searchParams.get("callbackUrl");
@@ -43,49 +43,50 @@ export default function LoginPage() {
     },
   });
 
-  const mutation = useMutation({
+  const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await fetch("http://localhost:8000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        // Handle HTTP errors
-        const errorResponse = await response.json();
-        throw new Error(errorResponse.message || "Something went wrong!");
-      }
-
-      return await response.json();
+      const response = await axios.post(
+        "http://localhost:8000/api/auth/login",
+        data,
+      );
+      return response.data;
     },
     onSuccess: (res) => {
       if (!res.ok) {
-        return toast.error(res?.message || "Something went wrong!", {
-          position: "top-center",
-        });
+        return toast.error(res?.message || "Something went wrong!");
       }
 
       toast.success("Login success!", {
         position: "top-center",
       });
 
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
       setCookies("token", res.token);
 
-      router.push(callbackUrl ? callbackUrl : "/");
+      if (callbackUrl) {
+        router.push(callbackUrl);
+        router.refresh();
+      } else {
+        router.push("/");
+        router.refresh();
+      }
+
+      router.refresh();
     },
-    onError: (res) => {
-      toast.error("Something went wrong!", { position: "top-center" });
+    onError: (res: any) => {
+      toast.error(res?.response.data.message || "Something went wrong!");
     },
   });
 
-  const onSubmit: SubmitHandler<FormData> = (data) => {
-    startTransition(() => {
-      mutation.mutate(data);
-    });
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    const token = await GetCaptchaToken();
+    const isVerified = await VerifyCaptchaToken({ token: token as string });
+    if (!isVerified.success) {
+      toast.error("Captcha verification failed!");
+      return;
+    } else {
+      mutate(data);
+    }
   };
 
   return (

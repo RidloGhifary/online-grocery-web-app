@@ -18,10 +18,12 @@ export async function sendResetPasswordEmail({
     to: email,
     subject: 'Reset your password',
     text: `Reset your password`,
-    html: `<h1 style="text-align: center; color: #16a34a; margin-top: 0;">Welcome to OGro</h1>
+    html: `<h1 style="text-align: center; color: #16a34a; margin-top: 0;">Reset your password</h1>
     <p style="text-align: center; color: #666; margin-top: 0;">Click the link below to reset your password.</p>
     <div style="text-align: center; margin-top: 20px;">
       <a href="${confirmLink}" style="display: inline-block; padding: 10px 20px; background-color: #16a34a; color: #fff; text-decoration: none; border-radius: 4px;">Reset password</a>
-    </div>`,
+    </div>
+    <p style="text-align: center; color: #888; margin-top: 0;">If you did not make this request, please ignore this email.</p>
+    `,
   });
 }

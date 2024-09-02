@@ -16,14 +16,14 @@ interface CartItem {
 }
 
 interface CheckoutSummaryProps {
-  items: CartItem[]; // List of items passed from the cart
+  items: CartItem[];
   selectedVoucher: string | null;
   onVoucherSelect: (voucher: string) => void;
   buttonText: string;
   showDeliveryPrice?: boolean;
   deliveryPrice?: number;
   disableButton?: boolean;
-  onCheckout: () => void; // Prop for handling checkout
+  onCheckout: () => void;
 }
 
 const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
@@ -36,7 +36,6 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
   disableButton = false,
   onCheckout,
 }) => {
-  // Calculate the total price of selected items
   const totalPrice = items.reduce(
     (total, item) => total + item.qty * item.product.price,
     0,
@@ -58,7 +57,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
       {selectedVoucher && (
         <div className="mb-2 flex justify-between">
           <span>Discount ({selectedVoucher}):</span>
-          {/* Assuming a flat $5 discount for the sake of example */}
+          {/* Discount sample later */}
           <span>-Rp. {(5.0).toFixed(2)}</span>
         </div>
       )}

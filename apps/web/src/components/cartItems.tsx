@@ -60,7 +60,7 @@ const CartItem: React.FC<CartItemProps> = ({
         <input
           type="checkbox"
           checked={isChecked}
-          onChange={() => onCheckboxChange && onCheckboxChange(item.id)}
+          onChange={() => onCheckboxChange && onCheckboxChange(item.product_id)}
           className="mr-4"
         />
       )}

@@ -3,13 +3,14 @@ import React, { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import CartItem from "@/components/CartItems";
 import { FaRegTrashAlt } from "react-icons/fa";
-import { IoMenu } from "react-icons/io5"; // Import IoMenu icon
+
 import {
   getCartItems,
   updateCartItemQuantity,
   removeItemFromCart,
   selectForCheckout,
 } from "@/api/cart/route";
+import { IoMenu } from "react-icons/io5";
 import CheckoutSummary from "@/components/CheckoutSummary";
 import { Modal } from "@/components/features-2/ui/Modal";
 import MainButton from "@/components/MainButton";
@@ -27,10 +28,9 @@ const CartPage: React.FC = () => {
   const [order, setOrder] = useState<string>("asc");
   const [search, setSearch] = useState<string>("");
   const [hasMoreItems, setHasMoreItems] = useState<boolean>(true);
-  const [sortModalVisible, setSortModalVisible] = useState(false); // State for sorting modal visibility
+  const [sortModalVisible, setSortModalVisible] = useState(false);
   const { refreshCart } = useCart();
 
-  // Fetching Cart Items
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
@@ -84,7 +84,7 @@ const CartPage: React.FC = () => {
       const response = await selectForCheckout(selectedForCheckout);
       const checkoutItems = response.data;
       console.log("Items selected for checkout:", checkoutItems);
-      // Proceed to checkout logic here...
+      // Proceeding to checkout logic later should be added here...
     } catch (error) {
       console.error("Error selecting items for checkout:", error);
     }
@@ -185,6 +185,7 @@ const CartPage: React.FC = () => {
   };
 
   const cartIsEmpty = items.length === 0;
+
   return (
     <div className="min-h-screen">
       <div className="container mx-auto p-4">
@@ -247,7 +248,7 @@ const CartPage: React.FC = () => {
                       key={item.id}
                       item={item}
                       showCheckbox={true}
-                      isChecked={selectedItems.includes(item.id)}
+                      isChecked={selectedItems.includes(item.product_id)}
                       onCheckboxChange={handleCheckboxChange}
                       onQuantityChange={handleQuantityChange}
                       onRemoveItem={() => {
@@ -270,63 +271,62 @@ const CartPage: React.FC = () => {
                   )}
                 </>
               ) : (
-                <div className="flex items-center justify-center py-6">
-                  <span className="text-xl font-semibold">
-                    Your cart is empty.
-                  </span>
-                </div>
+                <p className="text-center text-gray-500">
+                  Your cart is empty. Please add some items.
+                </p>
               )}
             </div>
           </div>
           <div className="lg:col-span-2">
-            <div className="sticky top-0">
-              <CheckoutSummary
-                buttonText={`Proceed to Checkout (${selectedItems.reduce(
-                  (total, itemId) =>
-                    total +
-                    (items.find((item) => item.id === itemId)?.qty || 0),
+            <CheckoutSummary
+              buttonText={`Proceed to Checkout (${selectedItems.reduce(
+                (total, productId) =>
+                  total +
+                    items.find((item) => item.product_id === productId)?.qty ||
                   0,
-                )})`}
-                items={items.filter((item) => selectedItems.includes(item.id))}
-                selectedVoucher={selectedVoucher}
-                onVoucherSelect={handleVoucherSelect}
-                disableButton={selectedItems.length === 0}
-                onCheckout={handleProceedToCheckout}
-                showDeliveryPrice={false}
-              />
-            </div>
+                0,
+              )})`}
+              items={items.filter((item) =>
+                selectedItems.includes(item.product_id),
+              )}
+              selectedVoucher={selectedVoucher}
+              onVoucherSelect={handleVoucherSelect}
+              disableButton={selectedItems.length === 0}
+              onCheckout={handleProceedToCheckout}
+              showDeliveryPrice={false}
+            />
           </div>
         </div>
-        {modalVisible && (
-          <Modal
-            show={modalVisible}
-            onClose={() => setModalVisible(false)}
-            actions={[
-              <button
-                key="cancel"
-                className="rounded-lg bg-gray-500 px-4 py-2 text-white"
-                onClick={() => setModalVisible(false)}
-              >
-                Batalkan
-              </button>,
-              <button
-                key="confirm"
-                className="rounded-lg bg-red-500 px-4 py-2 text-white"
-                onClick={() => {
-                  if (typeof actionToConfirm === "function") {
-                    actionToConfirm();
-                  }
-                  setModalVisible(false);
-                }}
-              >
-                Ya
-              </button>,
-            ]}
-          >
-            <p>{modalContent}</p>
-          </Modal>
-        )}
       </div>
+      {modalVisible && (
+        <Modal
+          show={modalVisible}
+          onClose={() => setModalVisible(false)}
+          actions={[
+            <button
+              key="cancel"
+              className="rounded-lg bg-gray-500 px-4 py-2 text-white"
+              onClick={() => setModalVisible(false)}
+            >
+              Batalkan
+            </button>,
+            <button
+              key="confirm"
+              className="rounded-lg bg-red-500 px-4 py-2 text-white"
+              onClick={() => {
+                if (typeof actionToConfirm === "function") {
+                  actionToConfirm();
+                }
+                setModalVisible(false);
+              }}
+            >
+              Ya
+            </button>,
+          ]}
+        >
+          <p>{modalContent}</p>
+        </Modal>
+      )}
     </div>
   );
 };

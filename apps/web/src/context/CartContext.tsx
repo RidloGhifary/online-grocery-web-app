@@ -22,7 +22,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const refreshCart = async () => {
     try {
       const response = await getCartItems();
-      const cartItems = response.data.data; // Ensure correct access to array
+      const cartItems = response.data.data;
       if (Array.isArray(cartItems)) {
         const totalQuantity = cartItems.reduce(
           (acc: number, item: any) => acc + item.qty,

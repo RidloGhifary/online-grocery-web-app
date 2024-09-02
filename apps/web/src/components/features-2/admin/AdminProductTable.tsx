@@ -27,7 +27,7 @@ export default function ({ products }: { products: ProductCompleteInterface[] })
               <td>
                 <div className="flex flex-col sm:items-center items-start justify-start sm:flex-row sm:space-x-4 min-w-40">
                   <Image
-                    src={product.image ?? "https://via.placeholder.com/150"}
+                    src={product.image || "https://via.placeholder.com/150"}
                     alt={product.name}
                     width={50}
                     height={50}

@@ -1,33 +1,26 @@
 "use client";
 
-import { MouseEventHandler } from "react";
 import Radio from "../ui/Radio"; 
-import { useProductCategory } from "@/hooks/publicProductCategoriesHooks";
-import { usePathname, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import CommonResultInterface from "@/interfaces/CommonResultInterface";
+import { ProductCategoryMockInterface } from "@/mocks/productCategory";
+import { adminQueryKey } from "@/constants/adminQueryKeys";
+import { getProductCategoryList } from "@/actions/categories";
 
-export default function CategoryFilter() {
-  const { data } = useProductCategory();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const handleSelect: MouseEventHandler<HTMLInputElement> = (e) => {
-    const params = new URLSearchParams();
-    params.set("category", e.currentTarget.value);
-    if (e.currentTarget.value === 'all') {
-      params.delete('category')
-    }
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
+export default function () {
+  const { data }  = useQuery({
+    queryKey:[adminQueryKey.adminProductCategories],
+    queryFn : async () => await getProductCategoryList()
+  }) 
   return (
     <>
       
-      <Radio defaultChecked={true} value={"all"} action={handleSelect}>
+      <Radio defaultChecked={true} value={"all"} >
         All
       </Radio>
-      {data?.data?.map((e, i) => {
+      {(data as CommonResultInterface<ProductCategoryMockInterface[]>)?.data?.map((e, i) => {
         return (
-          <Radio key={i} value={e.name} action={handleSelect}>
+          <Radio key={i} value={e.name} >
             {e.display_name}
           </Radio>
         );

@@ -10,6 +10,7 @@ const protectedRoutes = [
   "/checkout",
   "/transaction",
 ];
+const superAdminRoutes = ["/create-store"];
 const authRoutes = ["/login", "/register", "/verify-account"];
 
 export default function middleware(req: NextRequest) {
@@ -21,6 +22,9 @@ export default function middleware(req: NextRequest) {
     path.startsWith(route),
   );
   const isAuthRoute = authRoutes.some((route) => path.startsWith(route));
+  const isSuperAdminRoute = superAdminRoutes.some((route) =>
+    path.startsWith(route),
+  );
 
   if (!isLoggedIn && isProtectedRoute) {
     const callbackUrl = req.nextUrl.search

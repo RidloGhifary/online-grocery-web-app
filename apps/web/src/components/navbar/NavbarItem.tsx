@@ -21,7 +21,7 @@ export default function NavbarItem({ user }: NavbarItemProps) {
           ? NavbarItemAuth.map((item, i) => (
               <div key={i} className="w-full md:w-fit">
                 {item.name === "Profile" ? (
-                  <ProfileItem />
+                  <ProfileItem user={user} />
                 ) : (
                   <div
                     onClick={() => router.push(`${item.href}`)}

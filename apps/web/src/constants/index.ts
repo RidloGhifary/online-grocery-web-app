@@ -53,6 +53,15 @@ export const ProfileDropDownItems = [
     href: "/user/settings",
     requireAuth: true,
     icon: FaUser,
+  }
+];
+
+export const ProfileDropDownSuperAdminItems = [
+  {
+    name: "Profile",
+    href: "/user/settings",
+    requireAuth: true,
+    icon: FaUser,
   },
   {
     name: "My Store",

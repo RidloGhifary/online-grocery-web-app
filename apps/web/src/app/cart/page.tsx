@@ -16,11 +16,11 @@ import { Modal } from "@/components/features-2/ui/Modal";
 import MainButton from "@/components/MainButton";
 
 const CartPage: React.FC = () => {
-  const [items, setItems] = useState<CartItemData[]>([]);
+  const [items, setItems] = useState<CartItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalContent, setModalContent] = useState<string>("");
+  const [modalContent, setModalContent] = useState<React.ReactNode>("");
   const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {});
   const [selectedForCheckout, setSelectedForCheckout] = useState<number[]>([]);
   const [page, setPage] = useState<number>(1);
@@ -29,6 +29,7 @@ const CartPage: React.FC = () => {
   const [search, setSearch] = useState<string>("");
   const [hasMoreItems, setHasMoreItems] = useState<boolean>(true);
   const [sortModalVisible, setSortModalVisible] = useState(false);
+  const [isSortModal, setIsSortModal] = useState(false);
   const { refreshCart } = useCart();
 
   useEffect(() => {
@@ -40,6 +41,7 @@ const CartPage: React.FC = () => {
           const mappedItems = cartItems.map((item) => ({
             ...item,
             quantity: item.qty,
+            product: item.product || {},
           }));
           setItems((prevItems) =>
             page === 1 ? mappedItems : [...prevItems, ...mappedItems],
@@ -131,6 +133,7 @@ const CartPage: React.FC = () => {
     setModalContent("Apakah anda ingin menghapus semua produk terpilih?");
     setActionToConfirm(() => handleDeleteSelected);
     setModalVisible(true);
+    setIsSortModal(false);
   };
 
   const handleLoadMore = () => {
@@ -166,14 +169,14 @@ const CartPage: React.FC = () => {
     setModalContent(
       <div className="flex flex-col items-center gap-4">
         <MainButton
-          text={`Sort by Name: ${order === "asc" ? "A-Z" : "Z-A"}`}
+          text={`Sort by Name`}
           onClick={() => {
             handleSortByName();
             setModalVisible(false);
           }}
         />
         <MainButton
-          text={`Sort by Price: ${order === "asc" ? "Asc" : "Desc"}`}
+          text={`Sort by Price`}
           onClick={() => {
             handleSortByPrice();
             setModalVisible(false);
@@ -182,9 +185,8 @@ const CartPage: React.FC = () => {
       </div>,
     );
     setModalVisible(true);
+    setIsSortModal(true);
   };
-
-  const cartIsEmpty = items.length === 0;
 
   return (
     <div className="min-h-screen">
@@ -212,23 +214,18 @@ const CartPage: React.FC = () => {
             className="input input-bordered mr-4 w-1/2 rounded-xl"
           />
           <div className="flex items-center">
-            {/* Sorting Button for Small Screens */}
             <MainButton
               text={<IoMenu />}
               onClick={toggleSortModal}
               className="mx-2 lg:hidden"
             />
-            {/* Sorting Buttons for Large Screens */}
             <div className="hidden items-center lg:flex">
               <MainButton
-                text={`Sort by Name: ${order === "asc" ? "A-Z" : "Z-A"}`}
+                text={`Sort by Name`}
                 onClick={handleSortByName}
                 className="mx-2"
               />
-              <MainButton
-                text={`Sort by Price: ${order === "asc" ? "Asc" : "Desc"}`}
-                onClick={handleSortByPrice}
-              />
+              <MainButton text={`Sort by Price`} onClick={handleSortByPrice} />
             </div>
             <MainButton
               text={<FaRegTrashAlt />}
@@ -294,6 +291,8 @@ const CartPage: React.FC = () => {
               disableButton={selectedItems.length === 0}
               onCheckout={handleProceedToCheckout}
               showDeliveryPrice={false}
+              showVoucherButton={false}
+              showSubtotal={false}
             />
           </div>
         </div>
@@ -301,28 +300,33 @@ const CartPage: React.FC = () => {
       {modalVisible && (
         <Modal
           show={modalVisible}
+          hideCloseButton={true}
           onClose={() => setModalVisible(false)}
-          actions={[
-            <button
-              key="cancel"
-              className="rounded-lg bg-gray-500 px-4 py-2 text-white"
-              onClick={() => setModalVisible(false)}
-            >
-              Batalkan
-            </button>,
-            <button
-              key="confirm"
-              className="rounded-lg bg-red-500 px-4 py-2 text-white"
-              onClick={() => {
-                if (typeof actionToConfirm === "function") {
-                  actionToConfirm();
-                }
-                setModalVisible(false);
-              }}
-            >
-              Ya
-            </button>,
-          ]}
+          actions={
+            !isSortModal
+              ? [
+                  <button
+                    key="cancel"
+                    className="rounded-lg bg-gray-500 px-4 py-2 text-white"
+                    onClick={() => setModalVisible(false)}
+                  >
+                    Batalkan
+                  </button>,
+                  <button
+                    key="confirm"
+                    className="rounded-lg bg-red-500 px-4 py-2 text-white"
+                    onClick={() => {
+                      if (typeof actionToConfirm === "function") {
+                        actionToConfirm();
+                      }
+                      setModalVisible(false);
+                    }}
+                  >
+                    Ya
+                  </button>,
+                ]
+              : undefined
+          }
         >
           <p>{modalContent}</p>
         </Modal>

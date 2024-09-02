@@ -1,12 +1,12 @@
 import React from "react";
 
 interface MainButtonProps {
-  text: string;
+  text: React.ReactNode | string;
   onClick?: () => void;
   disabled?: boolean;
   variant?: "primary" | "error" | "danger";
   fullWidth?: boolean;
-  className?: string; // Add this line to accept custom styles
+  className?: string;
 }
 
 const MainButton: React.FC<MainButtonProps> = ({
@@ -15,7 +15,7 @@ const MainButton: React.FC<MainButtonProps> = ({
   disabled = false,
   variant = "primary",
   fullWidth = false,
-  className = "", // Add this line to initialize custom styles
+  className = "",
 }) => {
   const baseStyles = "btn";
   const variantStyles = {
@@ -31,7 +31,7 @@ const MainButton: React.FC<MainButtonProps> = ({
     <button
       className={`${baseStyles} ${variantStyles[variant]} ${
         fullWidth ? "w-full" : ""
-      } ${disabledStyles} ${className}`} // Include custom styles
+      } ${disabledStyles} ${className}`}
       onClick={onClick}
       disabled={disabled}
     >

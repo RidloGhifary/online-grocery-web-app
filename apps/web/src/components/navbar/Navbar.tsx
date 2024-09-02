@@ -8,7 +8,6 @@ import InputSearch from "./InputSearch";
 import NavbarItem from "./NavbarItem";
 import { useState, useEffect } from "react";
 import { UserProps } from "@/interface/user";
-import { getCartItems } from "@/api/cart/route";
 import { useCart } from "@/context/CartContext";
 
 interface NavbarProps {

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import QuantityBox from "../ui/QuantityBox";
 import { addItemToCart } from "@/api/cart/route";
 import { useCart } from "@/context/CartContext";
+import { convertToRupiah } from "@/utils/ConvertRupiah";
 
 export default function PublicProductDetail({ product }) {
   const [quantity, setQuantity] = useState<number>(1);
@@ -67,7 +68,7 @@ export default function PublicProductDetail({ product }) {
               <tr className="border-b">
                 <td className="py-2 text-sm">Price</td>
                 <td className="py-2 text-right text-sm">
-                  Rp {product.price.toFixed(2)}
+                  {convertToRupiah(product.price)}
                 </td>
               </tr>
               <tr className="">

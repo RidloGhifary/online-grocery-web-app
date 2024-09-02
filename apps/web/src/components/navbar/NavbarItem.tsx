@@ -32,7 +32,7 @@ export default function NavbarItem({ user, cartItemCount }: NavbarItemProps) {
                     {item.name}
                     {item.name === "Cart" &&
                       cartItemCount! > 0 && ( // Only display for Cart and if cartItemCount is greater than 0
-                        <span className="absolute left-[-20px] top-[-10px] rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">
+                        <span className="absolute right-[-20px] top-[-10px] flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white lg:left-[-20px] lg:right-auto">
                           {" "}
                           {/* Position to the left side */}
                           {cartItemCount}
@@ -53,7 +53,7 @@ export default function NavbarItem({ user, cartItemCount }: NavbarItemProps) {
                   {item.name}
                   {item.name === "Cart" &&
                     cartItemCount! > 0 && ( // Only display for Cart and if cartItemCount is greater than 0
-                      <span className="absolute left-[-20px] top-[-10px] rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">
+                      <span className="absolute right-[-20px] top-[-10px] flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white lg:left-[-20px] lg:right-auto">
                         {" "}
                         {/* Position to the left side */}
                         {cartItemCount}

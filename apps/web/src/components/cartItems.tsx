@@ -1,6 +1,7 @@
 import React from "react";
 import MainButton from "./MainButton";
 import { useCart } from "@/context/CartContext";
+import { convertToRupiah } from "@/utils/ConvertRupiah";
 
 interface Product {
   name: string;
@@ -55,57 +56,63 @@ const CartItem: React.FC<CartItemProps> = ({
   };
 
   return (
-    <div className="mb-4 flex items-center rounded-lg p-4 shadow-md">
+    <div className="mb-4 flex flex-col items-center rounded-lg p-4 shadow-md lg:flex-row lg:items-center">
       {showCheckbox && (
-        <input
-          type="checkbox"
-          checked={isChecked}
-          onChange={() => onCheckboxChange && onCheckboxChange(item.product_id)}
-          className="mr-4"
-        />
+        <div className="mb-4 flex flex-shrink-0 items-center justify-center lg:mb-0 lg:mr-4 lg:justify-start">
+          <input
+            type="checkbox"
+            checked={isChecked}
+            onChange={() =>
+              onCheckboxChange && onCheckboxChange(item.product_id)
+            }
+            className="lg:mr-4"
+          />
+        </div>
       )}
-      <img
-        src={item.product.image || "/path/to/placeholder-image.jpg"}
-        alt={item.product.name}
-        className="mr-4 h-24 w-24 rounded-md object-cover"
-      />
-      <div className="flex-grow">
-        <h2 className="text-xl font-semibold">{item.product.name}</h2>
-        <p className="text-gray-500">Price: Rp. {item.product.price}</p>
-        <p className="text-gray-500">{item.product.description}</p>
-        <div className="mt-2 flex items-center">
-          {showButtons ? (
-            <>
-              <MainButton
-                text="-"
-                variant="primary"
-                onClick={handleDecrement}
-              />
-              <span className="mx-2 font-semibold">{item.qty}</span>
-              <MainButton
-                text="+"
-                variant="primary"
-                onClick={handleIncrement}
-              />
-            </>
-          ) : showQuantityPrice ? (
-            <span className="font-semibold">
-              {item.qty} X Rp. {item.product.price.toFixed(2)}
-            </span>
-          ) : (
-            <span className="font-semibold">{item.qty}</span>
-          )}
+      <div className="flex w-full flex-col items-center lg:flex-row">
+        <img
+          src={item.product.image || "/path/to/placeholder-image.jpg"}
+          alt={item.product.name}
+          className="mb-4 h-24 w-24 rounded-md object-cover lg:mb-0 lg:mr-4"
+        />
+        <div className="flex-grow text-center lg:text-left">
+          <h2 className="text-xl font-semibold">{item.product.name}</h2>
+          <p className="text-gray-500">{item.product.description}</p>
+          <div className="mt-2 flex items-center justify-center lg:justify-start">
+            {showButtons ? (
+              <>
+                <MainButton
+                  text="-"
+                  variant="primary"
+                  onClick={handleDecrement}
+                />
+                <span className="mx-2 font-semibold">{item.qty}</span>
+                <MainButton
+                  text="+"
+                  variant="primary"
+                  onClick={handleIncrement}
+                />
+              </>
+            ) : showQuantityPrice ? (
+              <span className="font-semibold">
+                {item.qty} X {convertToRupiah(item.product.price)}
+              </span>
+            ) : (
+              <span className="font-semibold">{item.qty}</span>
+            )}
+          </div>
         </div>
       </div>
-      <div className="text-right">
+      <div className="mt-4 w-full text-center lg:mt-0 lg:text-right">
         <p className="text-xl font-bold">
-          Rp. {(item.product.price * item.qty).toFixed(2)}
+          {convertToRupiah(item.product.price * item.qty)}
         </p>
         {showButtons && (
           <MainButton
             text="Remove"
             variant="error"
             onClick={() => onRemoveItem && onRemoveItem(item.product_id)}
+            className="mt-2"
           />
         )}
       </div>

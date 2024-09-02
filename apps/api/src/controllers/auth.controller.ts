@@ -41,7 +41,26 @@ export class AuthController {
           .json({ ok: false, message: 'Invalid credentials' });
       }
 
-      const token = jwt.sign(user, process.env.JWT_SECRET!, {
+      const userRole = await prisma.userHasRole.findFirst({
+        where: {
+          user_id: user.id,
+        },
+        include: {
+          role: true,
+        },
+      });
+
+      let formattedUser;
+      if (userRole) {
+        formattedUser = {
+          ...user,
+          role: userRole.role.name,
+        };
+      } else {
+        formattedUser = user;
+      }
+
+      const token = jwt.sign(formattedUser, process.env.JWT_SECRET!, {
         expiresIn: '1d',
       });
 

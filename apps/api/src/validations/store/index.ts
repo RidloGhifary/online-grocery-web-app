@@ -11,7 +11,13 @@ export const createStoreSchema = z.object({
   province_id: z.number({ required_error: 'Province is required' }),
   city: z.string({ required_error: 'City is required' }),
   city_id: z.number({ required_error: 'City is required' }),
-  address: z.string({ required_error: 'Address is required' }),
-  kelurahan: z.string({ required_error: 'Kelurahan is required' }),
-  kecamatan: z.string({ required_error: 'Kecamatan is required' }),
+  address: z
+    .string({ required_error: 'Address is required' })
+    .max(100, { message: 'Address must be less than 100 characters' }),
+  kelurahan: z
+    .string({ required_error: 'Kelurahan is required' })
+    .max(100, { message: 'Address must be less than 100 characters' }),
+  kecamatan: z
+    .string({ required_error: 'Kecamatan is required' })
+    .max(100, { message: 'Address must be less than 100 characters' }),
 });

@@ -13,8 +13,8 @@ export async function getProductListWithFilter({
 }: {
   category?: string;
   search?: string;
-  order?: "asc" | "desc";
-  orderField?: "product_name" | "category";
+  order?: "asc" | "desc"|string;
+  orderField?: "product_name" | "category"|string;
 }): Promise<CommonResultInterface<ProductCompleteInterface[]>> {
   const result = {
     ok: false,

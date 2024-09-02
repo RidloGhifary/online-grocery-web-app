@@ -117,6 +117,7 @@ class ProductRepository {
     }
     return result
   }
+  
 }
 
 export const productRepository = new ProductRepository();

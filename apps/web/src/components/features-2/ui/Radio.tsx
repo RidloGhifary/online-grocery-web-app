@@ -1,14 +1,17 @@
-import { ReactNode } from 'react';
+import { MouseEventHandler, ReactNode } from 'react';
 
 export default function Radio({
   children,
   defaultChecked = false,
-  value
+  value,
+  action
 }: {
   children?: ReactNode;
   defaultChecked?: boolean;
-  value?: string
+  value?: string;
+  action?: MouseEventHandler<HTMLInputElement>
 }) {
+  
   return (
     <>
       <div className="form-control">
@@ -16,10 +19,12 @@ export default function Radio({
           <span className="label-text">{children}</span>
           <input
             type="radio"
-            name="radio-10"
+            name='category'
             className="radio checked:bg-base-300"
             defaultChecked={defaultChecked}
+            // defaultChecked={true}
             value={value??undefined}
+            onClick={action}
           />
         </label>
       </div>

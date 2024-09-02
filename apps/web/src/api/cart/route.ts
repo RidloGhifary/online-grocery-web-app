@@ -9,6 +9,13 @@ interface CartItem {
   store_id: number;
 }
 
+interface GetCartItemsResponse {
+  data: CartItem[];
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+}
+
 interface AddItemResponse {
   data: CartItem;
 }
@@ -27,6 +34,10 @@ interface GetCartItemsResponse {
   data: CartItem[];
 }
 
+interface SelectForCheckoutResponse {
+  data: CartItem[];
+}
+
 function getToken(): string | undefined {
   return Cookies.get("token");
 }
@@ -38,11 +49,18 @@ const api = axios.create({
   },
 });
 
-export async function getCartItems(): Promise<
-  AxiosResponse<GetCartItemsResponse>
-> {
+export async function getCartItems(
+  page: number = 1,
+  pageSize: number = 8,
+  sort: string = "name",
+  order: string = "asc",
+  search: string = "",
+): Promise<AxiosResponse<GetCartItemsResponse>> {
   try {
-    const response = await api.get<GetCartItemsResponse>("/cart/items");
+    const response = await api.get<GetCartItemsResponse>("/cart/items", {
+      params: { page, pageSize, sort, order, search },
+    });
+    console.log(response);
     return response;
   } catch (error) {
     throw new Error(`Failed to fetch cart items: ${error}`);
@@ -80,6 +98,27 @@ export async function updateCartItemQuantity(
     throw new Error(`Failed to remove item from cart: ${error}`);
   }
 }
+
+export const selectForCheckout = async (
+  productIds: number[],
+): Promise<AxiosResponse<SelectForCheckoutResponse>> => {
+  const token = getToken();
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const response = await api.post<SelectForCheckoutResponse>(
+    "/cart/select-for-checkout",
+    { productIds },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return response;
+};
 
 export async function removeItemFromCart(
   productId: number,

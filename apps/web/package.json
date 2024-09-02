@@ -12,10 +12,13 @@
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@tanstack/react-query": "^5.52.1",
+    "@types/lodash.debounce": "^4.0.9",
     "axios": "^1.7.5",
     "cross-env": "^7.0.3",
     "daisyui": "^4.12.10",
     "js-cookie": "^3.0.5",
+    "lodash": "^4.17.21",
+    "lodash.debounce": "^4.0.8",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.53.0",

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import QuantityBox from "../ui/QuantityBox";
 import { addItemToCart } from "@/api/cart/route";
+import { useCart } from "@/context/CartContext";
 
 export default function PublicProductDetail({ product }) {
   const [quantity, setQuantity] = useState<number>(1);
@@ -11,6 +12,7 @@ export default function PublicProductDetail({ product }) {
   const [currentStock, setCurrentStock] = useState<number>(
     product.current_stock,
   );
+  const { refreshCart } = useCart();
 
   const handleAddToCart = async () => {
     setLoading(true);
@@ -27,6 +29,7 @@ export default function PublicProductDetail({ product }) {
         alert("Item added to cart!");
         setCurrentStock((prevStock) => prevStock - quantity);
         setQuantity(1);
+        refreshCart();
       }
     } catch (err: any) {
       const errorMessage =

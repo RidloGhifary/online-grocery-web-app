@@ -3,7 +3,6 @@ import prisma from '@/prisma';
 import {
   addItemSchema,
   updateQuantitySchema,
-  removeItemSchema,
   selectForCheckoutSchema,
 } from '@/validations/cart';
 
@@ -21,9 +20,25 @@ export class CartController {
       return res.status(401).json({ error: 'Pengguna tidak terauthentikasi' });
     }
     const userId = user.id;
+
+    const {
+      page = 1,
+      pageSize = 8,
+      sort = 'name',
+      order = 'asc',
+      search = '',
+    } = req.query;
+
     try {
       const cartItems = await prisma.cart.findMany({
-        where: { user_id: userId },
+        where: {
+          user_id: userId,
+          product: {
+            name: {
+              contains: search.toString(), // Filtering by product name
+            },
+          },
+        },
         include: {
           product: {
             select: {
@@ -34,9 +49,39 @@ export class CartController {
             },
           },
         },
+        orderBy:
+          sort === 'name' || sort === 'price'
+            ? {
+                product: {
+                  [sort.toString()]: order.toString(), // Sorting by related product fields
+                },
+              }
+            : {
+                [sort.toString()]: order.toString(), // Sorting by cart fields if needed
+              },
+        skip: (Number(page) - 1) * Number(pageSize),
+        take: Number(pageSize),
       });
-      return res.json(cartItems);
+
+      const totalItems = await prisma.cart.count({
+        where: {
+          user_id: userId,
+          product: {
+            name: {
+              contains: search.toString(),
+            },
+          },
+        },
+      });
+
+      return res.json({
+        data: cartItems,
+        totalItems,
+        totalPages: Math.ceil(totalItems / Number(pageSize)),
+        currentPage: Number(page),
+      });
     } catch (error) {
+      console.error('Error fetching cart items:', error);
       return res
         .status(500)
         .json({ error: 'Terjadi error saat mengambil item dari keranjang' });

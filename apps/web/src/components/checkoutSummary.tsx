@@ -16,13 +16,14 @@ interface CartItem {
 }
 
 interface CheckoutSummaryProps {
-  items: CartItem[]; // Updated to use CartItem interface
+  items: CartItem[]; // List of items passed from the cart
   selectedVoucher: string | null;
   onVoucherSelect: (voucher: string) => void;
   buttonText: string;
   showDeliveryPrice?: boolean;
   deliveryPrice?: number;
   disableButton?: boolean;
+  onCheckout: () => void; // Prop for handling checkout
 }
 
 const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
@@ -30,51 +31,58 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
   selectedVoucher,
   onVoucherSelect,
   buttonText,
-  showDeliveryPrice,
-  deliveryPrice,
+  showDeliveryPrice = true,
+  deliveryPrice = 0,
   disableButton = false,
+  onCheckout,
 }) => {
+  // Calculate the total price of selected items
   const totalPrice = items.reduce(
-    (total, item) => total + item.product.price * item.qty,
+    (total, item) => total + item.qty * item.product.price,
     0,
   );
 
-  const subtotalPrice = showDeliveryPrice
-    ? totalPrice + (deliveryPrice || 0)
-    : totalPrice;
-
   return (
     <div className="fixed bottom-0 left-0 right-0 rounded-lg bg-white p-6 shadow-lg lg:static lg:mt-6 lg:shadow-none">
-      <h2 className="mb-4 text-xl font-bold">Summary</h2>
-      <div className="mb-4 flex justify-between">
-        <span>Total Price:</span>
+      <h2 className="mb-4 text-xl font-bold">Order Summary</h2>
+      <div className="mb-2 flex justify-between">
+        <span>Subtotal:</span>
         <span>Rp. {totalPrice.toFixed(2)}</span>
       </div>
-
       {showDeliveryPrice && (
-        <>
-          <div className="mb-4 flex justify-between">
-            <span>Delivery Price:</span>
-            <span>Rp. {deliveryPrice?.toFixed(2)}</span>
-          </div>
-          <div className="mb-4 flex justify-between">
-            <span>Subtotal:</span>
-            <span>Rp. {subtotalPrice.toFixed(2)}</span>
-          </div>
-        </>
+        <div className="mb-2 flex justify-between">
+          <span>Delivery:</span>
+          <span>Rp. {deliveryPrice.toFixed(2)}</span>
+        </div>
       )}
-
+      {selectedVoucher && (
+        <div className="mb-2 flex justify-between">
+          <span>Discount ({selectedVoucher}):</span>
+          {/* Assuming a flat $5 discount for the sake of example */}
+          <span>-Rp. {(5.0).toFixed(2)}</span>
+        </div>
+      )}
+      <div className="mb-4 flex justify-between border-t pt-4">
+        <span>Total:</span>
+        <span>
+          Rp.
+          {(
+            totalPrice +
+            (showDeliveryPrice ? deliveryPrice : 0) -
+            (selectedVoucher ? 5.0 : 0)
+          ).toFixed(2)}
+        </span>
+      </div>
       <VoucherButton
         selectedVoucher={selectedVoucher}
         onVoucherSelect={onVoucherSelect}
       />
-
       <MainButton
         text={buttonText}
-        onClick={() => {}}
+        onClick={onCheckout}
         variant="primary"
-        fullWidth
         disabled={disableButton}
+        fullWidth
       />
     </div>
   );

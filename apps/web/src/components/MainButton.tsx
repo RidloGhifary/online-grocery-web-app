@@ -6,6 +6,7 @@ interface MainButtonProps {
   disabled?: boolean;
   variant?: "primary" | "error" | "danger";
   fullWidth?: boolean;
+  className?: string; // Add this line to accept custom styles
 }
 
 const MainButton: React.FC<MainButtonProps> = ({
@@ -14,8 +15,9 @@ const MainButton: React.FC<MainButtonProps> = ({
   disabled = false,
   variant = "primary",
   fullWidth = false,
+  className = "", // Add this line to initialize custom styles
 }) => {
-  const baseStyles = "btn mt-2";
+  const baseStyles = "btn";
   const variantStyles = {
     primary: "bg-blue-500 text-white hover:bg-blue-600",
     error: "bg-red-500 text-white hover:bg-red-600",
@@ -29,7 +31,7 @@ const MainButton: React.FC<MainButtonProps> = ({
     <button
       className={`${baseStyles} ${variantStyles[variant]} ${
         fullWidth ? "w-full" : ""
-      } ${disabledStyles}`}
+      } ${disabledStyles} ${className}`} // Include custom styles
       onClick={onClick}
       disabled={disabled}
     >

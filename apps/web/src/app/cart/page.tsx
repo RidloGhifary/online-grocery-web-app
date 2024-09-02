@@ -4,33 +4,44 @@ import { useCart } from "@/context/CartContext";
 import CartItem from "@/components/CartItems";
 import {
   getCartItems,
-  addItemToCart,
   updateCartItemQuantity,
   removeItemFromCart,
+  selectForCheckout,
 } from "@/api/cart/route";
+import { IoMenu } from "react-icons/io5"; /
 import CheckoutSummary from "@/components/CheckoutSummary";
-import { Modal } from "@/components/features-2/ui/Modal"; // Import the modal
+import { Modal } from "@/components/features-2/ui/Modal";
 
 const CartPage: React.FC = () => {
   const [items, setItems] = useState<CartItemData[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
-  const [cartQuantity, setCartQuantity] = useState<number>(0);
-  const [modalVisible, setModalVisible] = useState(false); // Modal visibility
-  const [modalContent, setModalContent] = useState<string>(""); // Modal content
-  const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {}); // Action to confirm
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalContent, setModalContent] = useState<string>("");
+  const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {});
+  const [selectedForCheckout, setSelectedForCheckout] = useState<number[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [sort, setSort] = useState<string>("name");
+  const [order, setOrder] = useState<string>("asc");
+  const [search, setSearch] = useState<string>("");
+  const [hasMoreItems, setHasMoreItems] = useState<boolean>(true);
+  const [showSortModal, setShowSortModal] = useState(false); // New state to manage sorting modal visibility
   const { refreshCart } = useCart();
 
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
         const response: GetCartItemsResponse = await getCartItems();
-        const cartItems = response.data;
-        const mappedItems = cartItems.map((item) => ({
-          ...item,
-          quantity: item.qty,
-        }));
-        setItems(mappedItems);
+        const cartItems = response.data.data;
+        if (Array.isArray(cartItems)) {
+          const mappedItems = cartItems.map((item) => ({
+            ...item,
+            quantity: item.qty,
+          }));
+          setItems(mappedItems);
+        } else {
+          throw new Error("Unexpected response format: data is not an array");
+        }
       } catch (error) {
         console.error("Error fetching cart items:", error);
       }
@@ -43,19 +54,33 @@ const CartPage: React.FC = () => {
     setSelectedVoucher(voucher);
   };
 
-  const handleCheckboxChange = (id: number) => {
+  const handleCheckboxChange = (productId: number) => {
     setSelectedItems((prevSelectedItems) =>
-      prevSelectedItems.includes(id)
-        ? prevSelectedItems.filter((itemId) => itemId !== id)
-        : [...prevSelectedItems, id],
+      prevSelectedItems.includes(productId)
+        ? prevSelectedItems.filter((id) => id !== productId)
+        : [...prevSelectedItems, productId],
     );
   };
 
   const handleSelectAll = () => {
     if (selectedItems.length === items.length) {
       setSelectedItems([]);
+      setSelectedForCheckout([]);
     } else {
-      setSelectedItems(items.map((item) => item.id));
+      const allProductIds = items.map((item) => item.product_id);
+      setSelectedItems(allProductIds);
+      setSelectedForCheckout(allProductIds);
+    }
+  };
+
+  const handleProceedToCheckout = async () => {
+    try {
+      const response = await selectForCheckout(selectedForCheckout);
+      const checkoutItems = response.data;
+      console.log("Items selected for checkout:", checkoutItems);
+      // Proceed to checkout logic here...
+    } catch (error) {
+      console.error("Error selecting items for checkout:", error);
     }
   };
 
@@ -87,8 +112,8 @@ const CartPage: React.FC = () => {
 
   const handleDeleteSelected = async () => {
     try {
-      for (const id of selectedItems) {
-        await handleRemoveItem(id);
+      for (const productId of selectedItems) {
+        await handleRemoveItem(productId);
       }
       setSelectedItems([]);
     } catch (error) {
@@ -96,10 +121,9 @@ const CartPage: React.FC = () => {
     }
   };
 
-  // New: Show confirmation modal before deleting selected items
   const confirmDeleteSelected = () => {
     setModalContent("Apakah anda ingin menghapus semua produk terpilih?");
-    setActionToConfirm(handleDeleteSelected);
+    setActionToConfirm(() => handleDeleteSelected);
     setModalVisible(true);
   };
 
@@ -126,7 +150,7 @@ const CartPage: React.FC = () => {
           <button
             className="btn btn-error"
             disabled={selectedItems.length === 0}
-            onClick={confirmDeleteSelected} // Use confirmDeleteSelected instead
+            onClick={confirmDeleteSelected}
           >
             Delete Selected
           </button>
@@ -152,7 +176,7 @@ const CartPage: React.FC = () => {
                           () => () => handleRemoveItem(item.product_id),
                         );
                         setModalVisible(true);
-                      }} // Show modal when removing an item
+                      }}
                     />
                   ))}
                 </>
@@ -165,11 +189,16 @@ const CartPage: React.FC = () => {
           </div>
           <div className="lg:col-span-2">
             <CheckoutSummary
-              buttonText="Proceed to Checkout"
-              items={items}
+              buttonText={`Proceed to Checkout (${selectedItems.reduce(
+                (total, itemId) =>
+                  total + items.find((item) => item.id === itemId)?.qty || 0,
+                0,
+              )})`}
+              items={items.filter((item) => selectedItems.includes(item.id))}
               selectedVoucher={selectedVoucher}
               onVoucherSelect={handleVoucherSelect}
-              disableButton={cartIsEmpty}
+              disableButton={selectedItems.length === 0}
+              onCheckout={handleProceedToCheckout}
             />
           </div>
         </div>
@@ -190,7 +219,9 @@ const CartPage: React.FC = () => {
               key="confirm"
               className="rounded-lg bg-red-500 px-4 py-2 text-white"
               onClick={() => {
-                actionToConfirm();
+                if (typeof actionToConfirm === "function") {
+                  actionToConfirm();
+                }
                 setModalVisible(false);
               }}
             >

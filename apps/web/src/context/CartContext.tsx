@@ -22,12 +22,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const refreshCart = async () => {
     try {
       const response = await getCartItems();
-      const cartItems = response.data;
-      const totalQuantity = cartItems.reduce(
-        (acc: number, item: any) => acc + item.qty,
-        0,
-      );
-      setCartItemCount(totalQuantity);
+      const cartItems = response.data.data; // Ensure correct access to array
+      if (Array.isArray(cartItems)) {
+        const totalQuantity = cartItems.reduce(
+          (acc: number, item: any) => acc + item.qty,
+          0,
+        );
+        setCartItemCount(totalQuantity);
+      } else {
+        throw new Error("Unexpected response format: data is not an array");
+      }
     } catch (error) {
       console.error("Failed to fetch cart item count:", error);
     }

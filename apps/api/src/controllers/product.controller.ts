@@ -187,7 +187,8 @@ export class ProductController {
     res: Response,
   ): Promise<void | Response> {
     const {slug} = req.params
-    if (!slug) {
+    
+    if (!slug || slug==='') {
       const response : CommonResultInterface<null> = {
         ok : false,
         error : 'Empty slug'

@@ -1,6 +1,5 @@
 "use client";
 
-import { getProductListWithFilter } from "@/actions/products";
 import Drawer from "@/components/features-2/layouts/Drawer";
 import SidePanel from "@/components/features-2/layouts/SidePanel";
 import ProductFilter from "@/components/features-2/product/filter/ProductFilter";
@@ -24,7 +23,7 @@ export default function Page() {
     order: queryParams.get("order") as 'asc'|'desc' || "asc",
     category: queryParams.get("category") || undefined,
   });
-
+  
   return (
     <>
       <Drawer

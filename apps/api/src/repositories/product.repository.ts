@@ -101,13 +101,17 @@ class ProductRepository {
       ok: false,
     };
     try {
-      const res = await prisma.product.findFirstOrThrow({
+      const res = await prisma.product.findFirst({
         where : {
           slug : slug
         }, include: {
           product_category: true,
         },
       })
+      if (!res) {
+        result.error = 'not found'
+        return result
+      }
       result.data = res
       result.ok = true
       result.message = 'Query Success'

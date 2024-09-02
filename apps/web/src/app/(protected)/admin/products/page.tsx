@@ -3,7 +3,7 @@ import AdminProductTable from "@/components/features-2/admin/AdminProductTable";
 import ProductFilter from "@/components/features-2/product/filter/ProductFilter";
 import { Modal } from "@/components/features-2/ui/Modal";
 import SearchBar from "@/components/features-2/ui/SearchBar";
-import { products } from "@/mocks/productData";
+import { productDefault as products } from "@/mocks/productData";
 import { useState } from "react";
 
 export default function () {

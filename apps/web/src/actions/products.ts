@@ -37,8 +37,11 @@ export async function getProductListWithFilter({
     result.data = data.data as ProductCompleteInterface[];
     result.ok = true;
     result.message = "Got the product";
+    
   } catch (error) {
     result.error = error instanceof Error ? error.message : "Failed to fetch product list";
+    console.log(error);
+
   }
 
   return result;
@@ -52,6 +55,8 @@ export async function getSingleProduct({
   const result = {
     ok: false,
   } as CommonResultInterface<ProductCompleteInterface>;
+  console.log(slug,' : sluggg');
+  
 
   if (!slug) {
     result.error = "Slug is empty";
@@ -61,18 +66,23 @@ export async function getSingleProduct({
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/products/${slug}`);
 
+    
     if (!response.ok) {
-      result.error = `Failed to fetch product: ${response.statusText}`;
-      return result;
+      result.error = ` ${response.status}`;
+      throw new Error(result.error);
+      
+      // return result;
     }
-
     const data = await response.json();
     result.data = data.data as ProductCompleteInterface;
     result.ok = true;
     result.message = "Got the product";
+    console.log('result',result);
+    
   } catch (error) {
+    
     result.error = error instanceof Error ? error.message : "Failed to fetch product";
   }
-
+  
   return result;
 }

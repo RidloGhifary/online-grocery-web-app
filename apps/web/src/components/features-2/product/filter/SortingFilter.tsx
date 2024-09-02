@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChangeEventHandler } from "react";
+import { ChangeEventHandler, useEffect, useState } from "react";
 
 export default function SortingFilter() {
   const router = useRouter();
@@ -9,17 +9,22 @@ export default function SortingFilter() {
   const queryParams = useSearchParams();
 
   // Extract values from query parameters
-  const selectedFilter = queryParams.get("filter") || "product_name";
-  const selectedOrder = queryParams.get("order") || "asc";
+  const [selectedFilter, setSelectedFilter] = useState(queryParams.get("orderField") || "product_name");
+  const [selectedOrder, setSelectedOrder] = useState(queryParams.get("order") || "asc");
+
+  useEffect(() => {
+    setSelectedFilter(queryParams.get("orderField") || "product_name");
+    setSelectedOrder(queryParams.get("order") || "asc");
+  }, [queryParams]);
 
   const handleFilterChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(queryParams.toString());
     params.set("orderField", e.currentTarget.value);
     router.push(`${pathname}?${params.toString()}`);
   };
 
   const handleOrderChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(queryParams.toString());
     params.set("order", e.currentTarget.value);
     router.push(`${pathname}?${params.toString()}`);
   };

@@ -1,11 +1,12 @@
 import React from "react";
 import Image from "next/image";
-import { ProductInterface } from "@/mocks/productData";
+// import { productDefault as products } from "@/mocks/productData";
 import { FaInfoCircle } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
+import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
 
-export default function ({ products }: { products: ProductInterface[] }) {
+export default function ({ products }: { products: ProductCompleteInterface[] }) {
   return (
     <div className="overflow-x-auto">
       <table className="table w-full text-base">

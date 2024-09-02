@@ -82,7 +82,7 @@ export default function AdminNavMenu() {
   };
 
   return (
-    <ul className="menu menu-horizontal rounded-box bg-base-200 m-4">
+    <ul className="menu menu-horizontal rounded-box bg-base-200 m-4 lg:hidden">
       {renderMenuItems(menu)}
     </ul>
   );

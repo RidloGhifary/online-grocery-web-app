@@ -1,6 +1,6 @@
 import React from "react";
 import { IconType } from "react-icons";
-import { FaHome, FaUserFriends } from "react-icons/fa";
+import { FaHome, FaShoppingBag, FaUserFriends } from "react-icons/fa";
 
 export interface AdminSideMenuInterface {
   name?: string;
@@ -51,6 +51,7 @@ const adminSideMenuDatas : { baseUrlGroup: string; menu: AdminSideMenuInterface[
       name: "admin.products.menu",
       displayName: "Products",
       permission: "admin_product_access",
+      icon : <FaShoppingBag size={'1.5em'} />,
       subMenu: [
         {
           name: "admin.products.list",

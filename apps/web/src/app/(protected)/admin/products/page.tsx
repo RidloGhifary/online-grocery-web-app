@@ -5,6 +5,7 @@ import { Modal } from "@/components/features-2/ui/Modal";
 import SearchBar from "@/components/features-2/ui/SearchBar";
 import { productDefault as products } from "@/mocks/productData";
 import { useState } from "react";
+import { FaPlus } from "react-icons/fa";
 
 export default function () {
   const [modalActive, setModalActive] = useState<boolean>(false);
@@ -15,14 +16,24 @@ export default function () {
           <div className="flex max-w-full flex-1 flex-row items-center px-4 py-4">
             <SearchBar />
           </div>
-          <div className="flex max-w-full min-[395px]:w-auto w-full flex-row min-[395px]:py-4 min-[395px]:pb-0 pb-4 min-[395px]:pr-4 min-[395px]:mx-0 mx-4 lg:hidden">
+          <div className="flex max-w-full min-[395px]:w-auto w-full flex-row min-[395px]:py-4 min-[395px]:pb-0 pb-4 min-[395px]:pr-4 min-[395px]:mx-0 mx-4">
             <button
               onClick={(e) => {
                 setModalActive(true);
               }}
-              className="btn block  w-full"
+              className="btn block  w-full "
             >
               Filter
+            </button>
+          </div>
+          <div className="flex max-w-full min-[395px]:w-auto w-full flex-row min-[395px]:py-4 min-[395px]:pb-0 pb-4 min-[395px]:pr-4 min-[395px]:mx-0 mx-4">
+            <button
+              onClick={(e) => {
+                setModalActive(true);
+              }}
+              className="btn btn-primary w-full justify-center items-center flex"
+            >
+              <FaPlus size={'1.5rem'} />
             </button>
           </div>
         </div>

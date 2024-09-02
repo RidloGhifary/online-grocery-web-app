@@ -27,6 +27,7 @@
     "react-toastify": "^10.0.5",
     "swiper": "^11.1.10",
     "uploadthing": "^6.13.2",
+    "use-debounce": "^10.0.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {

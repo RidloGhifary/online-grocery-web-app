@@ -16,7 +16,7 @@ export default async function UserContainer({ children }: UserContainerProps) {
       <div className="flex w-full justify-start gap-4">
         <LeftSideProfile user={user} />
         <div className="w-full">
-          <ProfileNavigation />
+          <ProfileNavigation userRole={user?.role}/>
           <hr />
           <RightSideProfile>{children}</RightSideProfile>
         </div>

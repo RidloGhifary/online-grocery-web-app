@@ -4,6 +4,27 @@ import getCoordinates from '@/utils/getUserCoordinates';
 import getUserPermission from '@/utils/getUserPermission';
 
 export class StoreController {
+  async getStores(req: Request, res: Response) {
+    try {
+      const stores = await prisma.store.findMany({
+        where: {
+          created_by: Number(req.currentUser?.id),
+        },
+        include: {
+          province: true,
+          city: true,
+        },
+        orderBy: {
+          store_type: 'asc',
+        },
+      });
+
+      res.status(200).json({ ok: true, data: stores });
+    } catch {
+      res.status(500).json({ ok: false, message: 'Internal server error' });
+    }
+  }
+
   async createStore(req: Request, res: Response) {
     try {
       const {

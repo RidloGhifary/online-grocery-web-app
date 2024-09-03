@@ -16,6 +16,12 @@ export class StoreRouter {
   }
 
   private initializeRoutes(): void {
+    this.router.get(
+      '/',
+      verifyToken,
+      verifySuperAdmin,
+      this.storeController.getStores,
+    );
     this.router.post(
       '/',
       validateRequest(createStoreSchema),

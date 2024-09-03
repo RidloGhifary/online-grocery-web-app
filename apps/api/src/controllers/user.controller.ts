@@ -34,7 +34,26 @@ export class UserController {
         return res.status(404).json({ ok: false, message: 'User not found' });
       }
 
-      res.status(200).json({ ok: true, user });
+      const userRole = await prisma.userHasRole.findFirst({
+        where: {
+          user_id: user.id,
+        },
+        include: {
+          role: true,
+        },
+      });
+
+      let formattedUser;
+      if (userRole) {
+        formattedUser = {
+          ...user,
+          role: userRole.role.name,
+        };
+      } else {
+        formattedUser = user;
+      }
+
+      res.status(200).json({ ok: true, user: formattedUser });
     } catch {
       res.status(500).json({ ok: false, message: 'Something went wrong' });
     }

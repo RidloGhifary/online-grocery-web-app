@@ -92,7 +92,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
       <MainButton
         text={buttonText}
         onClick={onCheckout}
-        variant="primary"
+        variant="secondary"
         disabled={disableButton}
         fullWidth
       />

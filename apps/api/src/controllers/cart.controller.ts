@@ -17,7 +17,7 @@ export class CartController {
   getCartItems = async (req: CustomRequest, res: Response) => {
     const user = req.currentUser;
     if (!user) {
-      return res.status(401).json({ error: 'Pengguna tidak terauthentikasi' });
+      return res.status(401).json({ error: 'User not authenticated' });
     }
     const userId = user.id;
 
@@ -35,7 +35,7 @@ export class CartController {
           user_id: userId,
           product: {
             name: {
-              contains: search.toString(), // Filtering by product name
+              contains: search.toString(),
             },
           },
         },
@@ -53,11 +53,11 @@ export class CartController {
           sort === 'name' || sort === 'price'
             ? {
                 product: {
-                  [sort.toString()]: order.toString(), // Sorting by related product fields
+                  [sort.toString()]: order.toString(),
                 },
               }
             : {
-                [sort.toString()]: order.toString(), // Sorting by cart fields if needed
+                [sort.toString()]: order.toString(),
               },
         skip: (Number(page) - 1) * Number(pageSize),
         take: Number(pageSize),
@@ -84,14 +84,14 @@ export class CartController {
       console.error('Error fetching cart items:', error);
       return res
         .status(500)
-        .json({ error: 'Terjadi error saat mengambil item dari keranjang' });
+        .json({ error: 'There is an error fetching items from cart' });
     }
   };
 
   addItem = async (req: CustomRequest, res: Response) => {
     const user = req.currentUser;
     if (!user) {
-      return res.status(401).json({ error: 'Pengguna tidak terauthentikasi' });
+      return res.status(401).json({ error: 'User not authenticated' });
     }
 
     const validationResult = addItemSchema.safeParse(req.body);
@@ -109,13 +109,11 @@ export class CartController {
         });
 
         if (!product) {
-          throw new Error('Produk tidak ditemukan');
+          throw new Error('Product not found');
         }
 
         if (product.current_stock === 0) {
-          throw new Error(
-            'Produk saat ini habis, tidak bisa ditambahkan ke keranjang',
-          );
+          throw new Error('Product ran out of stock, cannot add to cart');
         }
 
         const existingCart = await prisma.cart.findFirst({
@@ -130,7 +128,7 @@ export class CartController {
         if (existingCart) {
           if (additionalQuantityNeeded > product.current_stock) {
             throw new Error(
-              `Jumlah stok produk yang tersedia hanya ${product.current_stock}, tidak bisa menambahkan lebih banyak.`,
+              `Remaing stock are only ${product.current_stock}, cannot add more.`,
             );
           }
 
@@ -150,7 +148,7 @@ export class CartController {
         } else {
           if (quantity > product.current_stock) {
             throw new Error(
-              `Jumlah stok produk yang tersedia hanya ${product.current_stock}, tidak bisa menambahkan lebih banyak.`,
+              `Remaing stock are only ${product.current_stock}, cannot add more.`,
             );
           }
 
@@ -175,9 +173,7 @@ export class CartController {
       return res.json(result);
     } catch (error: any) {
       return res.status(500).json({
-        error:
-          error.message ||
-          'Terjadi error saat menambahkan item ke dalam keranjang',
+        error: error.message || 'Error occurs when adding item to cart',
       });
     }
   };
@@ -185,7 +181,7 @@ export class CartController {
   updateQuantity = async (req: CustomRequest, res: Response) => {
     const user = req.currentUser;
     if (!user) {
-      return res.status(401).json({ error: 'Pengguna tidak terauthentikasi' });
+      return res.status(401).json({ error: 'User not authenticated' });
     }
 
     const productId = parseInt(req.params.productId, 10);
@@ -212,7 +208,7 @@ export class CartController {
         });
 
         if (!cartItem) {
-          throw new Error('Item tidak ditemukan dalam keranjang');
+          throw new Error('Item not found in the cart');
         }
 
         const product = await prisma.product.findUnique({
@@ -220,13 +216,13 @@ export class CartController {
         });
 
         if (!product) {
-          throw new Error('Produk tidak ditemukan');
+          throw new Error('Product not found');
         }
 
         const stockAdjustment = quantity - cartItem.qty;
 
         if (product.current_stock < stockAdjustment) {
-          throw new Error('Stok produk tidak mencukupi untuk perubahan ini');
+          throw new Error('Current stock cannot fulfill current request');
         }
 
         await prisma.product.update({
@@ -245,16 +241,15 @@ export class CartController {
       return res.json(result);
     } catch (error) {
       return res.status(500).json({
-        error: 'Terjadi error saat memperbarui jumlah item dalam keranjang',
+        error: 'There is an error updating items into cart',
       });
     }
   };
 
-  // CartController.ts
   removeItem = async (req: CustomRequest, res: Response) => {
     const user = req.currentUser;
     if (!user) {
-      return res.status(401).json({ error: 'Pengguna tidak terauthentikasi' });
+      return res.status(401).json({ error: 'User not authenticated' });
     }
 
     const productId = parseInt(req.params.productId, 10);
@@ -272,7 +267,7 @@ export class CartController {
         });
 
         if (!cartItem) {
-          throw new Error('Item tidak ditemukan dalam keranjang');
+          throw new Error('Item are not found in cart');
         }
 
         await prisma.product.update({
@@ -285,18 +280,18 @@ export class CartController {
         });
       });
 
-      return res.json({ message: 'Item berhasil dihapus dari keranjang' });
+      return res.json({ message: 'Suceed removing item from cart' });
     } catch (error) {
       return res
         .status(500)
-        .json({ error: 'Terjadi error saat menghapus item dari keranjang' });
+        .json({ error: 'There is an error deleting item from cart' });
     }
   };
 
   selectForCheckout = async (req: CustomRequest, res: Response) => {
     const user = req.currentUser;
     if (!user) {
-      return res.status(401).json({ error: 'Pengguna tidak terauthentikasi' });
+      return res.status(401).json({ error: 'User not authenticated' });
     }
 
     const validationResult = selectForCheckoutSchema.safeParse(req.body);
@@ -321,14 +316,14 @@ export class CartController {
       if (cartItems.length === 0) {
         return res
           .status(404)
-          .json({ error: 'Tidak ada item yang dipilih untuk checkout' });
+          .json({ error: 'There are no choosen items for checkout' });
       }
 
       return res.json(cartItems);
     } catch (error) {
       return res
         .status(500)
-        .json({ error: 'Terjadi error saat memilih item untuk checkout' });
+        .json({ error: 'Error occurs when choosing items for checkout' });
     }
   };
 }

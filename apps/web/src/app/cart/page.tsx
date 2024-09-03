@@ -130,7 +130,7 @@ const CartPage: React.FC = () => {
   };
 
   const confirmDeleteSelected = () => {
-    setModalContent("Apakah anda ingin menghapus semua produk terpilih?");
+    setModalContent("Do you want to delete all selected items?");
     setActionToConfirm(() => handleDeleteSelected);
     setModalVisible(true);
     setIsSortModal(false);
@@ -231,6 +231,7 @@ const CartPage: React.FC = () => {
               text={<FaRegTrashAlt />}
               onClick={confirmDeleteSelected}
               disabled={selectedItems.length === 0}
+              className="ml-2"
               variant="error"
             />
           </div>
@@ -248,20 +249,17 @@ const CartPage: React.FC = () => {
                       isChecked={selectedItems.includes(item.product_id)}
                       onCheckboxChange={handleCheckboxChange}
                       onQuantityChange={handleQuantityChange}
-                      onRemoveItem={() => {
-                        setModalContent(
-                          `Apakah anda ingin menghapus ${item.product.name}?`,
-                        );
-                        setActionToConfirm(
-                          () => () => handleRemoveItem(item.product_id),
-                        );
-                        setModalVisible(true);
-                      }}
+                      onRemoveItem={() => handleRemoveItem(item.product_id)}
+                      setModalContent={setModalContent}
+                      setActionToConfirm={setActionToConfirm}
+                      setModalVisible={setModalVisible}
+                      setIsSortModal={setIsSortModal}
                     />
                   ))}
                   {hasMoreItems && (
                     <MainButton
                       text="Load More"
+                      variant="secondary"
                       onClick={handleLoadMore}
                       className="mt-4 w-full"
                     />
@@ -305,25 +303,25 @@ const CartPage: React.FC = () => {
           actions={
             !isSortModal
               ? [
-                  <button
+                  <MainButton
                     key="cancel"
-                    className="rounded-lg bg-gray-500 px-4 py-2 text-white"
+                    text="Cancel"
+                    variant="static"
                     onClick={() => setModalVisible(false)}
-                  >
-                    Batalkan
-                  </button>,
-                  <button
+                    className="rounded-lg px-4 py-2"
+                  />,
+                  <MainButton
                     key="confirm"
-                    className="rounded-lg bg-red-500 px-4 py-2 text-white"
+                    text="Yes"
+                    variant="danger"
                     onClick={() => {
                       if (typeof actionToConfirm === "function") {
                         actionToConfirm();
                       }
                       setModalVisible(false);
                     }}
-                  >
-                    Ya
-                  </button>,
+                    className="rounded-lg px-4 py-2"
+                  />,
                 ]
               : undefined
           }

@@ -28,6 +28,10 @@ interface CartItemProps {
   onCheckboxChange?: (id: number) => void;
   onQuantityChange?: (id: number, quantity: number) => void;
   onRemoveItem?: (id: number) => void;
+  setModalContent: (content: string) => void;
+  setActionToConfirm: (action: () => void) => void;
+  setModalVisible: (visible: boolean) => void;
+  setIsSortModal: (isSortModal: boolean) => void;
 }
 
 const CartItem: React.FC<CartItemProps> = ({
@@ -39,8 +43,13 @@ const CartItem: React.FC<CartItemProps> = ({
   onCheckboxChange,
   onQuantityChange,
   onRemoveItem,
+  setModalContent,
+  setActionToConfirm,
+  setModalVisible,
+  setIsSortModal,
 }) => {
   const { refreshCart } = useCart();
+
   const handleDecrement = () => {
     if (onQuantityChange && item.qty > 1) {
       onQuantityChange(item.product_id, item.qty - 1);
@@ -53,6 +62,15 @@ const CartItem: React.FC<CartItemProps> = ({
       onQuantityChange(item.product_id, item.qty + 1);
       refreshCart();
     }
+  };
+
+  const handleRemoveClick = () => {
+    setModalContent(`Do you want to delete ${item.product.name}?`);
+    setActionToConfirm(
+      () => () => onRemoveItem && onRemoveItem(item.product_id),
+    );
+    setModalVisible(true);
+    setIsSortModal(false);
   };
 
   return (
@@ -111,7 +129,7 @@ const CartItem: React.FC<CartItemProps> = ({
           <MainButton
             text="Remove"
             variant="error"
-            onClick={() => onRemoveItem && onRemoveItem(item.product_id)}
+            onClick={handleRemoveClick}
             className="mt-2"
           />
         )}

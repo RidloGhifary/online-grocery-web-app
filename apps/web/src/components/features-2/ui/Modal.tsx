@@ -32,10 +32,10 @@ export function Modal({
   const handleClose = useCallback(
     (event?: MouseEvent | FormEvent) => {
       if (onClose) {
-        onClose(event); // Ensure onClose is called with the correct event parameter
+        onClose(event);
       }
       show = false;
-      modalRef.current?.close(); // Close the modal
+      modalRef.current?.close();
     },
     [onClose, modalRef],
   );
@@ -46,7 +46,7 @@ export function Modal({
         modalRef.current &&
         !modalRef.current.contains(event.target as Node)
       ) {
-        handleClose(event); // Close the modal when clicking outside
+        handleClose(event);
       }
     },
     [handleClose, modalRef],
@@ -58,7 +58,6 @@ export function Modal({
       document.addEventListener("mousedown", handleOutsideClick);
       currentRef?.showModal();
     } else {
-      // currentRef?.close();
       document.removeEventListener("mousedown", handleOutsideClick);
     }
 
@@ -90,8 +89,8 @@ export function Modal({
             ✕
           </button>
         </form>
-        <div className="pt-8">{children}</div>
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="flex justify-center py-4">{children}</div>
+        <div className="flex flex-wrap justify-center gap-2">
           {actions &&
             actions.map((action) => (
               <div key={Date.now()} className="modal-action">

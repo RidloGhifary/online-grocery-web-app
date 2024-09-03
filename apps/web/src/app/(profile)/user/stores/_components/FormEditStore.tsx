@@ -1,33 +1,66 @@
 "use client";
 
 import { Provinces } from "@/constants";
-import { FormData } from "./CreateStoreForm";
+import { StoreProps } from "@/interfaces/store";
+import Image from "next/image";
+import { FormData } from "./EditStore";
 import {
   FieldErrors,
-  SubmitHandler,
   UseFormHandleSubmit,
   UseFormRegister,
 } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
-interface FormProps {
+interface FormEditStoreProps {
   handleSubmit: UseFormHandleSubmit<FormData>;
   register: UseFormRegister<FormData>;
   errors: FieldErrors<FormData>;
-  onSubmit: SubmitHandler<FormData>;
+  onSubmit: (data: FormData) => void;
   filteredCities: { city_id: string; city_name: string }[];
   isLoading: boolean;
+  store: false | StoreProps | undefined;
+  handleImage: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  image: string | undefined;
 }
 
-export default function Form({
+export default function FormEditStore({
   handleSubmit,
   register,
   errors,
   onSubmit,
   filteredCities,
   isLoading,
-}: FormProps) {
+  store,
+  handleImage,
+  image,
+}: FormEditStoreProps) {
+  const router = useRouter();
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+      <div className="flex items-center justify-center">
+        <label
+          htmlFor="file"
+          className={`cursor-pointer ${isLoading && "opacity-70"}`}
+        >
+          <Image
+            src={(store && store?.image) || image || "/store.webp"}
+            alt="store image"
+            width={200}
+            height={200}
+            priority
+            className="aspect-square h-[150px] w-[150px] rounded-full"
+          />
+        </label>
+        <input
+          id="file"
+          type="file"
+          accept="image/*"
+          disabled={isLoading}
+          onChange={(e) => handleImage(e)}
+          className="file-input file-input-bordered file-input-xs hidden w-full max-w-xs"
+        />
+      </div>
       <label className="form-control w-full">
         <div className="label">
           <span className="label-text">Store Name</span>
@@ -176,13 +209,23 @@ export default function Form({
           </span>
         </div>
       </label>
-      <button
-        disabled={isLoading}
-        type="submit"
-        className="btn btn-primary btn-sm w-full text-white md:btn-md"
-      >
-        {isLoading ? "Loading..." : "Create"}
-      </button>
+      <div className="grid grid-cols-2 gap-1">
+        <button
+          disabled={isLoading}
+          type="button"
+          onClick={() => router.back()}
+          className="btn btn-error btn-sm w-full text-white md:btn-md"
+        >
+          {isLoading ? "Loading..." : "Cancel"}
+        </button>
+        <button
+          disabled={isLoading}
+          type="submit"
+          className="btn btn-primary btn-sm w-full text-white md:btn-md"
+        >
+          {isLoading ? "Loading..." : "Update"}
+        </button>
+      </div>
     </form>
   );
 }

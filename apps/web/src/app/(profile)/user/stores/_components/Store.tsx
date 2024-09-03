@@ -6,8 +6,16 @@ import Image from "next/image";
 import { RiGitBranchLine } from "react-icons/ri";
 import { FaStore } from "react-icons/fa";
 import convertDate from "@/utils/convertDate";
+import DeleteStore from "./DeleteStore";
+import { MdEdit } from "react-icons/md";
 
-export default function Store({ store }: { store: StoreProps }) {
+export default function Store({
+  store,
+  api_url,
+}: {
+  store: StoreProps;
+  api_url: string;
+}) {
   const router = useRouter();
 
   return (
@@ -41,11 +49,14 @@ export default function Store({ store }: { store: StoreProps }) {
             }
             className="btn btn-primary btn-xs text-white sm:btn-sm"
           >
+            <MdEdit />
             Edit
           </button>
-          <button className="btn btn-error btn-xs text-white sm:btn-sm">
-            Delete
-          </button>
+          <DeleteStore
+            id={store.id}
+            api_url={api_url}
+            store_name={store.name}
+          />
         </div>
       </div>
     </div>

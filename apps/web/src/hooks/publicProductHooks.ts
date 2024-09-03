@@ -13,7 +13,6 @@ export function useProductWithFilter({
   order?: "asc" | "desc";
   orderField?: string;
 }) {
-
   return useQuery({
     queryKey: [
       "publicProductList",

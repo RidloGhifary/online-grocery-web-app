@@ -35,11 +35,11 @@ export default async function RootLayout({
           src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
         />
         <QueryProvider>
-          <ToastContainer position="top-center" draggable={true} />
-          <Marquee />
-          <Navbar user={user as UserProps} />
-          <main>{children}</main>
-          <Footer />
+            <ToastContainer position="top-center" draggable={true} />
+            <Marquee />
+            <Navbar user={user as UserProps} />
+            <main>{children}</main>
+            <Footer />
         </QueryProvider>
       </body>
     </html>

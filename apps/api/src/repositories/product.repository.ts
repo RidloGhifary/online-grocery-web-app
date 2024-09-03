@@ -1,6 +1,7 @@
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import prisma from '@/prisma';
 import searchFriendlyForLikeQuery from '@/utils/searchFriendlyForLikeQuery';
+import slugify from '@/utils/slugify';
 import { Product } from '@prisma/client';
 
 class ProductRepository {
@@ -121,7 +122,29 @@ class ProductRepository {
     }
     return result
   }
-  
+  async createProduct(product:Product):Promise<CommonResultInterface<Product>>{
+    let result : CommonResultInterface<Product> = {
+      ok: false,
+    }
+    try {
+      product.slug = slugify(product.name)
+      const newData  = await prisma.product.create({
+        data : {
+          ...product
+        },
+        include : {
+          product_category : true
+        }
+      })
+      result.data = newData
+      result.ok = true
+      result.message = 'Success adding data'
+    } catch (error) {
+      result.error = error
+      return result
+    }
+    return result
+  }
 }
 
 export const productRepository = new ProductRepository();

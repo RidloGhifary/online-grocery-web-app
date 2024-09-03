@@ -2,6 +2,7 @@ import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import prisma from '@/prisma';
 import { productRepository } from '@/repositories/product.repository';
 import calculateDistance from '@/utils/calculateDistance';
+import { Product } from '@prisma/client';
 import { Request, Response } from 'express';
 
 export class ProductController {
@@ -203,5 +204,13 @@ export class ProductController {
       return res.status(500).send(result)
     }
     return res.status(200).send(result)
+  }
+  public async createProduct (req: Request, res: Response): Promise<void | Response> {
+    const product :Product = req.body
+    const newData = await productRepository.createProduct(product)
+    if (!newData.ok) {
+      return res.status(400).send(newData)
+    }
+    return res.status(201).send(newData)
   }
 }

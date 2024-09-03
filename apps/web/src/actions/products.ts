@@ -1,7 +1,7 @@
 "use server";
 
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
-import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
+import { ProductCompleteInterface, ProductRecordInterface } from "@/interfaces/ProductInterface";
 import createQueryParams from "@/utils/createQueryParams";
 import { Params } from "next/dist/shared/lib/router/utils/route-matcher";
 
@@ -85,4 +85,32 @@ export async function getSingleProduct({
   }
   
   return result;
+}
+
+export async function createProduct(product:ProductRecordInterface) : Promise<CommonResultInterface<ProductCompleteInterface>> {
+  const result = {
+    ok: false,
+  } as CommonResultInterface<ProductCompleteInterface>;
+  try {
+    const prep = await fetch( `${process.env.BACKEND_URL}/products`,
+      {
+        method : "POST",
+        headers: {
+          'Content-type': 'application/json',
+      },
+        body: JSON.stringify(product),
+      }
+    );
+    const response = await prep.json()
+    if (!response.ok) {
+      result.error = ` ${response.status}`;
+      throw new Error(result.error);
+    }
+    result.data = response.data as ProductCompleteInterface
+    response.ok = true
+    result.message = 'Data created'
+  } catch (error) {
+    result.error = error instanceof Error ? error.message : "Failed to fetch product";
+  }
+  return result
 }

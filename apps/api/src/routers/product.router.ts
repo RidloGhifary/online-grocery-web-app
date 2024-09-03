@@ -19,6 +19,7 @@ export class ProductRouter {
       '/nearest-distance',
       this.productController.getProductByClosestDistance,
     );
+    this.router.post('/', this.productController.createProduct);
     this.router.get('/:slug', this.productController.productSingle);
     
   }

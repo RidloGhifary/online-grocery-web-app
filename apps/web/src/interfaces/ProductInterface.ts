@@ -16,7 +16,7 @@ export interface ProductCompleteInterface {
   product_category ?: ProductCategoryInterface 
 }
 
-interface ProductCategoryInterface {
+export interface ProductCategoryInterface {
   id: number;
   name: string;
   display_name: string | null;
@@ -30,4 +30,16 @@ export interface ProductCardListInterface {
   price: number;
   slug: string,
   city ?: string
+}
+
+export interface ProductRecordInterface {
+  sku: string;
+  name: string;
+  product_category_id: number;
+  description?: string | null;
+  current_stock?: number | null;
+  unit: string;
+  price: number;
+  image?: string | null;
+  store_id: number | null;
 }

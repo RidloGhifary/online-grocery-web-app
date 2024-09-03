@@ -6,7 +6,7 @@ import ProductFilter from "@/components/features-2/product/filter/ProductFilter"
 import PublicProductList from "@/components/features-2/product/PublicProductList";
 import { Modal } from "@/components/features-2/ui/Modal";
 import SearchBar from "@/components/features-2/ui/SearchBar";
-import { useProductWithFilter } from "@/hooks/productHooks";
+import { useProductWithFilter } from "@/hooks/publicProductHooks";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChangeEventHandler, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";

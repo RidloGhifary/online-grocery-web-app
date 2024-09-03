@@ -1,13 +1,8 @@
-'use client'
+"use client";
 
-import { createStore, Provider } from 'jotai'
-import { ReactNode, useState } from 'react'
+import { Provider } from "jotai";
+import { ReactNode } from "react";
 
-export const GlobalAtomProvider = ({ children }: { children: ReactNode}) => {
-  const [store] = useState(() => createStore());
-  return (
-    <Provider store={store}>
-      {children}
-    </Provider>
-  )
-}
+export const GlobalAtomProvider = ({ children }: { children: ReactNode }) => {
+  return <Provider>{children}</Provider>;
+};

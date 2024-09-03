@@ -8,8 +8,8 @@ import { Params } from "next/dist/shared/lib/router/utils/route-matcher";
 export async function getProductListWithFilter({
   category,
   search,
-  order = "asc",
-  orderField = "product_name",
+  order ,
+  orderField ,
 }: {
   category?: string;
   search?: string;

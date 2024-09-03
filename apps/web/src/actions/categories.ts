@@ -1,6 +1,6 @@
 'use server'
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
-import { ProductCategoryInterface } from "@/mocks/productCategory";
+import { ProductCategoryInterface } from "@/interfaces/ProductInterface";
 
 export async function getProductCategoryList() : Promise<CommonResultInterface<ProductCategoryInterface[]>> {
   const result = {

@@ -28,14 +28,14 @@ export function addProductAtom({
 
 // Define atoms for the filter parameters
 export const productCategoryAtom = atom<string | undefined>(undefined);
-export const productSearchAtom = atom<string | undefined>(undefined);
+export const productSearchAtom = atomWithImmer<string | undefined>(undefined);
 export const orderProductAtom = atom<"asc" | "desc">("asc");
 export const orderProductFieldAtom = atom<string>("product_name");
 
 // Define the product list atom with Jotai and React Query
 export const productListAtom = atomWithQuery((get) => ({
   queryKey: [
-    "publicProductList",
+    "productList",
     {
       category: get(productCategoryAtom),
       search: get(productSearchAtom),
@@ -54,6 +54,5 @@ export const productListAtom = atomWithQuery((get) => ({
   },
 }));
 
-export const categoriesAtom = atomWithImmer<ProductCategoryInterface[]>([]);
 
 

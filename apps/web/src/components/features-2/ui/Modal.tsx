@@ -19,21 +19,24 @@ export function Modal({
 }: ModalPropsInterface) {
   const localRef = useRef<HTMLDialogElement | null>(null);
   const modalRef = theRef ? (theRef as MutableRefObject<HTMLDialogElement | null>) : localRef;
+  const modalContentRef = useRef<HTMLDivElement | null>(null);
 
   const handleClose = useCallback(
     (event?: MouseEvent | FormEvent) => {
       if (onClose) {
         onClose(event); // Ensure onClose is called with the correct event parameter
       }
-      show=false
-      modalRef.current?.close(); // Close the modal
     },
-    [onClose, modalRef]
+    [onClose]
   );
 
   const handleOutsideClick = useCallback(
     (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+      if (
+        modalRef.current &&
+        modalRef.current.contains(event.target as Node) &&
+        !modalContentRef.current?.contains(event.target as Node)
+      ) {
         handleClose(event); // Close the modal when clicking outside
       }
     },
@@ -63,26 +66,27 @@ export function Modal({
 
   return (
     <dialog className={`modal ${scrollable ? "overflow-y-auto" : ""}`} ref={modalRef}>
-      <div className={`modal-box ${useTCustomContentWidthClass||''} relative ${scrollable ? "max-h-[90%]" : ""}`}>
-        <form method="dialog">
-          <button
+      <div
+        className={`modal-box ${useTCustomContentWidthClass || ''} relative ${scrollable ? "max-h-[90%]" : ""}`}
+        ref={modalContentRef}
+      >
+        <button
             type="button"
             className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
             onClick={handleClose}
           >
             ✕
           </button>
-        </form>
         <div className="pt-8">{children}</div>
         <div className="flex flex-wrap gap-2 justify-end ">
-          {actions && actions.map((action) => <div key={Date.now()} className="modal-action">{action}</div>)}
+          {actions && actions.map((action, index) => (
+            <div key={index} className="modal-action">{action}</div>
+          ))}
           {closeButton && (
             <div className="modal-action">
-              <form method="dialog">
-                <button type="button" className="btn btn-error" onClick={handleClose}>
-                  Close
-                </button>
-              </form>
+              <button type="button" className="btn btn-error" onClick={handleClose}>
+                Close
+              </button>
             </div>
           )}
         </div>

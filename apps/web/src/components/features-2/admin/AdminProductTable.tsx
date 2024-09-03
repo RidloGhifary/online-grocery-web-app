@@ -5,27 +5,40 @@ import { FaInfoCircle } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
 import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
+import ButtonWithAction from "../ui/ButtonWithAction";
 
-export default function ({ products }: { products: ProductCompleteInterface[] }) {
+export default function ({
+  products,
+}: {
+  products: ProductCompleteInterface[];
+}) {
   return (
     <div className="overflow-x-auto">
       <table className="table w-full text-base">
         <thead>
           <tr>
-            <th className="font-extrabold text-lg">Product</th>
-            <th className="font-extrabold hidden sm:table-cell text-lg">SKU</th>
-            <th className="font-extrabold hidden sm:table-cell text-lg">Category</th>
-            <th className="font-extrabold hidden md:table-cell text-lg">Stock</th>
-            <th className="font-extrabold hidden md:table-cell text-lg">Unit</th>
-            <th className="font-extrabold hidden md:table-cell text-lg">Price</th>
-            <th className="font-extrabold text-lg">Action</th>
+            <th className="text-lg font-extrabold">Product</th>
+            <th className="hidden text-lg font-extrabold sm:table-cell">SKU</th>
+            <th className="hidden text-lg font-extrabold sm:table-cell">
+              Category
+            </th>
+            <th className="hidden text-lg font-extrabold md:table-cell">
+              Stock
+            </th>
+            <th className="hidden text-lg font-extrabold md:table-cell">
+              Unit
+            </th>
+            <th className="hidden text-lg font-extrabold md:table-cell">
+              Price
+            </th>
+            <th className="text-lg font-extrabold">Action</th>
           </tr>
         </thead>
         <tbody>
           {products.map((product) => (
             <tr key={product.id}>
               <td>
-                <div className="flex flex-col sm:items-center items-start justify-start sm:flex-row sm:space-x-4 min-w-40">
+                <div className="flex min-w-40 flex-col items-start justify-start sm:flex-row sm:items-center sm:space-x-4">
                   <Image
                     src={product.image || "https://via.placeholder.com/150"}
                     alt={product.name}
@@ -34,7 +47,7 @@ export default function ({ products }: { products: ProductCompleteInterface[] })
                     className="hidden rounded-md sm:table-cell"
                   />
                   {/* {product.name} */}
-                  <span >{product.name}</span>
+                  <span>{product.name}</span>
                 </div>
               </td>
               <td className="hidden sm:table-cell">{product.sku}</td>
@@ -51,9 +64,15 @@ export default function ({ products }: { products: ProductCompleteInterface[] })
               </td>
               <td>
                 <div className="flex flex-wrap gap-2">
-                  <button className="btn btn-primary btn-sm"><FaInfoCircle /></button>
-                  <button className="btn btn-secondary btn-sm"><FaEdit /></button>
-                  <button className="btn btn-error btn-sm"><FaTrash /></button>
+                  <ButtonWithAction replaceTWClass="btn btn-info btn-sm">
+                    <FaInfoCircle />
+                  </ButtonWithAction>
+                  <ButtonWithAction replaceTWClass="btn btn-accent btn-sm">
+                    <FaEdit />
+                  </ButtonWithAction>
+                  <ButtonWithAction replaceTWClass="btn btn-error btn-sm">
+                    <FaTrash />
+                  </ButtonWithAction>
                 </div>
               </td>
             </tr>

@@ -1,5 +1,3 @@
-import { getProductListWithFilter } from "@/actions/products";
-import AdminProductPage from "./_components/AdminProductPage";
 import {
   dehydrate,
   HydrationBoundary,
@@ -7,13 +5,10 @@ import {
 } from "@tanstack/react-query";
 import { queryKeys } from "@/constants/queryKeys";
 import { getProductCategoryList } from "@/actions/categories";
+import AdminCategoriesPage from "./_components/AdminCategoriesPage";
 
 export default async function Page() {
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery({
-    queryKey: [queryKeys.products],
-    queryFn: () => getProductListWithFilter({}),
-  });
   await queryClient.prefetchQuery({
     queryKey: [queryKeys.productCategories],
     queryFn: async () => await getProductCategoryList(),
@@ -21,7 +16,8 @@ export default async function Page() {
   return (
     <>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <AdminProductPage />
+        {/* <AdminProductPage /> */}
+        <AdminCategoriesPage/>
       </HydrationBoundary>
     </>
   );

@@ -70,6 +70,7 @@ export default function AdminNavMenu() {
         return (
           <li key={item.name}>
             <Link
+              prefetch={true}
               className={`h-full min-h-full flex items-center justify-center ${isActive ? "font-bold" : ""}`}
               href={`${baseUrlGroup}${item.href}`}
             >

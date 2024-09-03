@@ -1,33 +1,38 @@
-'use client'
+"use client";
 import { getProductListWithFilter } from "@/actions/products";
+import { queryKeys } from "@/constants/queryKeys";
 import { useQuery } from "@tanstack/react-query";
 
 export function useProductWithFilter({
   category,
   search,
-  order = "asc",
-  orderField = "product_name",
+  order,
+  orderField,
 }: {
   category?: string;
   search?: string;
   order?: "asc" | "desc";
   orderField?: string;
 }) {
+  let keys: {} | undefined = undefined;
+  if (category || search || order || orderField) {
+    keys = {
+      category,
+      search,
+      order,
+      orderField,
+    };
+  }
   return useQuery({
     queryKey: [
-      "publicProductList",
-      {
-        search: search,
-        orderField: orderField || "product_name",
-        order: order || "asc",
-        category: category,
-      },
+      queryKeys.products,
+      (keys||undefined),
     ],
     queryFn: async () => {
       const data = await getProductListWithFilter({
         search: search,
-        orderField: orderField || "product_name",
-        order: order || "asc",
+        orderField: orderField,
+        order: order,
         category: category,
       });
       return data;

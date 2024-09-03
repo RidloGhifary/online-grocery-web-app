@@ -33,8 +33,7 @@ export default function PublicProductDetail({ product }) {
         refreshCart();
       }
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.error || "Failed to add item to cart.";
+      const errorMessage = err.message || "Failed to add item to cart.";
       console.error("Failed to add item to cart:", errorMessage);
       setError(errorMessage);
     } finally {
@@ -122,7 +121,11 @@ export default function PublicProductDetail({ product }) {
               />
             </svg>
           </button>
-          {error && <p className="mt-2 text-red-500">{error}</p>}
+          {error && (
+            <p className="mt-2 flex w-40 items-center justify-center self-end text-red-500">
+              {error}
+            </p>
+          )}
         </div>
       </div>
     </div>

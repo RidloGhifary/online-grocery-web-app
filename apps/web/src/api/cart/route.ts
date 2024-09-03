@@ -7,6 +7,13 @@ interface CartItem {
   qty: number;
   user_id: number;
   store_id: number;
+  totalPrice: number;
+  product: {
+    name: string;
+    price: number;
+    image: string;
+    description: string;
+  };
 }
 
 interface GetCartItemsResponse {
@@ -80,7 +87,19 @@ export async function addItemToCart(
     });
     return response;
   } catch (error) {
-    throw new Error(`Failed to add item to cart: ${error}`);
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        throw new Error(
+          error.response.data.message || `Error: ${error.response.status}`,
+        );
+      } else if (error.request) {
+        throw new Error("No response from server.");
+      } else {
+        throw new Error(error.message);
+      }
+    } else {
+      throw new Error(`Failed to add item to cart: ${error}`);
+    }
   }
 }
 

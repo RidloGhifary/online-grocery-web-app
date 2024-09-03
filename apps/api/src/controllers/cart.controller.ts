@@ -20,7 +20,6 @@ export class CartController {
       return res.status(401).json({ error: 'User not authenticated' });
     }
     const userId = user.id;
-
     const {
       page = 1,
       pageSize = 8,
@@ -30,6 +29,9 @@ export class CartController {
     } = req.query;
 
     try {
+      const offset = (Number(page) - 1) * Number(pageSize);
+      const limit = Number(pageSize);
+
       const cartItems = await prisma.cart.findMany({
         where: {
           user_id: userId,
@@ -39,7 +41,15 @@ export class CartController {
             },
           },
         },
-        include: {
+        select: {
+          id: true,
+          product_id: true,
+          qty: true,
+          user_id: true,
+          store_id: true,
+          createdAt: true,
+          updatedAt: true,
+          deletedAt: true,
           product: {
             select: {
               name: true,
@@ -49,19 +59,30 @@ export class CartController {
             },
           },
         },
-        orderBy:
-          sort === 'name' || sort === 'price'
-            ? {
-                product: {
-                  [sort.toString()]: order.toString(),
-                },
-              }
-            : {
-                [sort.toString()]: order.toString(),
-              },
-        skip: (Number(page) - 1) * Number(pageSize),
-        take: Number(pageSize),
+        skip: offset,
+        take: limit,
       });
+
+      const formattedCartItems = cartItems.map((item) => ({
+        ...item,
+        totalPrice: item.qty * item.product.price,
+      }));
+
+      if (sort === 'price') {
+        formattedCartItems.sort((a, b) => {
+          const priceA = a.totalPrice;
+          const priceB = b.totalPrice;
+          return order === 'asc' ? priceA - priceB : priceB - priceA;
+        });
+      } else if (sort === 'name') {
+        formattedCartItems.sort((a, b) => {
+          const nameA = a.product.name.toLowerCase();
+          const nameB = b.product.name.toLowerCase();
+          return order === 'asc'
+            ? nameA.localeCompare(nameB)
+            : nameB.localeCompare(nameA);
+        });
+      }
 
       const totalItems = await prisma.cart.count({
         where: {
@@ -75,7 +96,7 @@ export class CartController {
       });
 
       return res.json({
-        data: cartItems,
+        data: formattedCartItems,
         totalItems,
         totalPages: Math.ceil(totalItems / Number(pageSize)),
         currentPage: Number(page),

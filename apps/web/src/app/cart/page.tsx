@@ -34,9 +34,9 @@ const CartPage: React.FC = () => {
     const fetchCartItems = async () => {
       try {
         const response = await getCartItems(page, 8, sort, order, search);
-        const cartItems = response.data.data;
-        if (Array.isArray(cartItems)) {
-          const mappedItems = cartItems.map((item) => ({
+        const formattedCartItems = response.data.data;
+        if (Array.isArray(formattedCartItems)) {
+          const mappedItems = formattedCartItems.map((item) => ({
             ...item,
             quantity: item.qty,
             product: item.product || {},
@@ -44,7 +44,7 @@ const CartPage: React.FC = () => {
           setItems((prevItems) =>
             page === 1 ? mappedItems : [...prevItems, ...mappedItems],
           );
-          setHasMoreItems(cartItems.length === 8);
+          setHasMoreItems(formattedCartItems.length === 8);
         } else {
           throw new Error("Unexpected response format: data is not an array");
         }

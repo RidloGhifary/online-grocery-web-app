@@ -31,7 +31,7 @@ const CarouselWithThumb: React.FC<{ images: string[] }> = ({ images }) => {
         {images.map((src, index) => (
           <SwiperSlide key={index}>
             <Image
-              src={src}
+              src={src || "/images/placeholder.png"}
               alt={`Image ${index + 1}`}
               className="aspect-square w-full cursor-pointer object-scale-down"
               width={800}

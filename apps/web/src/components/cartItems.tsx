@@ -89,7 +89,7 @@ const CartItem: React.FC<CartItemProps> = ({
       )}
       <div className="flex w-full flex-col items-center lg:flex-row">
         <img
-          src={item.product.image || "/path/to/placeholder-image.jpg"}
+          src={item.product.image || "/images/placeholder.png"}
           alt={item.product.name}
           className="mb-4 h-24 w-24 rounded-md object-cover lg:mb-0 lg:mr-4"
         />

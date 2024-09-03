@@ -18,7 +18,6 @@ import MainButton from "@/components/MainButton";
 const CartPage: React.FC = () => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState<React.ReactNode>("");
   const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {});
@@ -28,7 +27,6 @@ const CartPage: React.FC = () => {
   const [order, setOrder] = useState<string>("asc");
   const [search, setSearch] = useState<string>("");
   const [hasMoreItems, setHasMoreItems] = useState<boolean>(true);
-  const [sortModalVisible, setSortModalVisible] = useState(false);
   const [isSortModal, setIsSortModal] = useState(false);
   const { refreshCart } = useCart();
 
@@ -57,10 +55,6 @@ const CartPage: React.FC = () => {
 
     fetchCartItems();
   }, [page, sort, order, search]);
-
-  const handleVoucherSelect = (voucher: string) => {
-    setSelectedVoucher(voucher);
-  };
 
   const handleCheckboxChange = (productId: number) => {
     setSelectedItems((prevSelectedItems) =>
@@ -284,8 +278,6 @@ const CartPage: React.FC = () => {
               items={items.filter((item) =>
                 selectedItems.includes(item.product_id),
               )}
-              selectedVoucher={selectedVoucher}
-              onVoucherSelect={handleVoucherSelect}
               disableButton={selectedItems.length === 0}
               onCheckout={handleProceedToCheckout}
               showDeliveryPrice={false}

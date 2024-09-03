@@ -77,7 +77,7 @@ export function Modal({
           >
             ✕
           </button>
-        <div className="pt-8">{children}</div>
+        <div className="pt-2">{children}</div>
         <div className="flex flex-wrap gap-2 justify-end ">
           {actions && actions.map((action, index) => (
             <div key={index} className="modal-action">{action}</div>

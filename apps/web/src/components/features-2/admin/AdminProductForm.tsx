@@ -106,7 +106,7 @@ export default function ProductForm() {
             setValue("product_category_id", option?.value || 0)
           }
           placeholder="Select a category"
-          isClearable
+          // isClearable
           value={categoryOptions.find(
             (option) => option.value === watch("product_category_id"),
           )}

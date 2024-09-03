@@ -78,7 +78,8 @@ export default function () {
         <AdminCategoryTable categories={categories} />
       </div>
       <Modal show={operation === "filter" ?? false} onClose={handleClose}>
-        <AdminFilter />
+        {/* <AdminFilter /> */}
+        'Filter'
       </Modal>
       <Modal show={operation === "add" ?? false} onClose={handleClose} closeButton={false}>
         <AdminProductForm />

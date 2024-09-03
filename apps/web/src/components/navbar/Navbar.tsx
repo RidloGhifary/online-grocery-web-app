@@ -4,7 +4,6 @@ import { IoMenu } from "react-icons/io5";
 
 import Container from "../Container";
 import Logo from "../Logo";
-import InputSearch from "./InputSearch";
 import NavbarItem from "./NavbarItem";
 import { useState } from "react";
 import { UserProps } from "@/interfaces/user";
@@ -23,8 +22,6 @@ export default function Navbar({ user }: NavbarProps) {
           <div className="flex-1">
             <Logo />
           </div>
-
-          <InputSearch />
 
           <div className="flex md:hidden">
             <IoMenu

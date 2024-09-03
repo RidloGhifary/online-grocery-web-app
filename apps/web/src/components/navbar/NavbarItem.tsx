@@ -19,15 +19,22 @@ export default function NavbarItem({ user }: NavbarItemProps) {
       <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
         {isLoggedIn
           ? NavbarItemAuth.map((item, i) => (
-              <div key={i}>
+              <div key={i} className="w-full md:w-fit">
                 {item.name === "Profile" ? (
                   <ProfileItem />
                 ) : (
                   <div
                     onClick={() => router.push(`${item.href}`)}
-                    className="cursor-pointer hover:underline"
+                    className={`btn btn-secondary btn-sm w-full transition md:btn-ghost md:w-fit`}
                   >
-                    {item.name}
+                    {item.name === "Search" ? (
+                      <item.icon size={23} />
+                    ) : (
+                      <>
+                        <item.icon size={23} />
+                        {item.name}
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -36,8 +43,9 @@ export default function NavbarItem({ user }: NavbarItemProps) {
               <div
                 key={i}
                 onClick={() => router.push(`${item.href}`)}
-                className="cursor-pointer hover:underline"
+                className={`btn ${i === 2 ? "btn-primary text-white" : "btn-secondary"} btn-sm w-full transition md:w-fit`}
               >
+                <item.icon />
                 {item.name}
               </div>
             ))}

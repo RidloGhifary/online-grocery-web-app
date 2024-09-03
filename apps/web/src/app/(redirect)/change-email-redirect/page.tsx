@@ -51,6 +51,7 @@ export default function ChangeEmailRedirect() {
       });
       router.refresh();
       router.push("/login");
+      router.refresh();
     }
   }, [cookiesSet, queryClient, router]);
 
@@ -58,6 +59,7 @@ export default function ChangeEmailRedirect() {
   useEffect(() => {
     if (!key) {
       router.push("/");
+      router.refresh();
     }
   }, [key, router]);
 

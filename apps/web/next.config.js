@@ -10,7 +10,6 @@ const nextConfig = {
       },
       {
         protocol: "https",
-<<<<<<< HEAD
         hostname: "utfs.io",
         port: "",
         pathname: "/*/**",
@@ -20,10 +19,11 @@ const nextConfig = {
         hostname: "lh3.googleusercontent.com",
         port: "",
         pathname: "/*/**",
-=======
-        hostname: "**",
->>>>>>> 4646dd604e8ce290892fe8f2a08f941b8ee95a57
       },
+      {
+        protocol: "https",
+        hostname: "**",
+      }
     ],
   },
 };

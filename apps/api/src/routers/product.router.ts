@@ -18,6 +18,9 @@ export class ProductRouter {
       '/nearest-distance',
       this.productController.getProductByClosestDistance,
     );
+    this.router.get('/:id', (req, res) =>
+      this.productController.getProductById(req, res),
+    );
   }
 
   getRouter(): Router {

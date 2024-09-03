@@ -42,7 +42,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
   showSubtotal = true,
 }) => {
   const totalPrice = items.reduce(
-    (total, item) => total + item.qty * item.product.price,
+    (total, item) => total + item.qty * item.product?.price,
     0,
   );
 

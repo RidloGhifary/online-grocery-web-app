@@ -89,13 +89,13 @@ const CartItem: React.FC<CartItemProps> = ({
       )}
       <div className="flex w-full flex-col items-center lg:flex-row">
         <img
-          src={item.product.image || "/images/placeholder.png"}
-          alt={item.product.name}
+          src={item?.product?.image || "/images/placeholder.png"}
+          alt={item?.product?.name}
           className="mb-4 h-24 w-24 rounded-md object-cover lg:mb-0 lg:mr-4"
         />
         <div className="flex-grow text-center lg:text-left">
-          <h2 className="text-xl font-semibold">{item.product.name}</h2>
-          <p className="text-gray-500">{item.product.description}</p>
+          <h2 className="text-xl font-semibold">{item.product?.name}</h2>
+          <p className="text-gray-500">{item.product?.description}</p>
           <div className="mt-2 flex items-center justify-center lg:justify-start">
             {showButtons ? (
               <>
@@ -113,7 +113,7 @@ const CartItem: React.FC<CartItemProps> = ({
               </>
             ) : showQuantityPrice ? (
               <span className="font-semibold">
-                {item.qty} X {convertToRupiah(item.product.price)}
+                {item.qty} X {convertToRupiah(item.product?.price)}
               </span>
             ) : (
               <span className="font-semibold">{item.qty}</span>
@@ -123,7 +123,7 @@ const CartItem: React.FC<CartItemProps> = ({
       </div>
       <div className="mt-4 w-full text-center lg:mt-0 lg:text-right">
         <p className="text-xl font-bold">
-          {convertToRupiah(item.product.price * item.qty)}
+          {convertToRupiah(item.product?.price * item.qty)}
         </p>
         {showButtons && (
           <MainButton

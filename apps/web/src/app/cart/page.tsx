@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
-import CartItem from "@/components/CartItems";
+import CartItem from "@/components/cartItems";
 import { FaRegTrashAlt } from "react-icons/fa";
 
 import {
@@ -11,7 +11,7 @@ import {
   selectForCheckout,
 } from "@/api/cart/route";
 import { IoMenu } from "react-icons/io5";
-import CheckoutSummary from "@/components/CheckoutSummary";
+import CheckoutSummary from "@/components/checkoutSummary";
 import { Modal } from "@/components/features-2/ui/Modal";
 import MainButton from "@/components/MainButton";
 

@@ -8,8 +8,8 @@ import {
 } from "@/constants/index";
 import CheckoutSummary from "@/components/checkoutSummary";
 import CartItem from "@/components/cartItems";
-import AddressCard from "./components/AddressCard";
-import DeliveryService from "./components/DeliveryService";
+import AddressCard from "./_components/addressSection/AddressCard";
+import DeliveryService from "./_components/DeliveryService";
 
 const CheckoutPage: React.FC = () => {
   const [selectedDeliveryService, setSelectedDeliveryService] = useState("JNE");

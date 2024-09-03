@@ -1,11 +1,12 @@
 import React from "react";
 
 interface MainButtonProps {
-  text: string;
+  text: React.ReactNode | string;
   onClick?: () => void;
   disabled?: boolean;
-  variant?: "primary" | "error" | "danger";
+  variant?: "primary" | "secondary" | "error" | "danger" | "static";
   fullWidth?: boolean;
+  className?: string;
 }
 
 const MainButton: React.FC<MainButtonProps> = ({
@@ -14,12 +15,15 @@ const MainButton: React.FC<MainButtonProps> = ({
   disabled = false,
   variant = "primary",
   fullWidth = false,
+  className = "",
 }) => {
-  const baseStyles = "btn mt-2";
+  const baseStyles = "btn";
   const variantStyles = {
-    primary: "bg-blue-500 text-white hover:bg-blue-600",
-    error: "bg-red-500 text-white hover:bg-red-600",
-    danger: "bg-red-500 text-white hover:bg-red-600",
+    primary: "bg-primary text-white hover:bg-secondary",
+    secondary: "bg-secondary text-white hover:bg-third",
+    error: "bg-red-600 text-white hover:bg-red-700",
+    danger: "bg-red-600 text-white hover:bg-red-700",
+    static: "bg-gray-600 text-white hover:bg-gray-700",
   };
   const disabledStyles = disabled
     ? "bg-gray-400 text-gray-500 cursor-not-allowed"
@@ -29,7 +33,7 @@ const MainButton: React.FC<MainButtonProps> = ({
     <button
       className={`${baseStyles} ${variantStyles[variant]} ${
         fullWidth ? "w-full" : ""
-      } ${disabledStyles}`}
+      } ${disabledStyles} ${className}`}
       onClick={onClick}
       disabled={disabled}
     >

@@ -1,16 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-
 import { NavbarItems, NavbarItemAuth } from "@/constants";
 import ProfileItem from "./ProfileItem";
 import { UserProps } from "@/interfaces/user";
 
 interface NavbarItemProps {
   user?: UserProps;
+  cartItemCount?: number; // Add prop for cart item count
 }
 
-export default function NavbarItem({ user }: NavbarItemProps) {
+export default function NavbarItem({ user, cartItemCount }: NavbarItemProps) {
   const isLoggedIn = !!user;
   const router = useRouter();
 

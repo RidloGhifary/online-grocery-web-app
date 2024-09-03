@@ -13,6 +13,6 @@
     },
   },
   // "include": ["src/**/*"],
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "src/hashPassword.js"],
   "exclude": ["node_modules"]
 }

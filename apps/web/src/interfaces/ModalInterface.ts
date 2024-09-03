@@ -1,19 +1,21 @@
 import { FormEvent, MutableRefObject, ReactNode } from "react";
 
 export interface ModalInterface {
-  show : boolean;
+  show: boolean;
   content: ReactNode | null | undefined;
-  actions : ReactNode[] | null;
+  actions: ReactNode[] | null;
 }
 
 export interface ModalPropsInterface {
   show?: boolean;
-  onClose?: ((e?:MouseEvent|FormEvent|undefined|null) => void) | undefined;
+  onClose?:
+    | ((e?: MouseEvent | FormEvent | undefined | null) => void)
+    | undefined;
   children?: ReactNode | undefined;
   closeButton?: boolean;
   scrollable?: boolean;
   actions?: ReactNode[] | undefined;
   theRef?: MutableRefObject<HTMLDialogElement | null> | undefined | null;
-  useTCustomContentWidthClass ?: string
+  useTCustomContentWidthClass?: string;
+  hideCloseButton?: Boolean;
 }
-

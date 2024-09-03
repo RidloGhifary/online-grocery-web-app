@@ -1,157 +1,131 @@
-'use client'
-import { useId } from "react";
-import Select from "react-select";
+"use client";
+
+import React, { useState } from "react";
 import QuantityBox from "../ui/QuantityBox";
-import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
+import { addItemToCart } from "@/api/cart/route";
+import { useCart } from "@/context/CartContext";
+import { convertToRupiah } from "@/utils/ConvertRupiah";
 
-const mockStores = [
-  { id: 0, value: "store1", label: "Store 1" },
-  { id: 1, value: "store2", label: "Store 2" },
-  { id: 2, value: "store3", label: "Store 3" },
-];
+export default function PublicProductDetail({ product }) {
+  const [quantity, setQuantity] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentStock, setCurrentStock] = useState<number>(
+    product.current_stock,
+  );
+  const { refreshCart } = useCart();
 
-export default function PublicProductDetail({
-  productDetail,
-  isLoading,
-}: {
-  productDetail: ProductCompleteInterface;
-  isLoading: boolean;
-}) {
-  const product = productDetail;
-  const instanceId = useId();
+  const handleAddToCart = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (currentStock >= quantity) {
+        const response = await addItemToCart(
+          product.id,
+          quantity,
+          product.store_id,
+        );
+        console.log("Item added to cart:", response.data);
+        alert("Item added to cart!");
+        setCurrentStock((prevStock) => prevStock - quantity);
+        setQuantity(1);
+        refreshCart();
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to add item to cart.";
+      console.error("Failed to add item to cart:", errorMessage);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="mt-6 w-full max-w-3xl">
+    <div className="mx-5 mt-6 max-w-xl">
       <div className="flex justify-center pb-2">
-        <h1 className="mt-5 text-center text-3xl font-bold text-gray-800 lg:text-4xl">
-          {isLoading ? <span className="loading loading-spinner loading-md text-primary"></span> : product.name}
+        <h1 className="mt-2 text-xl font-bold text-gray-800 lg:text-2xl">
+          {product.name}
         </h1>
       </div>
-
-      <div className="flex w-full justify-center">
-        <div className="my-7 flex w-full max-w-full flex-col p-6">
-          <table className="mb-8 w-full text-gray-800">
+      <div>
+        <div className="my-7 p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
+          <table className="w-full text-gray-800">
             <tbody>
               <tr className="border-b">
-                <td className="py-2 text-sm font-bold">SKU</td>
-                <td className="py-2 text-right text-sm">
-                  {isLoading ? <span className="loading loading-spinner loading-sm text-primary"></span> : product.sku}
-                </td>
+                <td className="py-2 text-sm">ID</td>
+                <td className="py-2 text-right text-sm">{product.id}</td>
               </tr>
               <tr className="border-b">
-                <td className="py-2 text-sm font-bold">Category</td>
-                <td className="py-2 text-right text-sm">
-                  {isLoading ? (
-                    <span className="loading loading-spinner loading-sm text-primary"></span>
-                  ) : (
-                    product.product_category?.display_name
-                  )}
-                </td>
+                <td className="py-2 text-sm">SKU</td>
+                <td className="py-2 text-right text-sm">{product.sku}</td>
               </tr>
               <tr className="border-b">
-                <td className="py-2 text-sm font-bold">Price</td>
-                <td className="py-2 text-right text-sm">
-                  {isLoading ? (
-                    <span className="loading loading-spinner loading-sm text-primary"></span>
-                  ) : (
-                    product.price?.toLocaleString("id-ID", {
-                      style: "currency",
-                      currency: "IDR",
-                    })
-                  )}
-                </td>
+                <td className="py-2 text-sm">Name</td>
+                <td className="py-2 text-right text-sm">{product.name}</td>
               </tr>
               <tr className="border-b">
-                <td className="py-2 text-sm font-bold">Last Update</td>
+                <td className="py-2 text-sm">Price</td>
                 <td className="py-2 text-right text-sm">
-                  {isLoading ? (
-                    <span className="loading loading-spinner loading-sm text-primary"></span>
-                  ) : (
-                    new Date(product?.updatedAt as string).toLocaleDateString('en-US', {
-                      weekday: 'long',  // "Sunday"
-                      year: 'numeric',  // "2024"
-                      month: 'long',    // "September"
-                      day: 'numeric'    // "1"
-                  })
-                  )}
+                  {convertToRupiah(product.price)}
+                </td>
+              </tr>
+              <tr className="">
+                <td className="py-2 text-sm">Last Update</td>
+                <td className="py-2 text-right text-sm">
+                  {new Date(product.updatedAt).toDateString()}
                 </td>
               </tr>
             </tbody>
           </table>
-          <div className="mb-8 flex w-full justify-start">
-            <p className="text-justify text-base leading-normal text-gray-600 lg:leading-tight dark:text-slate-600">
-              {isLoading ? (
-                <span className="loading loading-spinner loading-md text-primary"></span>
-              ) : (
-                product.description
-              )}
+        </div>
+        <p className="mt-2 text-justify text-base leading-normal text-gray-600 lg:leading-tight dark:text-slate-600">
+          {product.description}
+        </p>
+        <table className="mt-4 w-full text-gray-800">
+          <tbody>
+            <tr>
+              <td className="py-2 text-sm">Stock</td>
+              <td className="py-2 text-right text-sm">{currentStock}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div className="flex w-full max-w-full justify-end">
+        <div className="flex w-80 flex-col items-center justify-end rounded">
+          <div className="mt-2 inline-flex self-end">
+            <QuantityBox
+              qty={quantity}
+              setQty={setQuantity}
+              maxQty={currentStock}
+            />
+          </div>
+          <button
+            className="mt-4 flex w-40 items-center justify-center self-end rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50"
+            onClick={handleAddToCart}
+            disabled={loading || currentStock === 0}
+          >
+            {loading ? "Adding..." : "Add to order"}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="ml-2 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+          </button>
+          {error && (
+            <p className="mt-2 flex w-40 items-center justify-center self-end text-red-500">
+              {error}
             </p>
-          </div>
-          <div className="flex w-full max-w-full p-3 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
-            <div className="flex w-full flex-col items-center rounded">
-              <div className="my-2 inline-flex w-full justify-between">
-                <p className="mr-8 inline-flex items-center font-semibold">
-                  Nearest Store
-                </p>
-                <div className="inline-flex w-1/2 items-center">
-                  {isLoading ? (
-                    <span className="loading loading-spinner loading-sm text-primary"></span>
-                  ) : (
-                    <Select
-                      instanceId={instanceId}
-                      options={mockStores}
-                      placeholder="Select store..."
-                      className="w-full"
-                    />
-                  )}
-                </div>
-              </div>
-              <div className="mt-2 inline-flex w-full justify-between">
-                <p className="mr-8 inline-flex items-center font-semibold">
-                  Avalaible Stock
-                </p>
-                <p className="inline-flex items-center">
-                  {isLoading ? <span className="loading loading-spinner loading-sm text-primary"></span> : product.current_stock}
-                </p>
-              </div>
-              <div className="mt-2 inline-flex w-full justify-between">
-                <p className="mr-8 inline-flex items-center font-semibold">
-                  Last Update
-                </p>
-                <p className="inline-flex items-center">
-                  {isLoading ? <span className="loading loading-spinner loading-sm text-primary"></span> : new Date(product?.updatedAt as string).toLocaleDateString('en-US', {
-                      weekday: 'long',  // "Sunday"
-                      year: 'numeric',  // "2024"
-                      month: 'long',    // "September"
-                      day: 'numeric'    // "1"
-                  })}
-                </p>
-              </div>
-              <div className="mt-2 inline-flex w-full justify-between">
-                <p className="mr-8 inline-flex items-center font-semibold">
-                  Buy quantity
-                </p>
-                {isLoading ? <span className="loading loading-spinner loading-sm text-primary"></span> : <QuantityBox />}
-              </div>
-              <button className="mt-4 flex w-full items-center justify-center self-end rounded bg-primary px-4 py-2 text-white hover:bg-[#46c073] active:bg-[#0ea345] disabled:opacity-50">
-                +
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="ml-2 h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,87 +1,41 @@
-import { ChangeEvent, useState } from "react";
-import './css/quantityBox.css'
-
-export default function ({
-  qty = 0,
-  minimumQty = 0,
-  maximumQty,
+export default function QuantityBox({
+  qty = 1,
+  setQty,
+  maxQty,
 }: {
   qty?: number;
-  maximumQty?: number;
-  minimumQty?: number;
+  setQty: React.Dispatch<React.SetStateAction<number>>;
+  maxQty: number;
 }) {
-  const [quantity, setQuantity] = useState<number>(qty);
+  const handleDecrement = () => {
+    if (qty > 1) setQty(qty - 1);
+  };
 
-  function handleIncrement() {
-    if (!maximumQty) {
-      setQuantity((prev) => (prev += 1));
-    } else {
-      if (quantity < maximumQty) {
-        
-        setQuantity((prev) => (prev += 1));
-        console.log(quantity);
-      }
-    }
-  }
-  function handleDecrement() {
-    setQuantity((prev) => (prev > minimumQty ? (prev -= 1) : prev));
-  }
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
-    if (e.currentTarget.value) {
-      setQuantity(Number(e.currentTarget?.value) || quantity)
-    }
-  }
-  
+  const handleIncrement = () => {
+    if (qty < maxQty) setQty(qty + 1);
+  };
+
   return (
-    <div className="flex">
+    <div className="inline-flex items-center rounded border border-gray-200">
       <button
         onClick={handleDecrement}
-        className="inline-flex items-center rounded-l border border-r border-gray-200 bg-white px-2 py-1 text-gray-600 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-50"
+        disabled={qty <= 1}
+        className="flex h-8 w-8 items-center justify-center bg-gray-100 disabled:bg-gray-200 disabled:opacity-50"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M20 12H4"
-          />
-        </svg>
+        -
       </button>
       <input
-      type="number"
-        // defaultValue={qty}
-        value={quantity??''}
-        className="inline-flex max-w-14 select-none items-center border-b border-t border-gray-100 bg-gray-100 text-center text-gray-600 hover:bg-gray-100"
-        onChange={handleChange}
+        type="text"
+        value={qty}
+        readOnly
+        className="h-8 w-10 border-l border-r border-gray-200 bg-white text-center"
       />
-      {/* <div className="inline-flex select-none items-center border-b border-t border-gray-100 bg-gray-100 px-4 py-1 text-gray-600 hover:bg-gray-100">
-        {quantity}
-      </div> */}
-      {/* <input type="hidden" name="qty" value={quantity} /> */}
       <button
         onClick={handleIncrement}
-        className="inline-flex items-center rounded-r border border-r border-gray-200 bg-white px-2 py-1 text-gray-600 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-50"
+        disabled={qty >= maxQty || maxQty === 0}
+        className="flex h-8 w-8 items-center justify-center bg-gray-100 disabled:bg-gray-200 disabled:opacity-50"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
+        +
       </button>
     </div>
   );

@@ -1,5 +1,11 @@
 import { ModalPropsInterface } from "@/interfaces/ModalInterface";
-import { FormEvent, MutableRefObject, useCallback, useEffect, useRef } from "react";
+import {
+  FormEvent,
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 
 const getFullWidthRespectingScrollbarInVw = () => {
   const viewportWidth = window.innerWidth;
@@ -16,6 +22,7 @@ export function Modal({
   theRef,
   useTCustomContentWidthClass,
   onClose,
+  hideCloseButton = false,
 }: ModalPropsInterface) {
   const localRef = useRef<HTMLDialogElement | null>(null);
   const modalRef = theRef ? (theRef as MutableRefObject<HTMLDialogElement | null>) : localRef;
@@ -24,7 +31,7 @@ export function Modal({
   const handleClose = useCallback(
     (event?: MouseEvent | FormEvent) => {
       if (onClose) {
-        onClose(event); // Ensure onClose is called with the correct event parameter
+        onClose(event);
       }
     },
     [onClose]
@@ -40,7 +47,7 @@ export function Modal({
         handleClose(event); // Close the modal when clicking outside
       }
     },
-    [handleClose, modalRef]
+    [handleClose, modalRef],
   );
 
   useEffect(() => {
@@ -72,7 +79,7 @@ export function Modal({
       >
         <button
             type="button"
-            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
             onClick={handleClose}
           >
             ✕
@@ -92,7 +99,9 @@ export function Modal({
         </div>
       </div>
       <form method="dialog" className="modal-backdrop">
-        <button type="button" onClick={handleClose}>close</button>
+        <button type="button" onClick={handleClose}>
+          close
+        </button>
       </form>
     </dialog>
   );

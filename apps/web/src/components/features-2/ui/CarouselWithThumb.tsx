@@ -1,9 +1,7 @@
-// components/CarouselWithThumbs.tsx
+// components/CarouselWithThumb.tsx
 import React, { CSSProperties, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode, Navigation, Thumbs } from "swiper/modules";
-
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/navigation";
@@ -12,24 +10,8 @@ import "./css/carouselFeat2.css";
 import Image from "next/image";
 import { productDefault as products } from "@/mocks/productData";
 
-const CarouselWithThumbs: React.FC = () => {
+const CarouselWithThumb: React.FC<{ images: string[] }> = ({ images }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
-
-  //   const images = [
-  //     "https://swiperjs.com/demos/images/nature-1.jpg",
-  //     "https://swiperjs.com/demos/images/nature-2.jpg",
-  //     "https://swiperjs.com/demos/images/nature-3.jpg",
-  //     "https://swiperjs.com/demos/images/nature-4.jpg",
-  //     "https://swiperjs.com/demos/images/nature-5.jpg",
-  //     "https://swiperjs.com/demos/images/nature-6.jpg",
-  //     "https://swiperjs.com/demos/images/nature-7.jpg",
-  //     "https://swiperjs.com/demos/images/nature-8.jpg",
-  //     "https://swiperjs.com/demos/images/nature-9.jpg",
-  //     "https://swiperjs.com/demos/images/nature-10.jpg",
-  //   ];
-  const images = products
-    .map((e) => e.image)
-    .filter((image): image is string => image !== null);
 
   return (
     <div className="w-full">
@@ -43,14 +25,14 @@ const CarouselWithThumbs: React.FC = () => {
         loop={true}
         spaceBetween={10}
         navigation={true}
-        thumbs={{ swiper: thumbsSwiper }}
+        thumbs={thumbsSwiper ? { swiper: thumbsSwiper } : undefined}
         modules={[FreeMode, Navigation, Thumbs]}
         className="mySwiper2 h-80"
       >
         {images.map((src, index) => (
           <SwiperSlide key={index}>
             <Image
-              src={src}
+              src={src || "/images/placeholder.png"}
               alt={`Image ${index + 1}`}
               className="aspect-square w-full object-scale-down"
               width={800}
@@ -98,4 +80,4 @@ const CarouselWithThumbs: React.FC = () => {
   );
 };
 
-export default CarouselWithThumbs;
+export default CarouselWithThumb;

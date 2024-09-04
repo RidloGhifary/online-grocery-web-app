@@ -91,7 +91,7 @@ export default function ProductsList({ api_url }: Props) {
     );
   }
 
-  if (error) return <ErrorInfo />;
+  if (error) return <ErrorInfo error="Ups, no products found" />;
 
   if (products?.length === 0) {
     return <ErrorInfo error="Ups, no products found" />;

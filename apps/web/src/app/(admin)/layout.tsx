@@ -15,7 +15,7 @@ export default function ({ children }: { children: ReactNode }) {
         }
       >
         <AdminNavMenu/>
-        <div className="m-4 rounded-md">{children}</div>
+        <div className="m-4 rounded-md ">{children}</div>
       </Drawer>
     </>
   );

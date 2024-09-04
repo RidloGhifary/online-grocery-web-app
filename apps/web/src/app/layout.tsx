@@ -4,15 +4,10 @@ import Script from "next/script";
 import { ToastContainer } from "react-toastify";
 
 import QueryProvider from "./provider";
-import Navbar from "@/components/navbar/Navbar";
-import Footer from "@/components/Footer";
-import { UserProps } from "@/interfaces/user";
 
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
-import { getCurrentUser } from "@/actions/getCurrentUser";
 import { CartProvider } from "@/context/CartContext";
-import Marquee from "@/components/Marquee";
 
 const font = Nunito({ subsets: ["latin"] });
 
@@ -26,7 +21,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
 
   return (
     <html lang="en">
@@ -36,12 +30,9 @@ export default async function RootLayout({
           src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
         />
         <QueryProvider>
-            <CartProvider>
+          <CartProvider>
             <ToastContainer position="top-center" draggable={true} />
-            <Marquee />
-              <Navbar user={user as UserProps} />
-              <main>{children}</main>
-              <Footer />
+            {children}
           </CartProvider>
         </QueryProvider>
       </body>

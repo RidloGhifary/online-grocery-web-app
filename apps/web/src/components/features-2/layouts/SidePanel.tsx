@@ -24,7 +24,7 @@ export default function SidePanel({
             <a>Sidebar Item 2</a>
           </li>
         </ul> */}
-        <div className={`w-64 p-4 ${extraContentTWClass||''}`}>{children}</div>
+        <div className={`bg-neutral-100 w-64 p-4 ${extraContentTWClass||''}`}>{children}</div>
       </div>
     </>
   );

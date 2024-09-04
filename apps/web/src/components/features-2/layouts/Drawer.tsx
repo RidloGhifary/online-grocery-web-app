@@ -5,7 +5,7 @@ export default function Drawer({ children, sidePanel }: { children?: ReactNode, 
     <>
       <div className="drawer lg:drawer-open">
         <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content flex flex-col">
+        <div className="drawer-content flex flex-col bg-neutral-100">
           {/* Page content here */}
           {children}
         </div>

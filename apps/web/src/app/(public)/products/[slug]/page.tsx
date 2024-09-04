@@ -1,11 +1,11 @@
 'use client'
 import React from "react";
-import PublicProductDetail from "@/components/features-2/product/PublicProductDetail";
 import CarouselWithThumb from "@/components/features-2/ui/CarouselWithThumb";
 import { useQuery } from "@tanstack/react-query";
 import { notFound, useParams } from "next/navigation";
 import { getSingleProduct } from "@/actions/products";
 import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
+import PublicProductDetailV2 from "@/components/features-2/product/PublicProductDetailV2";
 
 export default function Page() {
   const { slug } = useParams<{ slug: string }>();
@@ -36,12 +36,12 @@ export default function Page() {
     <div className="w-full max-w-full items-center justify-center">
       <div className="flex w-full max-w-full flex-wrap justify-center shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
         <div className="w-full max-w-xl">
-          {product?.data ? <CarouselWithThumb /> : <div className="flex w-full justify-center py-5">
+          {product?.data ? <CarouselWithThumb images={[]} /> : <div className="flex w-full justify-center py-5">
           <span className="loading loading-spinner loading-lg text-primary"></span>
         </div>}
         </div>
         <div className="w-full max-w-xl">
-          <PublicProductDetail 
+          <PublicProductDetailV2 
             productDetail={product?.data as ProductCompleteInterface} 
             isLoading={isLoading} 
           />

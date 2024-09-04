@@ -59,7 +59,7 @@ export default function AdminSideMenu() {
   };
 
   return (
-    <ul className="menu w-56 rounded-box text-lg bg-base-200 min-h-[96vh]">
+    <ul className="menu w-56 rounded-box text-lg bg-neutral shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)] min-h-[96vh]">
       {renderMenuItems(menu)}
     </ul>
   );

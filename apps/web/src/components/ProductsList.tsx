@@ -48,7 +48,6 @@ export default function ProductsList({ api_url }: Props) {
         const query = geoLocation
           ? `?latitude=${geoLocation?.coords.latitude}&longitude=${geoLocation?.coords.longitude}&page=${pageParam}`
           : `?page=${pageParam}`;
-        console.log("🚀 ~ queryFn: ~ query:", query);
         const { data } = await axios.get(
           `${api_url}/products/locations${query}`,
         );

@@ -9,21 +9,24 @@ const protectedRoutes = [
   "/checkout",
   "/transaction",
 ];
-const superAdminRoutes = ["/create-store", "/admin"];
+const adminRoutes = ["/create-store", "/admin"];
 const authRoutes = ["/login", "/register", "/verify-account"];
 
 export default function middleware(req: NextRequest) {
   const token = cookies().get("token")?.value;
 
   let decoded: (JwtPayload & { email?: string }) | null = null;
-  let isSuperAdmin = false;
+  let isAdmin = false;
   let isLoggedIn = false;
 
   try {
     if (token) {
       decoded = jwtDecode<JwtPayload & { email: string }>(token);
       isLoggedIn = true;
-      isSuperAdmin = decoded.email?.includes("super.admin") || false;
+      isAdmin =
+        decoded.email?.includes("super.admin") ||
+        decoded.email?.includes("store.admin") ||
+        false;
     }
   } catch (error) {
     console.error("JWT decoding error:", error);
@@ -32,10 +35,10 @@ export default function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
   if (!isLoggedIn) {
-    // Deny access to protected and superAdminRoutes
+    // Deny access to protected and adminRoutes
     if (
       protectedRoutes.some((route) => path.startsWith(route)) ||
-      superAdminRoutes.some((route) => path.startsWith(route))
+      adminRoutes.some((route) => path.startsWith(route))
     ) {
       const callbackUrl = req.nextUrl.search
         ? `${path}${req.nextUrl.search}`
@@ -44,7 +47,7 @@ export default function middleware(req: NextRequest) {
       const redirectUrl = `/login?callbackUrl=${encodedCallbackUrl}`;
       return NextResponse.redirect(new URL(redirectUrl, req.url));
     }
-  } else if (isSuperAdmin) {
+  } else if (isAdmin) {
     // Redirect SuperAdmins away from authRoutes and protectedRoutes
     if (authRoutes.some((route) => path.startsWith(route))) {
       return NextResponse.redirect(new URL("/admin", req.url));
@@ -55,8 +58,8 @@ export default function middleware(req: NextRequest) {
     }
   } else {
     // Regular users handling
-    if (superAdminRoutes.some((route) => path.startsWith(route))) {
-      return NextResponse.redirect(new URL("/user/settings", req.url)); // Redirect regular users from superAdminRoutes
+    if (adminRoutes.some((route) => path.startsWith(route))) {
+      return NextResponse.redirect(new URL("/user/settings", req.url)); // Redirect regular users from adminRoutes
     }
 
     if (authRoutes.some((route) => path.startsWith(route))) {

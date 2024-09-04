@@ -39,7 +39,9 @@ export async function getAllProducts(): Promise<
 
 export async function getProductById(id: number) {
   try {
-    const response = await api.get<GetProductByIdResponse>(`/products/${id}`);
+    const response = await api.get<GetProductByIdResponse>(
+      `/products/details/${id}`,
+    );
     console.log(response);
     return response;
   } catch (error) {

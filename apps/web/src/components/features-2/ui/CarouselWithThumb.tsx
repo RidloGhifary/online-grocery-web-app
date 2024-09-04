@@ -8,7 +8,6 @@ import "swiper/css/navigation";
 import "swiper/css/thumbs";
 import "./css/carouselFeat2.css";
 import Image from "next/image";
-import { productDefault as products } from "@/mocks/productData";
 
 const CarouselWithThumb: React.FC<{ images: string[] }> = ({ images }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
@@ -27,14 +26,14 @@ const CarouselWithThumb: React.FC<{ images: string[] }> = ({ images }) => {
         navigation={true}
         thumbs={thumbsSwiper ? { swiper: thumbsSwiper } : undefined}
         modules={[FreeMode, Navigation, Thumbs]}
-        className="mySwiper2 h-80"
+        className="mySwiper2 h-80 outline outline-1 outline-black dark:outline-neutral-300"
       >
         {images.map((src, index) => (
           <SwiperSlide key={index}>
             <Image
               src={src || "/images/placeholder.png"}
               alt={`Image ${index + 1}`}
-              className="aspect-square w-full object-scale-down"
+              className="aspect-square w-full cursor-pointer object-scale-down"
               width={800}
               height={800}
               priority

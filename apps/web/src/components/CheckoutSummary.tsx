@@ -1,7 +1,7 @@
 import React from "react";
 import VoucherButton from "@/components/VoucherButton";
 import MainButton from "@/components/MainButton";
-import { convertToRupiah } from "@/utils/ConvertRupiah";
+import convertToRupiah  from "@/utils/convertRupiah";
 
 interface Product {
   name: string;
@@ -42,7 +42,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
   showSubtotal = true,
 }) => {
   const totalPrice = items.reduce(
-    (total, item) => total + item.qty * item.product.price,
+    (total, item) => total + item.qty * item.product?.price,
     0,
   );
 

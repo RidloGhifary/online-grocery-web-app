@@ -7,6 +7,8 @@ import QueryProvider from "./provider";
 
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
+import { getCurrentUser } from "@/actions/getCurrentUser";
+import Marquee from "@/components/Marquee";
 import { CartProvider } from "@/context/CartContext";
 
 const font = Nunito({ subsets: ["latin"] });
@@ -32,7 +34,10 @@ export default async function RootLayout({
         <QueryProvider>
           <CartProvider>
             <ToastContainer position="top-center" draggable={true} />
-            {children}
+            <Marquee />
+            <Navbar user={user as UserProps} />
+            <main>{children}</main>
+            <Footer />
           </CartProvider>
         </QueryProvider>
       </body>

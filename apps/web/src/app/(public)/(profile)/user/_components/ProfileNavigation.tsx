@@ -11,12 +11,20 @@ export default function ProfileNavigation() {
       name: "Profile",
       href: "/user/settings",
       isActive: path === "/user/settings",
+      isDisabled: false,
     },
     {
       name: "Address",
       href: "/user/address",
       isActive: path === "/user/address",
+      isDisabled: false,
     },
+    // {
+    //   name: "Stores",
+    //   href: "/user/stores",
+    //   isActive: path === "/user/stores",
+    //   isDisabled: userRole !== "super_admin",
+    // },
   ];
 
   return (

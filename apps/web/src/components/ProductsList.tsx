@@ -1,55 +1,118 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo, useRef } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import ProductCard from "./ProductCard";
 import axios from "axios";
 import { ProductProps } from "@/interfaces/product";
 import CardProductSkeleton from "@/skeletons/CardProductSkeleton";
-import { useState } from "react";
-import Pagination from "./Pagination";
+import { useEffect, useState } from "react";
+import ErrorInfo from "./ErrorInfo";
+import { toast } from "react-toastify";
 
 interface Props {
   api_url: string;
 }
 
 export default function ProductsList({ api_url }: Props) {
-  const [page, setPage] = useState<number>(1);
+  const [locationReady, setLocationReady] = useState(false);
+  const [geoLocation, setGeoLocation] = useState<GeolocationPosition | null>(
+    null,
+  );
+  const observer = useRef<IntersectionObserver>();
 
-  const {
-    data: products,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["products", page],
-    queryFn: async () => {
-      const { data } = await axios.get(`${api_url}/products?page=${page}`);
-      return data;
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setGeoLocation(position);
+          localStorage.setItem("locationAccess", "granted");
+          setLocationReady(true); // Indicate that location is ready
+        },
+        () => {
+          localStorage.setItem("locationAccess", "denied");
+          setLocationReady(true); // Even if denied, we proceed without location
+        },
+        { enableHighAccuracy: true, timeout: 10000 },
+      );
+    } else {
+      toast.error("Your browser does not support geolocation");
+      setLocationReady(true); // Handle browsers without geolocation support
+    }
+  }, []);
+
+  const { data, error, fetchNextPage, hasNextPage, isFetching, isLoading } =
+    useInfiniteQuery({
+      queryKey: ["products-locations"],
+      queryFn: async ({ pageParam = 1 }) => {
+        const query = geoLocation
+          ? `?latitude=${geoLocation?.coords.latitude}&longitude=${geoLocation?.coords.longitude}&page=${pageParam}`
+          : `?page=${pageParam}`;
+        console.log("🚀 ~ queryFn: ~ query:", query);
+        const { data } = await axios.get(
+          `${api_url}/products/locations${query}`,
+        );
+        return data;
+      },
+      getNextPageParam: (lastPage) => lastPage?.pagination?.next || null,
+      initialPageParam: 1,
+      enabled: locationReady,
+    });
+
+  const lastElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (isLoading) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetching) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observer.current.observe(node);
     },
-  });
+    [fetchNextPage, hasNextPage, isFetching, isLoading],
+  );
+
+  const products = useMemo(() => {
+    return data?.pages.reduce((acc, page) => {
+      return [...acc, ...page.data];
+    }, [] as ProductProps[]);
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <CardProductSkeleton key={i} className="mt-4" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) return <ErrorInfo />;
 
   return (
     <div className="my-8 space-y-6">
-      {isError && (
-        <div className="w-full rounded-md bg-red-500/20 p-6 text-center text-red-500">
-          Ups, something went wrong!
-        </div>
-      )}
-      {isLoading && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <CardProductSkeleton key={i} className="mt-4" />
-          ))}
-        </div>
-      )}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {!isLoading &&
-          products?.data?.products?.map((product: ProductProps) => (
+        {products?.map((product: ProductProps, index: number) => {
+          if (index === products.length - 1) {
+            return (
+              <div key={product?.id} ref={lastElementRef}>
+                <ProductCard product={product} />
+              </div>
+            );
+          }
+          return (
             <div key={product?.id}>
               <ProductCard product={product} />
             </div>
-          ))}
+          );
+        })}
       </div>
-      <Pagination pagination={products?.data?.pagination} setPage={setPage} />
+      {isFetching && <div className="mt-3 text-center">Wait a second...</div>}
     </div>
   );
 }

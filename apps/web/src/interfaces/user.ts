@@ -11,6 +11,7 @@ export interface UserProps {
   image: string | null;
   referral: string;
   is_google_linked: boolean;
+  role?: string;
   addresses: UserAddressProps[];
   carts: any[];
   validated_at: string | null;

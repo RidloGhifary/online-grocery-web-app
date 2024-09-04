@@ -7,6 +7,7 @@ declare global {
       currentUser?: {
         id: number;
         email: string;
+        role?: string;
       };
     }
   }
@@ -39,10 +40,18 @@ export async function verifyToken(
       return res.status(401).json({ ok: false, message: 'Unauthorized' });
     }
 
-    req.currentUser = {
-      id: verifiedUser.id,
-      email: verifiedUser.email,
-    };
+    if (verifiedUser.role) {
+      req.currentUser = {
+        id: verifiedUser.id,
+        email: verifiedUser.email,
+        role: verifiedUser.role,
+      };
+    } else {
+      req.currentUser = {
+        id: verifiedUser.id,
+        email: verifiedUser.email,
+      };
+    }
 
     next();
   } catch (error) {

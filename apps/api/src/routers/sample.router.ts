@@ -1,4 +1,3 @@
-
 // import { SampleController } from '@/controllers/sample.controller';
 // import { Router } from 'express';
 

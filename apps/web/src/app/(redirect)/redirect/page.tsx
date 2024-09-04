@@ -16,12 +16,14 @@ export default function Redirect() {
     if (token) {
       setCookies("token", token);
       router.push(`/`);
+      router.refresh();
     } else if (error) {
       toast.error(error, {
         position: "top-center",
       });
     } else {
       router.push(`/login`);
+      router.refresh();
     }
   }, []);
 

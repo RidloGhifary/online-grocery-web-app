@@ -1,19 +1,9 @@
-import { getCurrentUser } from "@/actions/getCurrentUser";
-import Footer from "@/components/Footer";
-import Marquee from "@/components/Marquee";
-import Navbar from "@/components/navbar/Navbar";
-import { UserProps } from "@/interfaces/user";
-import { ReactNode } from "react";
+import Container from "@/components/Container";
 
-export default async function ({ children }: { children: ReactNode }) {
-  const user = await getCurrentUser();
+const api_url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
+export default function RedirectLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <Marquee />
-      <Navbar user={user as UserProps} />
-      <main>{children}</main>
-      <Footer />
-    </>
-  );
+    <Container>{children}</Container>
+  )
 }

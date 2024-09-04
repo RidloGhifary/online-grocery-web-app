@@ -8,7 +8,7 @@ import { getProductById } from "@/api/products/route";
 
 export default function Page() {
   const { id } = useParams() as { id: string };
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +24,7 @@ export default function Page() {
 
     const fetchProduct = async () => {
       try {
-        const response = await getProductById(id);
+        const response = await getProductById(Number(id));
         setProduct(response?.data);
       } catch (err) {
         console.error("Failed to load product data:", err);

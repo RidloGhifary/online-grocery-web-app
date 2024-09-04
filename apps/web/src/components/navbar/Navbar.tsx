@@ -5,8 +5,8 @@ import { IoMenu } from "react-icons/io5";
 import Container from "../Container";
 import Logo from "../Logo";
 import NavbarItem from "./NavbarItem";
-import { useState, useEffect } from "react";
-import { UserProps } from "@/interface/user";
+import { UserProps } from "@/interfaces/user";
+import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 
 interface NavbarProps {

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import QuantityBox from "../ui/QuantityBox";
 import { addItemToCart } from "@/api/cart/route";
 import { useCart } from "@/context/CartContext";
-import { convertToRupiah } from "@/utils/ConvertRupiah";
+import convertToRupiah  from "@/utils/convertRupiah";
 
 export default function PublicProductDetail({ product }) {
   const [quantity, setQuantity] = useState<number>(1);

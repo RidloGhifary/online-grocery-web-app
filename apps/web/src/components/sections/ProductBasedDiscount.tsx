@@ -28,35 +28,35 @@ export default function ProductBasedDiscount({
     },
   });
 
+  if (isLoading) return <SectionSkeleton />;
+
+  if (isError) return <ErrorInfo />;
+
+  if (products?.data?.length === 0)
+    return <ErrorInfo error="Ups, No products found" />;
+
   return (
     <div className="my-8 w-full">
-      {isError && <ErrorInfo />}
-      {isLoading ? (
-        <SectionSkeleton />
-      ) : (
-        <>
-          <SectionTitle
-            title="Product Based Discount"
-            href="/product-based-discount"
-          />
-          <div className="mt-4 flex items-center">
-            <SectionBanner
-              title="Shop Now, Save More!"
-              href="/product-based-discount"
-            />
+      <SectionTitle
+        title="Product Based Discount"
+        href="/product-based-discount"
+      />
+      <div className="mt-4 flex items-center">
+        <SectionBanner
+          title="Shop Now, Save More!"
+          href="/product-based-discount"
+        />
 
-            <div className="flex w-full touch-pan-y snap-x items-center gap-2 overflow-x-auto rounded-box md:ml-[-50px]">
-              {!isLoading &&
-                !isError &&
-                products?.data?.slice(0, 10)?.map((product: ProductProps) => (
-                  <div key={product?.id} className="snap-start">
-                    <ProductCard product={product} />
-                  </div>
-                ))}
-            </div>
-          </div>
-        </>
-      )}
+        <div className="flex w-full touch-pan-y snap-x items-center gap-2 overflow-x-auto rounded-box md:ml-[-50px]">
+          {!isLoading &&
+            !isError &&
+            products?.data?.slice(0, 10)?.map((product: ProductProps) => (
+              <div key={product?.id} className="snap-start">
+                <ProductCard product={product} />
+              </div>
+            ))}
+        </div>
+      </div>
     </div>
   );
 }

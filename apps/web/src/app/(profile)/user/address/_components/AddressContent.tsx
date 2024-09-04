@@ -12,8 +12,12 @@ import UsePrimaryAddressButton from "./UsePrimaryAddressButton";
 
 export default function AddressContent({
   userAddresses,
+  username,
+  api_url,
 }: {
   userAddresses: UserAddressProps[];
+  username: string;
+  api_url: string;
 }) {
   const searchParams = useSearchParams();
   const action = searchParams.get("action");
@@ -21,15 +25,17 @@ export default function AddressContent({
   return (
     <>
       {action === "add-address" ? (
-        <AddAddressForm />
+        <AddAddressForm api_url={api_url} />
       ) : (
         <div className="space-y-4">
           <Link
             href="/user/address?action=add-address"
-            className="btn btn-primary btn-sm text-white"
+            className={`btn btn-primary ${userAddresses?.length === 0 ? "btn-md w-full" : "btn-sm"} text-white`}
           >
             <FiPlus />
-            Add Address
+            {userAddresses?.length === 0
+              ? "Add Address"
+              : "Add Another Address"}
           </Link>
 
           <div className="max-h-[100vh] space-y-4 overflow-y-auto">
@@ -48,7 +54,7 @@ export default function AddressContent({
                     )}
                   </span>
                 </div>
-                <p className="font-semibold">Ridlo achmad ghifary</p>
+                <p className="font-semibold">{username}</p>
                 <p className="max-w-[70%] text-sm font-light">
                   {userAddress?.address}
                   <br />

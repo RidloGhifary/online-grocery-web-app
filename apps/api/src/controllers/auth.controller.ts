@@ -64,7 +64,9 @@ export class AuthController {
         expiresIn: '1d',
       });
 
-      res.status(200).json({ ok: true, message: 'Login success', token });
+      res
+        .status(200)
+        .json({ ok: true, message: 'Login success', token, data: user });
     } catch {
       res.status(500).json({ ok: false, message: 'Something went wrong' });
     }
@@ -141,9 +143,9 @@ export class AuthController {
         return res.status(400).json({ ok: false, message: 'Invalid address' });
       }
 
-      const cityData = await prisma.city.findUnique({
+      const cityData = await prisma.city.findFirst({
         where: {
-          id: city_id,
+          city_name: city,
         },
       });
 

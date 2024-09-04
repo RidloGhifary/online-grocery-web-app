@@ -3,11 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function ProfileNavigation({
-  userRole,
-}: {
-  userRole?: string | null;
-}) {
+export default function ProfileNavigation() {
   const path = usePathname();
 
   const navigations = [
@@ -23,12 +19,12 @@ export default function ProfileNavigation({
       isActive: path === "/user/address",
       isDisabled: false,
     },
-    {
-      name: "Stores",
-      href: "/user/stores",
-      isActive: path === "/user/stores",
-      isDisabled: userRole !== "super_admin",
-    },
+    // {
+    //   name: "Stores",
+    //   href: "/user/stores",
+    //   isActive: path === "/user/stores",
+    //   isDisabled: userRole !== "super_admin",
+    // },
   ];
 
   return (
@@ -37,7 +33,7 @@ export default function ProfileNavigation({
         <Link
           key={navigation.name}
           href={navigation.href}
-          className={`${navigation.isActive && "text-primary"} ${navigation.isDisabled && "hidden"} mb-[-1px] w-full max-w-[120px] text-center text-base font-semibold transition hover:text-primary md:max-w-[150px] md:text-lg`}
+          className={`${navigation.isActive && "text-primary"} mb-[-1px] w-full max-w-[120px] text-center text-base font-semibold transition hover:text-primary md:max-w-[150px] md:text-lg`}
         >
           {navigation.name}
           {navigation.isActive && <hr className="border-primary" />}

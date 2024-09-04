@@ -2,7 +2,7 @@ import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import prisma from '@/prisma';
 import { productRepository } from '@/repositories/product.repository';
 import getCityFromCoordinates from '@/utils/getCityFromCoordinates';
-import { Product, StoreType } from '@prisma/client';
+import { Product } from '@prisma/client';
 import { Request, Response } from 'express';
 
 export class ProductController {
@@ -188,41 +188,6 @@ export class ProductController {
         });
       }
 
-      // Calculate total pages
-      const city = await getCityFromCoordinates(
-        parseFloat(latitude as string),
-        parseFloat(longitude as string),
-      );
-
-      const where = city
-        ? {
-            current_stock: { gt: 0 },
-            store: {
-              city: {
-                city_name: city,
-              },
-            },
-          }
-        : {
-            current_stock: { gt: 0 },
-            store: {
-              store_type: StoreType.central,
-            },
-          };
-
-      const totalProducts = await prisma.product.count({
-        where,
-      });
-
-      const totalPages = Math.ceil(totalProducts / limitNumber);
-
-      const pagination = {
-        current_page: pageNumber,
-        next: pageNumber < totalPages ? pageNumber + 1 : null,
-        back: pageNumber > 1 ? pageNumber - 1 : null,
-        total_page: totalPages,
-      };
-
       if (products.length === 0) {
         return res
           .status(404)
@@ -233,7 +198,6 @@ export class ProductController {
         ok: true,
         message: 'Successfully retrieved products based on your location.',
         data: products,
-        pagination,
       });
     } catch (error) {
       console.error('Error retrieving products:', error);

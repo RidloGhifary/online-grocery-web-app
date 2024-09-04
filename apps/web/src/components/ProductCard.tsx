@@ -22,9 +22,9 @@ export default function ProductCard({ product }: ProductCardProps) {
         <Image
           width={300}
           height={300}
-          src={product?.image || "/sample-product-image.jpg"}
+          src={product?.image || "/default-image.jpeg"}
           alt="Placeholder"
-          className="aspect-square max-h-[140px] w-full object-contain md:max-h-[180px]"
+          className="aspect-square max-h-[140px] w-full object-cover md:max-h-[180px]"
           loading="lazy"
         />
       </figure>

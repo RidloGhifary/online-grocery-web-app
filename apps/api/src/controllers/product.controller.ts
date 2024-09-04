@@ -1,8 +1,8 @@
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import prisma from '@/prisma';
 import { productRepository } from '@/repositories/product.repository';
-import calculateDistance from '@/utils/calculateDistance';
-import { Product } from '@prisma/client';
+import getCityFromCoordinates from '@/utils/getCityFromCoordinates';
+import { Product, StoreType } from '@prisma/client';
 import { Request, Response } from 'express';
 
 export class ProductController {
@@ -108,68 +108,139 @@ export class ProductController {
     }
   }
 
-  async getProductByClosestDistance(req: Request, res: Response) {
+  async getProductByLocation(req: Request, res: Response) {
     try {
-      const { latitude, longitude } = req.query;
+      const { latitude, longitude, page = '1', limit = '10' } = req.query;
 
-      if (!latitude || !longitude) {
+      const pageNumber = parseInt(page as string, 10);
+      const limitNumber = parseInt(limit as string, 10);
+
+      if (
+        isNaN(pageNumber) ||
+        isNaN(limitNumber) ||
+        pageNumber < 1 ||
+        limitNumber < 1
+      ) {
         return res
           .status(400)
-          .json({ ok: false, message: 'Latitude and longitude are required' });
+          .json({ ok: false, message: 'Invalid page or limit' });
       }
 
-      // Convert query parameters to numbers
-      const userLatitude = parseFloat(latitude as string);
-      const userLongitude = parseFloat(longitude as string);
+      let products;
 
-      const products = await prisma.product.findMany({
-        where: {
-          current_stock: {
-            gt: 0,
-          },
-        },
-        include: {
-          product_discounts: true,
-          store: {
-            include: {
-              city: true,
-              province: true,
+      if (latitude && longitude) {
+        const userLatitude = parseFloat(latitude as string);
+        const userLongitude = parseFloat(longitude as string);
+
+        if (isNaN(userLatitude) || isNaN(userLongitude)) {
+          return res
+            .status(400)
+            .json({ ok: false, message: 'Invalid latitude or longitude' });
+        }
+
+        const userCity = await getCityFromCoordinates(
+          userLatitude,
+          userLongitude,
+        );
+
+        if (!userCity) {
+          return res.status(404).json({
+            ok: false,
+            message: 'City not found for the given coordinates',
+          });
+        }
+
+        products = await prisma.product.findMany({
+          where: {
+            current_stock: { gt: 0 },
+            store: {
+              city: {
+                city_name: userCity,
+              },
             },
           },
-        },
-      });
+          include: {
+            product_discounts: true,
+            store: {
+              include: { city: true, province: true },
+            },
+          },
+          skip: (pageNumber - 1) * limitNumber,
+          take: limitNumber,
+        });
+      } else {
+        // No coordinates provided, get products from the central store
+        products = await prisma.product.findMany({
+          where: {
+            current_stock: { gt: 0 },
+            store: {
+              store_type: 'central',
+            },
+          },
+          include: {
+            product_discounts: true,
+            store: {
+              include: { city: true, province: true },
+            },
+          },
+          skip: (pageNumber - 1) * limitNumber,
+          take: limitNumber,
+        });
+      }
 
-      const productsWithDistance = products.map((product) => {
-        if (product.store) {
-          const distance = calculateDistance(
-            userLatitude,
-            userLongitude,
-            product.store.latitude.toNumber() || 0,
-            product.store.longtitude.toNumber() || 0,
-          );
-          return { ...product, distance };
-        }
-        return product;
-      });
-
-      // Sort by distance
-      productsWithDistance.sort(
-        (a: any, b: any) => (a.distance || 0) - (b.distance || 0),
+      // Calculate total pages
+      const city = await getCityFromCoordinates(
+        parseFloat(latitude as string),
+        parseFloat(longitude as string),
       );
 
-      // Limit products to 60
-      const limitedProducts = productsWithDistance.slice(0, 60);
+      const where = city
+        ? {
+            current_stock: { gt: 0 },
+            store: {
+              city: {
+                city_name: city,
+              },
+            },
+          }
+        : {
+            current_stock: { gt: 0 },
+            store: {
+              store_type: StoreType.central,
+            },
+          };
+
+      const totalProducts = await prisma.product.count({
+        where,
+      });
+
+      const totalPages = Math.ceil(totalProducts / limitNumber);
+
+      const pagination = {
+        current_page: pageNumber,
+        next: pageNumber < totalPages ? pageNumber + 1 : null,
+        back: pageNumber > 1 ? pageNumber - 1 : null,
+        total_page: totalPages,
+      };
+
+      if (products.length === 0) {
+        return res
+          .status(404)
+          .json({ ok: false, message: 'No products found' });
+      }
 
       res.status(200).json({
         ok: true,
-        message:
-          'Successfully retrieved products sorted by distance from your location.',
-        data: limitedProducts,
+        message: 'Successfully retrieved products based on your location.',
+        data: products,
+        pagination,
       });
-    } catch {
+    } catch (error) {
+      console.error('Error retrieving products:', error);
       res.status(500).json({ ok: false, message: 'Internal server error' });
     }
   }
+
   async productList(req: Request, res: Response) {
     const { category, search, order, order_field } = req.query;
     const result = await productRepository.publicProductList({

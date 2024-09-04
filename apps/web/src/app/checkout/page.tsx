@@ -6,8 +6,8 @@ import {
   mockTransactionDetails,
   deliveryOptions,
 } from "@/constants/index";
-import CheckoutSummary from "@/components/checkoutSummary";
-import CartItem from "@/components/cartItems";
+import CheckoutSummary from "@/components/CheckoutSummary";
+import CartItem from "@/components/CartItems";
 import AddressCard from "./_components/addressSection/AddressCard";
 import DeliveryService from "./_components/DeliveryService";
 

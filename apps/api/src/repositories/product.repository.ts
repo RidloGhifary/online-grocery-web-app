@@ -88,62 +88,69 @@ class ProductRepository {
               },
             ],
       });
-      result.data = res
-      result.ok = true
-      result.message = 'Query Success'
+      result.data = res;
+      result.ok = true;
+      result.message = 'Query Success';
     } catch (error) {
-      result.error = error
-      result.message = 'Error'
+      result.error = error;
+      result.message = 'Error';
     }
     return result;
   }
-  async getSingleProduct ({slug}:{slug:string}) : Promise<CommonResultInterface<Product>> {
+  async getSingleProduct({
+    slug,
+  }: {
+    slug: string;
+  }): Promise<CommonResultInterface<Product>> {
     const result: CommonResultInterface<Product> = {
       ok: false,
     };
     try {
       const res = await prisma.product.findFirst({
-        where : {
-          slug : slug
-        }, include: {
+        where: {
+          slug: slug,
+        },
+        include: {
           product_category: true,
         },
-      })
+      });
       if (!res) {
-        result.error = 'not found'
-        return result
+        result.error = 'not found';
+        return result;
       }
-      result.data = res
-      result.ok = true
-      result.message = 'Query Success'
+      result.data = res;
+      result.ok = true;
+      result.message = 'Query Success';
     } catch (error) {
-      result.error = error
-      result.message = 'Error'
+      result.error = error;
+      result.message = 'Error';
     }
-    return result
+    return result;
   }
-  async createProduct(product:Product):Promise<CommonResultInterface<Product>>{
-    let result : CommonResultInterface<Product> = {
+  async createProduct(
+    product: Product,
+  ): Promise<CommonResultInterface<Product>> {
+    let result: CommonResultInterface<Product> = {
       ok: false,
-    }
+    };
     try {
-      product.slug = slugify(product.name)
-      const newData  = await prisma.product.create({
-        data : {
-          ...product
+      product.slug = slugify(product.name);
+      const newData = await prisma.product.create({
+        data: {
+          ...product,
         },
-        include : {
-          product_category : true
-        }
-      })
-      result.data = newData
-      result.ok = true
-      result.message = 'Success adding data'
+        include: {
+          product_category: true,
+        },
+      });
+      result.data = newData;
+      result.ok = true;
+      result.message = 'Success adding data';
     } catch (error) {
-      result.error = error
-      return result
+      result.error = error;
+      return result;
     }
-    return result
+    return result;
   }
 }
 

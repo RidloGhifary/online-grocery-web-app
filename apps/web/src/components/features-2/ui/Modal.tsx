@@ -25,28 +25,26 @@ export function Modal({
   hideCloseButton = false,
 }: ModalPropsInterface) {
   const localRef = useRef<HTMLDialogElement | null>(null);
-  const modalRef = theRef
-    ? (theRef as MutableRefObject<HTMLDialogElement | null>)
-    : localRef;
+  const modalRef = theRef ? (theRef as MutableRefObject<HTMLDialogElement | null>) : localRef;
+  const modalContentRef = useRef<HTMLDivElement | null>(null);
 
   const handleClose = useCallback(
     (event?: MouseEvent | FormEvent) => {
       if (onClose) {
         onClose(event);
       }
-      show = false;
-      modalRef.current?.close();
     },
-    [onClose, modalRef],
+    [onClose]
   );
 
   const handleOutsideClick = useCallback(
     (event: MouseEvent) => {
       if (
         modalRef.current &&
-        !modalRef.current.contains(event.target as Node)
+        modalRef.current.contains(event.target as Node) &&
+        !modalContentRef.current?.contains(event.target as Node)
       ) {
-        handleClose(event);
+        handleClose(event); // Close the modal when clicking outside
       }
     },
     [handleClose, modalRef],
@@ -58,6 +56,7 @@ export function Modal({
       document.addEventListener("mousedown", handleOutsideClick);
       currentRef?.showModal();
     } else {
+      currentRef?.close();
       document.removeEventListener("mousedown", handleOutsideClick);
     }
 
@@ -73,41 +72,28 @@ export function Modal({
   }, [modalRef]);
 
   return (
-    <dialog
-      className={`modal ${scrollable ? "overflow-y-auto" : ""}`}
-      ref={modalRef}
-    >
+    <dialog className={`modal ${scrollable ? "overflow-y-auto" : ""}`} ref={modalRef}>
       <div
-        className={`modal-box ${useTCustomContentWidthClass || ""} relative ${scrollable ? "max-h-[90%]" : ""}`}
+        className={`modal-box ${useTCustomContentWidthClass || ''} relative ${scrollable ? "max-h-[90%]" : ""}`}
+        ref={modalContentRef}
       >
-        <form method="dialog">
-          <button
+        <button
             type="button"
             className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
             onClick={handleClose}
           >
             ✕
           </button>
-        </form>
-        <div className="flex justify-center py-4">{children}</div>
-        <div className="flex flex-wrap justify-center gap-2">
-          {actions &&
-            actions.map((action) => (
-              <div key={Date.now()} className="modal-action">
-                {action}
-              </div>
-            ))}
-          {!hideCloseButton && (
+        <div className="pt-2">{children}</div>
+        <div className="flex flex-wrap gap-2 justify-end ">
+          {actions && actions.map((action, index) => (
+            <div key={index} className="modal-action">{action}</div>
+          ))}
+          {closeButton && (
             <div className="modal-action">
-              <form method="dialog">
-                <button
-                  type="button"
-                  className="btn btn-error"
-                  onClick={handleClose}
-                >
-                  Close
-                </button>
-              </form>
+              <button type="button" className="btn btn-error" onClick={handleClose}>
+                Close
+              </button>
             </div>
           )}
         </div>

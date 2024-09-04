@@ -1,5 +1,8 @@
+import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import prisma from '@/prisma';
+import { productRepository } from '@/repositories/product.repository';
 import calculateDistance from '@/utils/calculateDistance';
+import { Product } from '@prisma/client';
 import { Request, Response } from 'express';
 
 export class ProductController {
@@ -167,7 +170,54 @@ export class ProductController {
       res.status(500).json({ ok: false, message: 'Internal server error' });
     }
   }
+  async productList(req: Request, res: Response) {
+    const { category, search, order, order_field } = req.query;
+    const result = await productRepository.publicProductList({
+      category: category as string,
+      search: search as string,
+      order: order as 'asc' | 'desc',
+      orderField: order_field as 'product_name' | 'category',
+    });
+    if (!result.ok) {
+      return res.status(400).send(result);
+    }
+    return res.status(200).send(result);
+  }
+  public async productSingle(
+    req: Request,
+    res: Response,
+  ): Promise<void | Response> {
+    const { slug } = req.params;
 
+    if (!slug || slug === '') {
+      const response: CommonResultInterface<null> = {
+        ok: false,
+        error: 'Empty slug',
+      };
+      return res.status(401).send(response);
+    }
+    const result = await productRepository.getSingleProduct({
+      slug: slug as string,
+    });
+    if (!result.ok) {
+      if (!result.data) {
+        return res.status(404).send(result);
+      }
+      return res.status(500).send(result);
+    }
+    return res.status(200).send(result);
+  }
+  public async createProduct(
+    req: Request,
+    res: Response,
+  ): Promise<void | Response> {
+    const product: Product = req.body;
+    const newData = await productRepository.createProduct(product);
+    if (!newData.ok) {
+      return res.status(400).send(newData);
+    }
+    return res.status(201).send(newData);
+  }
   getProductById = async (req: Request, res: Response) => {
     const productId = parseInt(req.params.id, 10);
     if (isNaN(productId)) {

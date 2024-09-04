@@ -168,7 +168,7 @@ const Carousel: FC<CarouselProps> = ({
       </div>
 
       {images.length > 0 && (
-        <div className="my-5 items-center self-center w-full max-w-md flex justify-center">
+        <div className="my-5 items-center self-center w-full max-w-lg flex justify-center">
           <div className="flex flex-wrap justify-center gap-2 py-2 mx-5 items-center">
             <button
               onClick={handleLeftArrow}
@@ -177,7 +177,7 @@ const Carousel: FC<CarouselProps> = ({
             </button>
             <div
               ref={scrollRef}
-              className="carousel carousel-center max-w-52 overflow-x-auto space-x-4 bg-transparent h-auto">
+              className="carousel carousel-center max-w-lg overflow-x-auto space-x-4 bg-transparent h-auto">
               {displayedImages.map((image, index) => (
                 <button
                   key={index}

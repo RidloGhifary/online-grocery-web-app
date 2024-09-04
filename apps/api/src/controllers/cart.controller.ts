@@ -147,7 +147,7 @@ export class CartController {
         const additionalQuantityNeeded = quantity;
 
         if (existingCart) {
-          if (additionalQuantityNeeded > product.current_stock) {
+          if (additionalQuantityNeeded > product.current_stock!) {
             throw new Error(
               `Remaing stock are only ${product.current_stock}, cannot add more.`,
             );
@@ -156,7 +156,7 @@ export class CartController {
           const updatedProduct = await prisma.product.update({
             where: { id: productId },
             data: {
-              current_stock: product.current_stock - additionalQuantityNeeded,
+              current_stock: product.current_stock! - additionalQuantityNeeded,
             },
           });
 
@@ -167,7 +167,7 @@ export class CartController {
 
           return updatedCart;
         } else {
-          if (quantity > product.current_stock) {
+          if (quantity > product.current_stock!) {
             throw new Error(
               `Remaing stock are only ${product.current_stock}, cannot add more.`,
             );
@@ -175,7 +175,7 @@ export class CartController {
 
           const updatedProduct = await prisma.product.update({
             where: { id: productId },
-            data: { current_stock: product.current_stock - quantity },
+            data: { current_stock: product.current_stock! - quantity },
           });
 
           const newCartItem = await prisma.cart.create({
@@ -242,7 +242,7 @@ export class CartController {
 
         const stockAdjustment = quantity - cartItem.qty;
 
-        if (product.current_stock < stockAdjustment) {
+        if (product.current_stock! < stockAdjustment) {
           throw new Error('Current stock cannot fulfill current request');
         }
 

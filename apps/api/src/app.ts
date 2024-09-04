@@ -12,11 +12,13 @@ import passport from 'passport';
 import session from 'express-session';
 
 import './auth';
+// import { SampleRouter } from './routers/sample.router';
 import { AuthRouter } from './routers/auth.router';
+import { ProductRouter } from './routers/product.router';
+import { CategoryRouter } from './routers/category.router';
 import { CartRouter } from './routers/cart.router';
 import { UserRouter } from './routers/user.router';
 import { CredentialRouter } from './routers/credential.router';
-import { ProductRouter } from './routers/product.router';
 import { StoreRouter } from './routers/store.router';
 
 export default class App {
@@ -64,11 +66,15 @@ export default class App {
   }
 
   private routes(): void {
+    // const sampleRouter = new SampleRouter();
+    // this.app.use('/api/samples', sampleRouter.getRouter());
+
     const authRouter = new AuthRouter();
+    const productRouter = new ProductRouter();
+    const categoryRouter = new CategoryRouter()
     const cartRouter = new CartRouter();
     const userRouter = new UserRouter();
     const credentialRouter = new CredentialRouter();
-    const productRouter = new ProductRouter();
     const storeRouter = new StoreRouter();
 
     this.app.get('/api', (req: Request, res: Response) => {
@@ -76,10 +82,12 @@ export default class App {
     });
 
     this.app.use('/api/auth', authRouter.getRouter());
+    this.app.use('/api/products', productRouter.getRouter())
+    this.app.use('/api/categories', categoryRouter.getRouter())
+
     this.app.use('/api/cart', cartRouter.getRouter());
     this.app.use('/api/users', userRouter.getRouter());
     this.app.use('/api/credentials', credentialRouter.getRouter());
-    this.app.use('/api/products', productRouter.getRouter());
     this.app.use('/api/stores', storeRouter.getRouter());
   }
 

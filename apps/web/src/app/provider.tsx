@@ -7,7 +7,11 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { queryClientAtom } from "jotai-tanstack-query";
 import { ReactNode } from "react";
+import { useHydrateAtoms } from "jotai/react/utils";
+import { GlobalAtomProvider } from "@/providers/GlobalAtomProvider";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -43,8 +47,17 @@ export default function Providers({ children }: { children: ReactNode }) {
   //       suspend because React will throw away the client on the initial
   //       render if it suspends and there is no boundary
   const queryClient = getQueryClient();
+  const HydrateAtoms = ({ children }: { children: ReactNode }) => {
+    useHydrateAtoms([[queryClientAtom, queryClient]]);
+    return children;
+  };
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <GlobalAtomProvider>
+        <HydrateAtoms>{children}</HydrateAtoms>
+      </GlobalAtomProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }

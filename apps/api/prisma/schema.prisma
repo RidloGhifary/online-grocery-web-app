@@ -265,10 +265,11 @@ model Product {
   id                  Int             @id @default(autoincrement())
   sku                 String          @unique
   name                String          @unique
+  slug                String?         @unique
   product_category    ProductCategory @relation(fields: [product_category_id], references: [id])
   product_category_id Int
   description         String?
-  current_stock       Int
+  current_stock       Int?
   unit                String
   price               Float
   image               String?
@@ -286,6 +287,9 @@ model Product {
   order_detail      OrderDetail[]
 
   @@index([id])
+  @@index([sku])
+  @@index([name])
+  @@index([slug])
   @@map("products")
 }
 

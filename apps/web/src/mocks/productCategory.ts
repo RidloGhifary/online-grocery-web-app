@@ -1,4 +1,4 @@
-export interface ProductCategoryInterface {
+export interface ProductCategoryMockInterface {
   id: number;
   name: string;
   display_name: string | null;
@@ -7,7 +7,7 @@ export interface ProductCategoryInterface {
   deletedAt: Date | null;
 }
 
-export const productsCategories: ProductCategoryInterface[] = [
+export const productsCategories: ProductCategoryMockInterface[] = [
   {
     id: 1,
     name: 'fruits',

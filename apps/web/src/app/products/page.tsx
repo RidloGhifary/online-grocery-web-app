@@ -1,36 +1,28 @@
-'use client';
-import Drawer from '@/components/features-2/layouts/Drawer';
-import SidePanel from '@/components/features-2/layouts/SidePanel';
-import ProductFilter from '@/components/features-2/product/filter/ProductFilter';
-import PublicProductList from '@/components/features-2/product/PublicProductList';
-import { Modal } from '@/components/features-2/ui/Modal';
-import SearchBar from '@/components/features-2/ui/SearchBar';
-import { useState } from 'react';
+import { getProductListWithFilter } from "@/actions/products";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import { queryKeys } from "@/constants/queryKeys";
+import { getProductCategoryList } from "@/actions/categories";
+import ProductListPage from "./_components/ProductListPage";
 
-export default function Page() {
-  const [modalActive, setModalActive] =useState<boolean>(false)
-  
+export default async function Page() {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery({
+    queryKey: [queryKeys.products],
+    queryFn: () => getProductListWithFilter({order:'asc',orderField:'product_name'}),
+  });
+  await queryClient.prefetchQuery({
+    queryKey: [queryKeys.productCategories],
+    queryFn: async () => await getProductCategoryList(),
+  });
   return (
     <>
-      <Drawer
-        sidePanel={
-          <SidePanel>
-            <ProductFilter />
-          </SidePanel>
-        }
-      >
-        <div className="flex flex-row max-w-full items-center justify-start mx-5 my-5">
-          <div className="grow mr-2 lg:mr-0">
-            <SearchBar />
-          </div>
-          <button onClick={(e)=> {setModalActive(true)} } className="btn lg:hidden " >Filter</button>
-        </div>
-        {/* <Card/> */}
-        <PublicProductList />
-      </Drawer>
-      <Modal show={modalActive} onClose={e=>{setModalActive(false)}}>
-        <ProductFilter />
-      </Modal>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <ProductListPage/>
+      </HydrationBoundary>
     </>
   );
 }

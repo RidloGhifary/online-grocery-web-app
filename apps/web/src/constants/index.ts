@@ -1,4 +1,3 @@
-
 import { IoCart } from "react-icons/io5";
 import { LuLogIn } from "react-icons/lu";
 import { FiSearch } from "react-icons/fi";

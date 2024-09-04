@@ -1,22 +1,48 @@
-import { productsCategories } from '@/mocks/productCategory';
-import Radio from '../../ui/Radio';
+"use client";
+
+import { MouseEventHandler } from "react";
+import Radio from "../../ui/Radio";
+import { useProductCategory } from "@/hooks/publicProductCategoriesHooks";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function CategoryFilter() {
+  const { data } = useProductCategory();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const handleSelect: MouseEventHandler<HTMLInputElement> = (e) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const selectedCategory = e.currentTarget.value;
+
+    if (selectedCategory === "all") {
+      params.delete("category");
+    } else {
+      params.set("category", selectedCategory);
+    }
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   return (
     <>
-      <h1 className="my-2 font-bold">Category</h1>
-      
-      <Radio defaultChecked value={'all'}>
+      <Radio
+        defaultChecked={!searchParams.get("category")}
+        value="all"
+        action={handleSelect}
+      >
         All
       </Radio>
-      {productsCategories.map((e, i) => {
-        return (
-          <Radio key={i} value={e.name}>
-            {e.display_name}
-          </Radio>
-        );
-      })}
-     
+      {data?.data?.map((category, index) => (
+        <Radio
+          defaultChecked={searchParams.get("category") === category.name}
+          key={index}
+          value={category.name}
+          action={handleSelect}
+        >
+          {category.display_name}
+        </Radio>
+      ))}
     </>
   );
 }

@@ -143,9 +143,9 @@ export class AuthController {
         return res.status(400).json({ ok: false, message: 'Invalid address' });
       }
 
-      const cityData = await prisma.city.findUnique({
+      const cityData = await prisma.city.findFirst({
         where: {
-          id: city_id,
+          city_name: city,
         },
       });
 

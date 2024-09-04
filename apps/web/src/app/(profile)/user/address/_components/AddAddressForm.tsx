@@ -9,7 +9,7 @@ import { Cities, Provinces } from "@/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCookies } from "@/actions/cookies";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 
 const schema = z.object({
@@ -32,9 +32,11 @@ type FormData = {
   is_primary: boolean;
 };
 
-export default function AddAddressForm() {
+export default function AddAddressForm({ api_url }: { api_url: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const callbackUrl = searchParams.get("callbackUrl");
 
   const {
     register,
@@ -67,28 +69,31 @@ export default function AddAddressForm() {
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: FormData) => {
       const cookie = await getCookies("token");
-      const response = await axios.post(
-        "http://localhost:8000/api/users/addresses",
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${cookie}`,
-          },
+      if (!cookie) return;
+      const response = await axios.post(`${api_url}/users/addresses`, data, {
+        headers: {
+          Authorization: `Bearer ${cookie}`,
         },
-      );
+      });
 
       return response.data;
     },
     onSuccess: (res) => {
       if (res.ok) {
         toast.success(res.message || "Success create address!");
-        router.push("/user/address");
         queryClient.invalidateQueries({ queryKey: ["user"] });
+        if (callbackUrl) {
+          router.push(callbackUrl);
+          router.refresh();
+          return;
+        }
+        router.push("/user/address");
       } else {
         toast.error(res.message || "Something went wrong!");
       }
     },
     onError: (res) => {
+      console.log("🚀 ~ AddAddressForm ~ res:", res);
       toast.error(res.message || "Something went wrong!");
     },
   });

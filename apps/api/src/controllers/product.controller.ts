@@ -190,7 +190,7 @@ export class ProductController {
 
       if (products.length === 0) {
         return res
-          .status(200)
+          .status(404)
           .json({ ok: false, message: 'No products found' });
       }
 

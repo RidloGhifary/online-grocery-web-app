@@ -52,7 +52,7 @@ export default function () {
     setIsDebouncing(true); // Set to true when a new search input occurs
     debounced(e.currentTarget.value);
   };
-
+  console.log(products);
   return (
     <>
       <Drawer

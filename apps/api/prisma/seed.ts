@@ -154,9 +154,11 @@ async function main() {
           display_name: 'Fruit',
         },
       ],
+      skipDuplicates: true,
     });
 
     const products = prisma.product.createMany({
+      skipDuplicates: true,
       data: [
         // Dairy Products
         {
@@ -432,7 +434,6 @@ async function main() {
     // console.log({...[...seedRes]});
   } catch (error) {
     console.log(error);
-    
   }
 }
 main()

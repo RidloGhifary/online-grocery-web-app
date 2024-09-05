@@ -34,10 +34,7 @@ export default async function RootLayout({
         <QueryProvider>
           <CartProvider>
             <ToastContainer position="top-center" draggable={true} />
-            <Marquee />
-            <Navbar user={user as UserProps} />
             <main>{children}</main>
-            <Footer />
           </CartProvider>
         </QueryProvider>
       </body>

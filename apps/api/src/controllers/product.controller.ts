@@ -207,11 +207,14 @@ export class ProductController {
 
   async productList(req: Request, res: Response) {
     const { category, search, order, order_field } = req.query;
+    const { page = 1, limit = 20 } = req.query;
     const result = await productRepository.publicProductList({
       category: category as string,
       search: search as string,
       order: order as 'asc' | 'desc',
       orderField: order_field as 'product_name' | 'category',
+      pageNumber : page as number,
+      limitNumber : limit as number
     });
     if (!result.ok) {
       return res.status(400).send(result);

@@ -15,9 +15,13 @@ export class ProductRouter {
     // this.router.get('/', this.productController.getAllProducts);
     this.router.get('/', this.productController.productList);
     this.router.get('/discounts', this.productController.getDiscountProduct);
+    this.router.get(
+      '/info/:productId/total-stock',
+      this.productController.getTotalStockAcrossStores,
+    );
     this.router.get('/locations', this.productController.getProductByLocation);
     this.router.post('/', this.productController.createProduct);
-    this.router.get('/:slug', this.productController.productSingle);
+    // this.router.get('/:slug', this.productController.productSingle);
     this.router.get('/details/:id', (req, res) =>
       this.productController.getProductById(req, res),
     );

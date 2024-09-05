@@ -1,4 +1,5 @@
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
+import searchFriendlyForLikeQuery from '@/utils/searchFriendlyForLikeQuery';
 import prisma from '@/prisma';
 import { productRepository } from '@/repositories/product.repository';
 import getCityFromCoordinates from '@/utils/getCityFromCoordinates';
@@ -21,16 +22,30 @@ export class ProductController {
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber,
         where: {
-          current_stock: {
-            gt: 0,
+          StoreHasProduct: {
+            some: {
+              qty: {
+                gt: 0,
+              },
+            },
           },
         },
         include: {
           product_discounts: true,
-          store: {
+          // store: {
+          //   include: {
+          //     city: true,
+          //     province: true,
+          //   },
+          // },
+          StoreHasProduct: {
             include: {
-              city: true,
-              province: true,
+              store: {
+                include: {
+                  city: true,
+                  province: true,
+                },
+              },
             },
           },
         },
@@ -74,8 +89,12 @@ export class ProductController {
               },
             },
           },
-          current_stock: {
-            gt: 0,
+          StoreHasProduct: {
+            some: {
+              qty: {
+                gt: 0,
+              },
+            },
           },
         },
         include: {
@@ -89,10 +108,14 @@ export class ProductController {
               },
             },
           },
-          store: {
+          StoreHasProduct: {
             include: {
-              city: true,
-              province: true,
+              store: {
+                include: {
+                  city: true,
+                  province: true,
+                },
+              },
             },
           },
         },
@@ -107,6 +130,28 @@ export class ProductController {
       res.status(500).json({ ok: false, message: 'Internal server error' });
     }
   }
+
+  getTotalStockAcrossStores = async (req: Request, res: Response) => {
+    const productId = parseInt(req.params.productId, 10);
+    if (isNaN(productId) || productId < 1) {
+      return res.status(400).json({ error: 'Invalid productId in URL' });
+    }
+
+    try {
+      // Fetch total stock across all stores for the given product
+      const totalStockAcrossStores = await prisma.storeHasProduct.aggregate({
+        _sum: { qty: true },
+        where: { product_id: productId },
+      });
+
+      // Return the total stock
+      const totalStock = totalStockAcrossStores._sum.qty || 0;
+      return res.json({ totalStock });
+    } catch (error) {
+      console.error('Error fetching total stock:', error);
+      return res.status(500).json({ error: 'Error fetching total stock' });
+    }
+  };
 
   async getProductByLocation(req: Request, res: Response) {
     try {
@@ -126,7 +171,7 @@ export class ProductController {
           .json({ ok: false, message: 'Invalid page or limit' });
       }
 
-      let products;
+      let products: Product[];
 
       if (latitude && longitude) {
         const userLatitude = parseFloat(latitude as string);
@@ -152,17 +197,39 @@ export class ProductController {
 
         products = await prisma.product.findMany({
           where: {
-            current_stock: { gt: 0 },
-            store: {
-              city: {
-                city_name: userCity,
+            // current_stock: { gt: 0 },
+
+            // store: {
+            //   city: {
+            //     city_name: userCity,
+            //   },
+            // },
+            StoreHasProduct: {
+              some: {
+                qty: {
+                  gt: 0,
+                },
+                store: {
+                  city: {
+                    city_name: userCity,
+                  },
+                },
               },
             },
           },
           include: {
             product_discounts: true,
-            store: {
-              include: { city: true, province: true },
+            // store: {
+            //   include: { city: true, province: true },
+            // },
+            StoreHasProduct: {
+              include: {
+                store: {
+                  include: {
+                    city: true,
+                  },
+                },
+              },
             },
           },
           skip: (pageNumber - 1) * limitNumber,
@@ -172,15 +239,31 @@ export class ProductController {
         // No coordinates provided, get products from the central store
         products = await prisma.product.findMany({
           where: {
-            current_stock: { gt: 0 },
-            store: {
-              store_type: 'central',
+            // current_stock: { gt: 0 },
+            // store: {
+            //   store_type: 'central',
+            // },
+            StoreHasProduct: {
+              some: {
+                qty: {
+                  gt: 0,
+                },
+                store: {
+                  store_type: 'central',
+                },
+              },
             },
           },
           include: {
             product_discounts: true,
-            store: {
-              include: { city: true, province: true },
+            // store: {
+            //   include: { city: true, province: true },
+            // },
+            StoreHasProduct: {
+              select: {
+                qty: true,
+                // store :
+              },
             },
           },
           skip: (pageNumber - 1) * limitNumber,
@@ -204,20 +287,110 @@ export class ProductController {
       res.status(500).json({ ok: false, message: 'Internal server error' });
     }
   }
+  //
 
-  async productList(req: Request, res: Response) {
-    const { category, search, order, order_field } = req.query;
-    const result = await productRepository.publicProductList({
-      category: category as string,
-      search: search as string,
-      order: order as 'asc' | 'desc',
-      orderField: order_field as 'product_name' | 'category',
-    });
-    if (!result.ok) {
-      return res.status(400).send(result);
+  async productList({
+    category,
+    search,
+    order = 'asc',
+    orderField = 'product_name',
+    pageNumber = 1,
+    limitNumber = 20, // Set default limit
+  }: {
+    category?: string;
+    search?: string;
+    order?: 'asc' | 'desc';
+    orderField?: 'product_name' | 'category';
+    pageNumber?: number; // Add pageNumber to the type definition
+    limitNumber?: number; // Add limitNumber to the type definition
+  }): Promise<CommonResultInterface<Product[]>> {
+    const searchable = await searchFriendlyForLikeQuery(search);
+    const searchableCategory = await searchFriendlyForLikeQuery(category);
+    const result: CommonResultInterface<Product[]> = {
+      ok: false,
+    };
+
+    try {
+      const res = await prisma.product.findMany({
+        where: {
+          OR: [
+            {
+              name: {
+                contains: searchable,
+              },
+            },
+            {
+              description: {
+                contains: searchable,
+              },
+            },
+            {
+              sku: {
+                contains: searchable,
+              },
+            },
+            {
+              slug: {
+                contains: searchable,
+              },
+            },
+          ],
+          AND: [
+            {
+              product_category: category
+                ? {
+                    name: {
+                      contains: searchableCategory,
+                    },
+                    display_name: {
+                      contains: searchableCategory,
+                    },
+                  }
+                : undefined,
+            },
+          ],
+          deletedAt: null,
+        },
+        include: {
+          product_category: true,
+        },
+        orderBy: !order
+          ? undefined
+          : [
+              {
+                name:
+                  orderField && orderField === 'product_name'
+                    ? order
+                    : undefined,
+              },
+              {
+                product_category: {
+                  name:
+                    orderField && orderField === 'category' ? order : undefined,
+                },
+              },
+              {
+                product_category: {
+                  display_name:
+                    orderField && orderField === 'category' ? order : undefined,
+                },
+              },
+            ],
+        skip: (pageNumber - 1) * limitNumber, // Skip the rows for pagination
+        take: limitNumber, // Take the number of rows specified by limitNumber
+      });
+
+      result.data = res;
+      result.ok = true;
+      result.message = 'Query Success';
+    } catch (error) {
+      result.error = error;
+      result.message = 'Error';
     }
-    return res.status(200).send(result);
+
+    return result;
   }
+
   public async productSingle(
     req: Request,
     res: Response,
@@ -253,6 +426,7 @@ export class ProductController {
     }
     return res.status(201).send(newData);
   }
+
   getProductById = async (req: Request, res: Response) => {
     const productId = parseInt(req.params.id, 10);
     if (isNaN(productId)) {
@@ -262,16 +436,8 @@ export class ProductController {
     try {
       const product = await prisma.product.findUnique({
         where: { id: productId },
-        select: {
-          id: true,
-          sku: true,
-          name: true,
-          description: true,
-          current_stock: true,
-          unit: true,
-          price: true,
-          image: true,
-          store_id: true,
+        include: {
+          StoreHasProduct: true,
         },
       });
 

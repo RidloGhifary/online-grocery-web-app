@@ -1,23 +1,74 @@
 import { PrismaClient } from '@prisma/client';
+import axios from 'axios';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
+
 const prisma = new PrismaClient();
+
+// Fetch provinces using axios
+async function fetchProvinces() {
+  const response = await axios.get(
+    'https://api.rajaongkir.com/starter/province',
+    {
+      headers: {
+        key: process.env.RAJA_ONGKIR_API_KEY, // Replace with your actual API key
+      },
+    },
+  );
+  return response.data.rajaongkir.results;
+}
+
+// Fetch cities using axios
+async function fetchCities() {
+  const response = await axios.get('https://api.rajaongkir.com/starter/city', {
+    headers: {
+      key: process.env.RAJA_ONGKIR_API_KEY, // Replace with your actual API key
+    },
+  });
+  return response.data.rajaongkir.results;
+}
+
+// Seed provinces into the database
+async function seedProvinces() {
+  const provinces = await fetchProvinces();
+  for (const province of provinces) {
+    await prisma.province.upsert({
+      where: { id: parseInt(province.province_id) },
+      update: {},
+      create: {
+        id: parseInt(province.province_id),
+        province: province.province,
+      },
+    });
+  }
+}
+
+// Seed cities into the database
+async function seedCities() {
+  const cities = await fetchCities();
+  for (const city of cities) {
+    await prisma.city.upsert({
+      where: { id: parseInt(city.city_id) },
+      update: {},
+      create: {
+        id: parseInt(city.city_id),
+        city_name: city.city_name,
+        postal_code: city.postal_code,
+        type: city.type.toLowerCase() === 'kabupaten' ? 'kabupaten' : 'kota',
+        province_id: parseInt(city.province_id), // Directly reference the province ID
+      },
+    });
+  }
+}
 
 async function main() {
   try {
+    // Seeding permissions
     const permission = prisma.permission.createMany({
       skipDuplicates: true,
       data: [
-        {
-          id: 1,
-          name: 'super',
-          display_name: 'Super',
-        },
-        {
-          id: 2,
-          name: 'admin_access',
-          display_name: 'Admin Access',
-        },
+        { id: 1, name: 'super', display_name: 'Super' },
+        { id: 2, name: 'admin_access', display_name: 'Admin Access' },
         {
           id: 3,
           name: 'admin_product_access',
@@ -81,10 +132,9 @@ async function main() {
       ],
     });
 
+    // Seeding super admin user
     const superAdminUser = prisma.user.upsert({
-      where: {
-        id: 1,
-      },
+      where: { id: 1 },
       update: {},
       create: {
         id: 1,
@@ -102,10 +152,9 @@ async function main() {
       },
     });
 
+    // Seeding super admin role and permissions
     const superRole = prisma.role.upsert({
-      where: {
-        id: 1,
-      },
+      where: { id: 1 },
       update: {},
       create: {
         name: 'super_admin',
@@ -113,54 +162,30 @@ async function main() {
         id: 1,
         roles_permissions: {
           createMany: {
-            data: [
-              {
-                id: 1,
-                permission_id: 1,
-              },
-            ],
+            data: [{ id: 1, permission_id: 1 }],
             skipDuplicates: true,
           },
         },
         user_role: {
-          createMany: {
-            data: [
-              {
-                user_id: 1,
-                id: 1,
-              },
-            ],
-            skipDuplicates: true,
-          },
+          createMany: { data: [{ user_id: 1, id: 1 }], skipDuplicates: true },
         },
       },
     });
 
+    // Seeding product categories
     const productCategory = prisma.productCategory.createMany({
       data: [
-        {
-          id: 1,
-          name: 'dairy',
-          display_name: 'Dairy',
-        },
-        {
-          id: 2,
-          name: 'vegetable',
-          display_name: 'Vegetable',
-        },
-        {
-          id: 3,
-          name: 'fruit',
-          display_name: 'Fruit',
-        },
+        { id: 1, name: 'dairy', display_name: 'Dairy' },
+        { id: 2, name: 'vegetable', display_name: 'Vegetable' },
+        { id: 3, name: 'fruit', display_name: 'Fruit' },
       ],
       skipDuplicates: true,
     });
 
+    // Seeding products
     const products = prisma.product.createMany({
       skipDuplicates: true,
       data: [
-        // Dairy Products
         {
           id: 1,
           name: 'SUSU UHT ULTRAMILK 500ML',
@@ -168,7 +193,6 @@ async function main() {
           sku: 'D0001',
           unit: 'Piece',
           product_category_id: 1,
-          image: '',
           description: 'High-quality UHT milk from Ultramilk.',
           current_stock: 50,
           slug: 'susu-uht-ultramilk-500ml',
@@ -180,7 +204,6 @@ async function main() {
           sku: 'D0002',
           unit: 'Piece',
           product_category_id: 1,
-          image: '',
           description: 'Rich and creamy cheese from Kraft.',
           current_stock: 30,
           slug: 'keju-kraft-250gr',
@@ -192,7 +215,6 @@ async function main() {
           sku: 'D0003',
           unit: 'Piece',
           product_category_id: 1,
-          image: '',
           description: 'Delicious yogurt from Cimory.',
           current_stock: 40,
           slug: 'yogurt-cimory-200ml',
@@ -204,7 +226,6 @@ async function main() {
           sku: 'D0004',
           unit: 'Piece',
           product_category_id: 1,
-          image: '',
           description: 'High-quality butter from Blue Band.',
           current_stock: 20,
           slug: 'butter-blue-band-200gr',
@@ -216,137 +237,10 @@ async function main() {
           sku: 'D0005',
           unit: 'Piece',
           product_category_id: 1,
-          image: '',
           description: 'Smooth and creamy cheese from Philadelphia.',
           current_stock: 25,
           slug: 'cream-cheese-philadelphia-150gr',
         },
-
-        // Vegetable Products
-        {
-          id: 6,
-          name: 'KENTANG 1KG',
-          price: 15000,
-          sku: 'V0001',
-          unit: 'Kilogram',
-          product_category_id: 2,
-          image: '',
-          description: 'Fresh potatoes, perfect for cooking.',
-          current_stock: 100,
-          slug: 'kentang-1kg',
-        },
-        {
-          id: 7,
-          name: 'WORTEL 500GR',
-          price: 10000,
-          sku: 'V0002',
-          unit: 'Piece',
-          product_category_id: 2,
-          image: '',
-          description: 'Crunchy and fresh carrots.',
-          current_stock: 80,
-          slug: 'wortel-500gr',
-        },
-        {
-          id: 8,
-          name: 'BROKOLI 250GR',
-          price: 12000,
-          sku: 'V0003',
-          unit: 'Piece',
-          product_category_id: 2,
-          image: '',
-          description: 'Fresh broccoli, rich in nutrients.',
-          current_stock: 70,
-          slug: 'brokoli-250gr',
-        },
-        {
-          id: 9,
-          name: 'KACANG PANJANG 300GR',
-          price: 8000,
-          sku: 'V0004',
-          unit: 'Piece',
-          product_category_id: 2,
-          image: '',
-          description: 'Fresh long beans, great for soups.',
-          current_stock: 90,
-          slug: 'kacang-panjang-300gr',
-        },
-        {
-          id: 10,
-          name: 'BUNCIS 250GR',
-          price: 9000,
-          sku: 'V0005',
-          unit: 'Piece',
-          product_category_id: 2,
-          image: '',
-          description: 'Fresh green beans, crunchy and tasty.',
-          current_stock: 60,
-          slug: 'buncis-250gr',
-        },
-
-        // Fruit Products
-        {
-          id: 11,
-          name: 'APEL FUJI 1KG',
-          price: 35000,
-          sku: 'F0001',
-          unit: 'Kilogram',
-          product_category_id: 3,
-          image: '',
-          description: 'Crisp and sweet Fuji apples.',
-          current_stock: 50,
-          slug: 'apel-fuji-1kg',
-        },
-        {
-          id: 12,
-          name: 'PISANG CAVENDISH 1KG',
-          price: 25000,
-          sku: 'F0002',
-          unit: 'Kilogram',
-          product_category_id: 3,
-          image: '',
-          description: 'Sweet and ripe Cavendish bananas.',
-          current_stock: 60,
-          slug: 'pisang-cavendish-1kg',
-        },
-        {
-          id: 13,
-          name: 'JERUK SANTANG 1KG',
-          price: 30000,
-          sku: 'F0003',
-          unit: 'Kilogram',
-          product_category_id: 3,
-          image: '',
-          description: 'Fresh and juicy Santang oranges.',
-          current_stock: 40,
-          slug: 'jeruk-santang-1kg',
-        },
-        {
-          id: 14,
-          name: 'ANGGUR MERAH 500GR',
-          price: 40000,
-          sku: 'F0004',
-          unit: 'Piece',
-          product_category_id: 3,
-          image: '',
-          description: 'Sweet and delicious red grapes.',
-          current_stock: 35,
-          slug: 'anggur-merah-500gr',
-        },
-        {
-          id: 15,
-          name: 'ALPUKAT MENTEGA 1KG',
-          price: 45000,
-          sku: 'F0005',
-          unit: 'Kilogram',
-          product_category_id: 3,
-          image: '',
-          description: 'Creamy and rich butter avocados.',
-          current_stock: 25,
-          slug: 'alpukat-mentega-1kg',
-        },
-
-        // Additional products for variety
         {
           id: 16,
           name: 'TOMAT 1KG',
@@ -354,34 +248,9 @@ async function main() {
           sku: 'V0006',
           unit: 'Kilogram',
           product_category_id: 2,
-          image: '',
           description: 'Fresh and ripe tomatoes.',
           current_stock: 100,
           slug: 'tomat-1kg',
-        },
-        {
-          id: 17,
-          name: 'PEPAYA CALIFORNIA 1KG',
-          price: 18000,
-          sku: 'F0006',
-          unit: 'Kilogram',
-          product_category_id: 3,
-          image: '',
-          description: 'Sweet and fresh California papayas.',
-          current_stock: 40,
-          slug: 'pepaya-california-1kg',
-        },
-        {
-          id: 18,
-          name: 'SUSU KEDELAI V-SOY 300ML',
-          price: 12000,
-          sku: 'D0006',
-          unit: 'Piece',
-          product_category_id: 1,
-          image: '',
-          description: 'Healthy and delicious soy milk.',
-          current_stock: 50,
-          slug: 'susu-kedelai-v-soy-300ml',
         },
         {
           id: 19,
@@ -390,7 +259,6 @@ async function main() {
           sku: 'D0007',
           unit: 'Lusin',
           product_category_id: 1,
-          image: '',
           description: 'Fresh eggs, perfect for daily consumption.',
           current_stock: 150,
           slug: 'telur-ayam-1-lusin',
@@ -402,7 +270,6 @@ async function main() {
           sku: 'F0007',
           unit: 'Kilogram',
           product_category_id: 3,
-          image: '',
           description: 'Juicy and fresh pears.',
           current_stock: 50,
           slug: 'pear-1kg',
@@ -410,38 +277,39 @@ async function main() {
       ],
     });
 
+    // Seed provinces and cities
+    await seedProvinces();
+    await seedCities();
+
+    // Execute all database operations
     const [
       res_permission,
       res_superAdminUser,
       res_superRole,
       res_productCategory,
       res_products,
-    ] = await prisma.$transaction([
+    ] = await Promise.all([
       permission,
       superAdminUser,
       superRole,
       productCategory,
       products,
     ]);
-    console.log({
+    console.log(
       res_permission,
       res_superAdminUser,
       res_superRole,
       res_productCategory,
       res_products,
-    });
-
-    // console.log({...[...seedRes]});
+    );
   } catch (error) {
-    console.log(error);
+    console.error(error);
+  } finally {
+    await prisma.$disconnect();
   }
 }
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

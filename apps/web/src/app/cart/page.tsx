@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import CartItem from "@/components/CartItems";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 import {
   getCartItems,
@@ -16,6 +17,7 @@ import { Modal } from "@/components/features-2/ui/Modal";
 import MainButton from "@/components/MainButton";
 
 const CartPage: React.FC = () => {
+  const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -79,8 +81,11 @@ const CartPage: React.FC = () => {
     try {
       const response = await selectForCheckout(selectedForCheckout);
       const checkoutItems = response.data;
-      console.log("Items selected for checkout:", checkoutItems);
-      // Proceeding to checkout logic later should be added here...
+      router.push("/cart/shipping", {
+        state: {
+          checkoutItems, // pass the items as state
+        },
+      });
     } catch (error) {
       console.error("Error selecting items for checkout:", error);
     }
@@ -275,11 +280,11 @@ const CartPage: React.FC = () => {
                   0,
                 0,
               )})`}
-              items={items.filter((item) =>
-                selectedItems.includes(item.product_id),
-              )}
-              disableButton={selectedItems.length === 0}
-              onCheckout={handleProceedToCheckout}
+              items={selectedItems.map((id) =>
+                items.find((item) => item.product_id === id),
+              )} //changed
+              disableButton={selectedItems.length === 0} // changed
+              onCheckout={handleProceedToCheckout} //changed
               showDeliveryPrice={false}
               showVoucherButton={false}
               showSubtotal={false}

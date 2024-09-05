@@ -129,6 +129,8 @@ model UsersAddress {
   latitude    Decimal? @db.Decimal(8, 6)
   longtitude  Decimal? @db.Decimal(9, 6)
 
+  orders      Order[]  @relation("OrderAddress") 
+
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
   deletedAt DateTime?
@@ -273,6 +275,7 @@ model Product {
   unit                String
   price               Float
   image               String?
+  unit_in_gram Float?
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -348,6 +351,8 @@ model Order {
   store             Store                     @relation(fields: [store_id], references: [id])
   store_id          Int
   expedition        Expedition                @relation(fields: [expedition_id], references: [id])
+  address_id Int
+  address UsersAddress @relation("OrderAddress", fields: [address_id], references: [id])
   expedition_id     Int
   payment_proof     String?
   order_status      OrderStatus               @relation(fields: [order_status_id], references: [id])

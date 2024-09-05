@@ -12,7 +12,6 @@ import passport from 'passport';
 import session from 'express-session';
 
 import './auth';
-// import { SampleRouter } from './routers/sample.router';
 import { AuthRouter } from './routers/auth.router';
 import { ProductRouter } from './routers/product.router';
 import { CategoryRouter } from './routers/category.router';
@@ -66,12 +65,9 @@ export default class App {
   }
 
   private routes(): void {
-    // const sampleRouter = new SampleRouter();
-    // this.app.use('/api/samples', sampleRouter.getRouter());
-
     const authRouter = new AuthRouter();
     const productRouter = new ProductRouter();
-    const categoryRouter = new CategoryRouter()
+    const categoryRouter = new CategoryRouter();
     const cartRouter = new CartRouter();
     const userRouter = new UserRouter();
     const credentialRouter = new CredentialRouter();
@@ -82,8 +78,8 @@ export default class App {
     });
 
     this.app.use('/api/auth', authRouter.getRouter());
-    this.app.use('/api/products', productRouter.getRouter())
-    this.app.use('/api/categories', categoryRouter.getRouter())
+    this.app.use('/api/products', productRouter.getRouter());
+    this.app.use('/api/categories', categoryRouter.getRouter());
 
     this.app.use('/api/cart', cartRouter.getRouter());
     this.app.use('/api/users', userRouter.getRouter());

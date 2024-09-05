@@ -30,7 +30,7 @@ export class CartRouter {
       this.cartController.getCartItems(req as CustomRequest, res),
     );
 
-    this.router.post('/checkout', verifyToken, (req, res) =>
+    this.router.post('/select-for-checkout', verifyToken, (req, res) =>
       this.cartController.selectForCheckout(req as CustomRequest, res),
     );
   }

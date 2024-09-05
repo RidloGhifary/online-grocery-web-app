@@ -321,7 +321,7 @@ export class CartController {
       return res.status(400).json({ error: validationResult.error.errors });
     }
 
-    const { productIds } = validationResult.data;
+    const { productIds, quantities } = validationResult.data;
     const userId = user.id;
 
     try {
@@ -338,6 +338,21 @@ export class CartController {
         return res
           .status(404)
           .json({ error: 'There are no choosen items for checkout' });
+      }
+
+      for (let i = 0; i < productIds.length; i++) {
+        const productId = productIds[i];
+        const quantity = quantities[i];
+
+        await prisma.cart.updateMany({
+          where: {
+            user_id: userId,
+            product_id: productId,
+          },
+          data: {
+            qty: quantity,
+          },
+        });
       }
 
       return res.json(cartItems);

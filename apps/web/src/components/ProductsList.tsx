@@ -97,10 +97,6 @@ export default function ProductsList({ api_url }: Props) {
     return <ErrorInfo error="Ups, no products found" />;
   }
 
-  if (products?.length == 0) {
-    return <ErrorInfo error="Ups, no product found" />;
-  }
-
   return (
     <div className="my-8 space-y-6">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">

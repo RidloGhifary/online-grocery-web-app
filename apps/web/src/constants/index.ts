@@ -1,8 +1,10 @@
-import {FaCheckCircle,
+import {
+  FaCheckCircle,
   FaCog,
   FaTruck,
   FaHandHoldingHeart,
-  FaHandshake, } from "react-icons/fa";
+  FaHandshake,
+} from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 
 export interface mockCartItem {
@@ -70,9 +72,9 @@ export const mockTransactionDetails = {
 };
 
 export const deliveryOptions = [
-  { id: "JNE", name: "JNE", price: 10000 },
-  { id: "POS Indonesia", name: "POS Indonesia", price: 12000 },
-  { id: "TIKI", name: "TIKI", price: 9000 },
+  { id: "jne", name: "Jalur Nugraha Ekakurir (JNE)" },
+  { id: "pos", name: "POS Indonesia (POS)" },
+  { id: "tiki", name: "Citra Van Titipan Kilat (TIKI)" },
 ];
 
 export const Provinces = [

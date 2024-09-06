@@ -31,7 +31,7 @@ const AddressCard: React.FC<Props> = ({
         <p className="text-sm">{address?.address}</p>
         <div className="text-sm">
           {address?.city?.city_name}, {address?.city?.province?.province},{" "}
-          <i>{selectedAddress?.postal_code}</i>
+          <i>{address?.postal_code}</i>
         </div>
 
         {use_primary_button && selectedAddress?.id !== address?.id && (

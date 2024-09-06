@@ -21,7 +21,7 @@ export default function CategoryFilter() {
       params.set("category", selectedCategory);
     }
 
-    router.push(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`);
   };
 
   return (

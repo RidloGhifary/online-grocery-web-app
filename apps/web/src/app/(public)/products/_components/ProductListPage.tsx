@@ -5,6 +5,7 @@ import SidePanel from "@/components/features-2/layouts/SidePanel";
 import ProductFilter from "@/components/features-2/product/filter/ProductFilter";
 import PublicProductList from "@/components/features-2/product/PublicProductList";
 import { Modal } from "@/components/features-2/ui/Modal";
+import PaginationPushRoute from "@/components/features-2/ui/PaginationPushRoute";
 import SearchBar from "@/components/features-2/ui/SearchBar";
 import { useProductWithFilter } from "@/hooks/publicProductHooks";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -28,6 +29,8 @@ export default function () {
     orderField: queryParams.get("orderField") || "product_name",
     order: (queryParams.get("order") as "asc" | "desc") || "asc",
     category: queryParams.get("category") || undefined,
+    page: Number(queryParams.get("page")) || undefined,
+    limit: Number(queryParams.get("limit")) || undefined,
   });
 
   const debounced = useDebouncedCallback(
@@ -39,13 +42,13 @@ export default function () {
         params.delete("search");
       }
 
-      router.push(`${pathname}?${params.toString()}`);
+      router.replace(`${pathname}?${params.toString()}`);
       setIsDebouncing(false); // Set to false after debounce completes
     },
     1000,
     {
       leading: true, // Run the function at the start of the delay
-    }
+    },
   );
 
   const onSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -64,7 +67,10 @@ export default function () {
       >
         <div className="flex w-full max-w-full flex-wrap justify-center">
           <div className="flex max-w-full flex-1 flex-row items-center px-4 py-0 pt-4 sm:max-w-xl sm:px-0 md:py-4 md:pr-2">
-            <SearchBar defaultValue={queryParams.get("search") || undefined} onChangeSearch={onSearch} />
+            <SearchBar
+              defaultValue={queryParams.get("search") || undefined}
+              onChangeSearch={onSearch}
+            />
           </div>
           <div className="flex w-full max-w-full flex-row items-center justify-center px-4 py-4 sm:max-w-xl sm:px-0 md:max-w-24 lg:hidden">
             <button
@@ -81,8 +87,21 @@ export default function () {
           <div className="flex w-full justify-center py-5">
             <span className="loading loading-spinner loading-lg text-primary"></span>
           </div>
-        ) : products?.data && products.data.length > 0 ? (
-          <PublicProductList products={products.data} isLoading={isLoading} />
+        ) : products &&
+          products?.data &&
+          products.data.data &&
+          products.data.data.length > 0 ? (
+          <>
+            <PublicProductList
+              products={products.data.data}
+              isLoading={isLoading}
+            />
+            <div className="flex w-full max-w-full justify-center">
+              <div className="flex w-full max-w-xl justify-center px-3 py-5">
+                <PaginationPushRoute pagination={products.data.pagination!} />
+              </div>
+            </div>
+          </>
         ) : (
           <div className="flex w-full justify-center py-5">
             <p>No products found.</p>
@@ -90,10 +109,7 @@ export default function () {
         )}
       </Drawer>
 
-      <Modal
-        show={modalActive}
-        onClose={() => setModalActive(false)}
-      >
+      <Modal show={modalActive} onClose={() => setModalActive(false)}>
         {modalActive && <ProductFilter />}
       </Modal>
     </>

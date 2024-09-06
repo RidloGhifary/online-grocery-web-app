@@ -1,5 +1,6 @@
 "use server";
 
+import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import { ProductCompleteInterface, ProductRecordInterface } from "@/interfaces/ProductInterface";
 import createQueryParams from "@/utils/createQueryParams";
@@ -10,21 +11,25 @@ export async function getProductListWithFilter({
   search,
   order ,
   orderField ,
+  page=1,
+  limit=20
 }: {
   category?: string;
   search?: string;
   order?: "asc" | "desc"|string;
   orderField?: "product_name" | "category"|string;
-}): Promise<CommonResultInterface<ProductCompleteInterface[]>> {
-  const result = {
+  page?: number,
+  limit?: number
+}): Promise<CommonPaginatedResultInterface<ProductCompleteInterface[]>> {
+  let result = {
     ok: false,
-  } as CommonResultInterface<ProductCompleteInterface[]>;
+  } as unknown as CommonPaginatedResultInterface<ProductCompleteInterface[]>;
 
   try {
     const response = await fetch(
       createQueryParams({
         url: `${process.env.BACKEND_URL}/products`,
-        params: { category, search, order, orderField },
+        params: { category, search, order, orderField, page, limit },
       })
     );
 
@@ -32,11 +37,13 @@ export async function getProductListWithFilter({
       result.error = `Failed to fetch product list: ${response.statusText}`;
       return result;
     }
-
-    const data = await response.json();
-    result.data = data.data as ProductCompleteInterface[];
-    result.ok = true;
-    result.message = "Got the product";
+    
+    const data = await response.json() as unknown as CommonPaginatedResultInterface<ProductCompleteInterface[]>;
+    console.log(data);
+    result = data
+    // result.data.data = data.data.data;
+    // result.ok = true;
+    // result.message = "Got the product";
     
   } catch (error) {
     result.error = error instanceof Error ? error.message : "Failed to fetch product list";

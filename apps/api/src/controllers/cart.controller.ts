@@ -125,15 +125,38 @@ export class CartController {
 
     try {
       const result = await prisma.$transaction(async (prisma) => {
+        const currentUserAddress = await prisma.user.findFirst({
+          include :{
+            addresses :{
+              where :{
+                is_primary: true
+              },
+            }
+          }
+        })
         const product = await prisma.product.findUnique({
           where: { id: productId },
+          include :{
+            StoreHasProduct : {
+              where :{
+                store :{
+                  city_id : currentUserAddress?.addresses[0].city_id
+                  
+                }
+              }
+              // include:{
+              //   store : true
+              // }
+            }
+          }
         });
 
         if (!product) {
           throw new Error('Product not found');
         }
 
-        if (product.current_stock === 0) {
+        // if (product.current_stock === 0) {
+        if (product.StoreHasProduct[0].qty === 0) {
           throw new Error('Product ran out of stock, cannot add to cart');
         }
 
@@ -147,18 +170,24 @@ export class CartController {
         const additionalQuantityNeeded = quantity;
 
         if (existingCart) {
-          if (additionalQuantityNeeded > product.current_stock!) {
+          if (additionalQuantityNeeded > product.StoreHasProduct[0].qty!) {
             throw new Error(
-              `Remaing stock are only ${product.current_stock}, cannot add more.`,
+              `Remaing stock are only ${product.StoreHasProduct[0].qty}, cannot add more.`,
             );
           }
 
-          const updatedProduct = await prisma.product.update({
-            where: { id: productId },
-            data: {
-              current_stock: product.current_stock! - additionalQuantityNeeded,
-            },
-          });
+          // const updatedProduct = await prisma.product.update({
+          //   where: { id: productId,  },
+          //   data: {
+          //     current_stock: product.current_stock! - additionalQuantityNeeded,
+          //   },
+          // });
+
+          const updatedProduct = await prisma.storeHasProduct.update({
+            where :{
+              product_id : productId
+            }
+          })
 
           const updatedCart = await prisma.cart.update({
             where: { id: existingCart.id },

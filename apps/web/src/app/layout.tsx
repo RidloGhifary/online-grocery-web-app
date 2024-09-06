@@ -34,7 +34,10 @@ export default async function RootLayout({
         <QueryProvider>
           <CartProvider>
             <ToastContainer position="top-center" draggable={true} />
-            <main>{children}</main>
+            {/* <main> */}
+              {children}
+
+            {/* </main> */}
           </CartProvider>
         </QueryProvider>
       </body>

@@ -21,18 +21,32 @@ export class ProductController {
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber,
         where: {
-          current_stock: {
-            gt: 0,
-          },
+          StoreHasProduct :{
+            some : {
+              qty : {
+                gt: 0,
+              }
+            }
+          }
         },
         include: {
           product_discounts: true,
-          store: {
-            include: {
-              city: true,
-              province: true,
-            },
-          },
+          // store: {
+          //   include: {
+          //     city: true,
+          //     province: true,
+          //   },
+          // },
+          StoreHasProduct :{
+            include :{
+              store :{
+                include :{
+                  city : true ,
+                  province : true
+                }
+              }
+            }
+          }
         },
       });
 
@@ -74,9 +88,13 @@ export class ProductController {
               },
             },
           },
-          current_stock: {
-            gt: 0,
-          },
+          StoreHasProduct :{
+            some :{
+              qty :{
+                gt: 0,
+              }
+            }
+          }
         },
         include: {
           product_discounts: {
@@ -89,12 +107,16 @@ export class ProductController {
               },
             },
           },
-          store: {
-            include: {
-              city: true,
-              province: true,
-            },
-          },
+          StoreHasProduct :{
+            include :{
+              store: {
+                include: {
+                  city: true,
+                  province: true,
+                },
+              },
+            }
+          }
         },
       });
 
@@ -126,7 +148,7 @@ export class ProductController {
           .json({ ok: false, message: 'Invalid page or limit' });
       }
 
-      let products;
+      let products : Product[];
 
       if (latitude && longitude) {
         const userLatitude = parseFloat(latitude as string);
@@ -152,18 +174,40 @@ export class ProductController {
 
         products = await prisma.product.findMany({
           where: {
-            current_stock: { gt: 0 },
-            store: {
-              city: {
-                city_name: userCity,
-              },
-            },
+            // current_stock: { gt: 0 },
+            
+            // store: {
+            //   city: {
+            //     city_name: userCity,
+            //   },
+            // },
+            StoreHasProduct :{
+              some :{
+                qty : {
+                  gt : 0
+                },
+                store :{
+                  city :{
+                    city_name : userCity
+                  }
+                }
+              }
+            }
           },
           include: {
             product_discounts: true,
-            store: {
-              include: { city: true, province: true },
-            },
+            // store: {
+            //   include: { city: true, province: true },
+            // },
+            StoreHasProduct :{
+              include :{
+                store :{
+                  include :{
+                    city :true
+                  }
+                }
+              }
+            }
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
@@ -171,17 +215,35 @@ export class ProductController {
       } else {
         // No coordinates provided, get products from the central store
         products = await prisma.product.findMany({
+          
           where: {
-            current_stock: { gt: 0 },
-            store: {
-              store_type: 'central',
-            },
+            // current_stock: { gt: 0 },
+            // store: {
+            //   store_type: 'central',
+            // },
+            StoreHasProduct :{
+              some :{
+                qty :{
+                  gt : 0
+                },
+                store :{
+                  store_type : 'central'
+                }
+              }
+            }
+            
           },
           include: {
             product_discounts: true,
-            store: {
-              include: { city: true, province: true },
-            },
+            // store: {
+            //   include: { city: true, province: true },
+            // },
+            StoreHasProduct :{
+              select :{
+                qty : true,
+                // store : 
+              }
+            }
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
@@ -204,7 +266,7 @@ export class ProductController {
       res.status(500).json({ ok: false, message: 'Internal server error' });
     }
   }
-
+  //
   async productList(req: Request, res: Response) {
     const { category, search, order, order_field } = req.query;
     const { page = 1, limit = 20 } = req.query;
@@ -263,19 +325,28 @@ export class ProductController {
     }
 
     try {
+      {
+        // field product,
+        // StoreHasProduct : {
+        
+      // }
+        //
+      }
       const product = await prisma.product.findUnique({
         where: { id: productId },
-        select: {
-          id: true,
-          sku: true,
-          name: true,
-          description: true,
-          current_stock: true,
-          unit: true,
-          price: true,
-          image: true,
-          store_id: true,
-        },
+        // select: {
+        //   id: true,
+        //   sku: true,
+        //   name: true,
+        //   description: true,
+        //   // current_stock: true,
+        //   unit: true,
+        //   price: true,
+        //   image: true,
+        // },
+        include :{
+          StoreHasProduct : true
+        }
       });
 
       if (!product) {

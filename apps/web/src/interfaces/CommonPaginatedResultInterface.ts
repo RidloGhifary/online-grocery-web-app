@@ -1,9 +1,11 @@
+import { PaginationInterface } from "./PaginateInterface";
+
 /**
- * A common interface for API responses.
+ * A common interface for paginate API responses.
  * 
  * @template T - The type of data to be returned. 
  */
-export default interface CommonResultInterface<T> {
+export default interface CommonPaginatedResultInterface<T> {
   /**
    * Indicates whether the operation was successful.
    */
@@ -15,7 +17,7 @@ export default interface CommonResultInterface<T> {
    * @type {T}
    * @description Provide the data using the appropriate constructor.
    */
-  data?: T;
+  data: {data :T|null, pagination : PaginationInterface|null};
 
   /**
    * A message providing additional information about the operation.

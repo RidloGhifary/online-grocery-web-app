@@ -72,7 +72,7 @@ export default class App {
     const authRouter = new AuthRouter();
     const productRouter = new ProductRouter();
     const categoryRouter = new CategoryRouter()
-    const cartRouter = new CartRouter();
+    // const cartRouter = new CartRouter();
     const userRouter = new UserRouter();
     const credentialRouter = new CredentialRouter();
     const storeRouter = new StoreRouter();
@@ -85,7 +85,7 @@ export default class App {
     this.app.use('/api/products', productRouter.getRouter())
     this.app.use('/api/categories', categoryRouter.getRouter())
 
-    this.app.use('/api/cart', cartRouter.getRouter());
+    // this.app.use('/api/cart', cartRouter.getRouter());
     this.app.use('/api/users', userRouter.getRouter());
     this.app.use('/api/credentials', credentialRouter.getRouter());
     this.app.use('/api/stores', storeRouter.getRouter());

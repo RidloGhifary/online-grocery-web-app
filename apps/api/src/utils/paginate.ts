@@ -13,7 +13,7 @@ export default function ({pageNumber=1,limitNumber=20,totalData}:PaginateInterfa
   return {
     current_page : safePageNumber,
     next : safePageNumber < totalPages ? safePageNumber + 1 : null,
-    back : safePageNumber < 1 ? safePageNumber - 1: null,
+    back : safePageNumber > 1 ? safePageNumber - 1: null,
     total_page : totalPages
   }
 }

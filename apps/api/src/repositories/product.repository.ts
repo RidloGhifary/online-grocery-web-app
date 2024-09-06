@@ -120,6 +120,7 @@ class ProductRepository {
         limitNumber : safeLimitNumber,
         totalData : count
       })
+
       
       result.ok = true;
       result.message = 'Query Success';

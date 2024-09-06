@@ -132,6 +132,7 @@ model UsersAddress {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
   deletedAt DateTime?
+  orders    Order[]   @relation("OrderAddress")
 
   @@index([id])
   @@map("users_addresses")
@@ -209,16 +210,17 @@ model Store {
   longtitude  Decimal   @db.Decimal(9, 6)
 
   store_admins        StoreHasAdmin[]
-  products            Product[]
+  // products            Product[]
   inventory_from      StocksAdjustment[] @relation("FromStore")
   inventory_destinied StocksAdjustment[] @relation("DestiniedStore")
   carts               Cart[]
   orders              Order[]
   order_detail        OrderDetail[]
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  createdAt       DateTime?         @default(now())
+  updatedAt       DateTime?         @updatedAt
+  deletedAt       DateTime?
+  StoreHasProduct StoreHasProduct[] @relation("ProductHasStore")
 
   @@index([id])
   @@map("stores")
@@ -269,10 +271,10 @@ model Product {
   product_category    ProductCategory @relation(fields: [product_category_id], references: [id])
   product_category_id Int
   description         String?
-  current_stock       Int?
   unit                String
   price               Float
   image               String?
+  unit_in_gram        Float? //newly added
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -282,15 +284,31 @@ model Product {
   carts             Cart[]
   vouchers          Voucher[]
   product_discounts ProductDiscount[]
-  store             Store?             @relation(fields: [store_id], references: [id])
-  store_id          Int?
+  // store             Store?             @relation(fields: [store_id], references: [id])
+  // store_id          Int?
   order_detail      OrderDetail[]
+  StoreHasProduct   StoreHasProduct[]  @relation("StoreHasProduct")
 
   @@index([id])
   @@index([sku])
   @@index([name])
   @@index([slug])
   @@map("products")
+}
+
+model StoreHasProduct {
+  id         Int      @id @default(autoincrement())
+  qty        Int?
+  product_id Int?
+  product    Product? @relation("StoreHasProduct", fields: [product_id], references: [id])
+  store_id   Int?
+  store      Store?   @relation("ProductHasStore", fields: [store_id], references: [id])
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@map("stores_have_products")
 }
 
 model StocksAdjustment {
@@ -306,6 +324,8 @@ model StocksAdjustment {
   from_store_id      Int
   destinied_store    Store           @relation("DestiniedStore", fields: [destinied_store_id], references: [id])
   destinied_store_id Int
+  order_detail_id    Int?
+  order_detail       OrderDetail?    @relation("OrderDetailInStock", fields: [order_detail_id], references: [id])
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -352,6 +372,8 @@ model Order {
   payment_proof     String?
   order_status      OrderStatus               @relation(fields: [order_status_id], references: [id])
   order_status_id   Int
+  address_id        Int //newly added
+  address           UsersAddress              @relation("OrderAddress", fields: [address_id], references: [id]) //newly added
   order_details     OrderDetail[]
   vouchers          OrderHasVoucher[]
   product_discounts OrderHasProductDiscount[]
@@ -391,9 +413,10 @@ model OrderDetail {
   price      Float
   sub_total  Float
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  createdAt        DateTime?          @default(now())
+  updatedAt        DateTime?          @updatedAt
+  deletedAt        DateTime?
+  StocksAdjustment StocksAdjustment[] @relation("OrderDetailInStock")
 
   @@index([id])
   @@map("order_details")

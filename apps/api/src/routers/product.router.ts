@@ -13,7 +13,7 @@ export class ProductRouter {
 
   private initializeRoutes(): void {
     this.router.get('/', this.productController.getAllProducts);
-    this.router.get('/', this.productController.productList);
+    // this.router.get('/', this.productController.productList);
     this.router.get('/discounts', this.productController.getDiscountProduct);
     this.router.get('/locations', this.productController.getProductByLocation);
     this.router.post('/', this.productController.createProduct);

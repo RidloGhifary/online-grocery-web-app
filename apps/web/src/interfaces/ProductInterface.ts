@@ -13,7 +13,7 @@ export interface ProductCompleteInterface {
   updatedAt: Date | string | null;
   deletedAt: Date | string | null;
   store_id: number | null;
-  product_category ?: ProductCategoryInterface 
+  product_category ?: ProductCategoryInterface;
 }
 
 export interface ProductCategoryInterface {

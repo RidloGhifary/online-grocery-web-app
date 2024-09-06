@@ -125,8 +125,29 @@ export class CartController {
 
     try {
       const result = await prisma.$transaction(async (prisma) => {
+        const currentUserAddress = await prisma.user.findFirst({
+          include: {
+            addresses: {
+              where: {
+                is_primary: true,
+              },
+            },
+          },
+        });
         const product = await prisma.product.findUnique({
           where: { id: productId },
+          include: {
+            StoreHasProduct: {
+              where: {
+                store: {
+                  city_id: currentUserAddress?.addresses[0].city_id,
+                },
+              },
+              // include:{
+              //   store : true
+              // }
+            },
+          },
         });
 
         if (!product) {

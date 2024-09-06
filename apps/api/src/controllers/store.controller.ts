@@ -43,7 +43,7 @@ export class StoreController {
       const { ok, message } = await getUserPermission({
         user_id: req.currentUser?.id,
         role: 'super_admin',
-        permission: 'create_store',
+        permission: 'super',
       });
 
       if (!ok) {
@@ -121,7 +121,7 @@ export class StoreController {
       const { ok, message } = await getUserPermission({
         user_id: req.currentUser?.id,
         role: 'super_admin',
-        permission: 'update_store',
+        permission: 'super',
       });
 
       if (!ok) {
@@ -212,7 +212,7 @@ export class StoreController {
       const { ok, message } = await getUserPermission({
         user_id: req.currentUser?.id,
         role: 'super_admin',
-        permission: 'delete_store',
+        permission: 'super',
       });
 
       if (!ok) {

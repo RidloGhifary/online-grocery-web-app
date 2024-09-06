@@ -19,3 +19,14 @@ export interface StoreProps {
   province: ProvinceProps;
   city: CityProps;
 }
+
+export interface StoreHasProductProps {
+  id: number;
+  qty: number;
+  product_id: number;
+  store_id: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: any;
+  store: StoreProps;
+}

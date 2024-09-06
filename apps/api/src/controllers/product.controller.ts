@@ -28,6 +28,12 @@ export class ProductController {
                 gt: 0,
               },
             },
+          StoreHasProduct: {
+            some: {
+              qty: {
+                gt: 0,
+              },
+            },
           },
         },
         include: {
@@ -95,6 +101,12 @@ export class ProductController {
                 gt: 0,
               },
             },
+          StoreHasProduct: {
+            some: {
+              qty: {
+                gt: 0,
+              },
+            },
           },
         },
         include: {
@@ -108,6 +120,14 @@ export class ProductController {
               },
             },
           },
+          StoreHasProduct: {
+            include: {
+              store: {
+                include: {
+                  city: true,
+                  province: true,
+                },
+              },
           StoreHasProduct: {
             include: {
               store: {
@@ -172,6 +192,7 @@ export class ProductController {
       }
 
       let products: Product[];
+      let products: Product[];
 
       if (latitude && longitude) {
         const userLatitude = parseFloat(latitude as string);
@@ -195,7 +216,7 @@ export class ProductController {
           });
         }
 
-        products = await prisma.product.findMany({
+        const getProducts = await prisma.product.findMany({
           where: {
             // current_stock: { gt: 0 },
 
@@ -234,6 +255,15 @@ export class ProductController {
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
+        });
+
+        products = getProducts.map((product) => {
+          return {
+            ...product,
+            StoreHasProduct: product.StoreHasProduct.filter(
+              (store) => store.store?.city.city_name === userCity,
+            ),
+          };
         });
       } else {
         // No coordinates provided, get products from the central store
@@ -434,6 +464,12 @@ export class ProductController {
     }
 
     try {
+      {
+        // field product,
+        // StoreHasProduct : {
+        // }
+        //
+      }
       const product = await prisma.product.findUnique({
         where: { id: productId },
         include: {

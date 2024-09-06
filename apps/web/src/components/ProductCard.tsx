@@ -15,7 +15,7 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Link
-      href={`/products/${product?.id}?name=${product?.name}?store=${product?.store?.id}-${product?.store?.name}`}
+      href={`/products/${product?.id}?name=${product?.name}`}
       className="card h-[300px] w-44 bg-white shadow md:h-[340px] md:w-56"
     >
       <figure>
@@ -48,20 +48,22 @@ export default function ProductCard({ product }: ProductCardProps) {
             </p>
           )}
           <p className="line-clamp-1 text-sm">
-            {product?.current_stock} stock available
+            {product?.StoreHasProduct[0]?.qty} stock available
           </p>
         </div>
         <div className="flex items-center gap-1">
-          {product?.store?.store_type === "central" ? (
+          {product?.StoreHasProduct[0]?.store?.store_type === "central" ? (
             <FaStore size={15} />
           ) : (
             <RiGitBranchFill size={15} />
           )}
           <span className="text-sm text-primary">
-            {product?.store?.city?.city_name}
+            {product?.StoreHasProduct[0]?.store?.city?.city_name}
           </span>
         </div>
-        <p className="badge-base-100 badge">{product?.store?.name}</p>
+        <p className="badge-base-100 badge">
+          {product?.StoreHasProduct[0]?.store?.name}
+        </p>
       </div>
     </Link>
   );

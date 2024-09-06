@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import Cookies from "js-cookie";
+import { useCart } from "@/context/CartContext";
 
 interface CartItem {
   id: number;
@@ -120,24 +121,50 @@ export async function updateCartItemQuantity(
 
 export const selectForCheckout = async (
   productIds: number[],
-): Promise<AxiosResponse<SelectForCheckoutResponse>> => {
+  setCheckoutItems: (items: CartItem[]) => void,
+) => {
   const token = getToken();
   if (!token) {
     throw new Error("User is not authenticated");
   }
 
-  const response = await api.post<SelectForCheckoutResponse>(
-    "/cart/select-for-checkout",
-    { productIds },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
+  try {
+    const response = await api.post<SelectForCheckoutResponse>(
+      "/cart/select-for-checkout",
+      { productIds },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    },
-  );
+    );
 
-  return response;
+    setCheckoutItems(response.data.data); // Store the checkout items in the context
+    return response;
+  } catch (error) {
+    throw error;
+  }
 };
+// export const selectForCheckout = async (
+//   productIds: number[],
+// ): Promise<AxiosResponse<SelectForCheckoutResponse>> => {
+//   const token = getToken();
+//   if (!token) {
+//     throw new Error("User is not authenticated");
+//   }
+
+//   const response = await api.post<SelectForCheckoutResponse>(
+//     "/cart/select-for-checkout",
+//     { productIds },
+//     {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     },
+//   );
+
+//   return response;
+// };
 
 export async function removeItemFromCart(
   productId: number,

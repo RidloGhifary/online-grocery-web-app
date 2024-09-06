@@ -30,7 +30,7 @@ const CartPage: React.FC = () => {
   const [search, setSearch] = useState<string>("");
   const [hasMoreItems, setHasMoreItems] = useState<boolean>(true);
   const [isSortModal, setIsSortModal] = useState(false);
-  const { refreshCart } = useCart();
+  const { setCheckoutItems, refreshCart } = useCart();
 
   useEffect(() => {
     const fetchCartItems = async () => {
@@ -79,17 +79,28 @@ const CartPage: React.FC = () => {
 
   const handleProceedToCheckout = async () => {
     try {
-      const response = await selectForCheckout(selectedForCheckout);
-      const checkoutItems = response.data;
-      router.push("/cart/shipping", {
-        state: {
-          checkoutItems, // pass the items as state
-        },
-      });
+      // Pass `selectedItems` and `setCheckoutItems` to the API function
+      await selectForCheckout(selectedItems, setCheckoutItems);
+      // Navigate to the shipping subfolder after selection
+      router.push("/cart/shipping");
     } catch (error) {
       console.error("Error selecting items for checkout:", error);
     }
   };
+
+  // const handleProceedToCheckout = async () => {
+  //   try {
+  //     const response = await selectForCheckout(selectedForCheckout);
+  //     const checkoutItems = response.data;
+  //     router.push("/cart/shipping", {
+  //       state: {
+  //         checkoutItems, // pass the items as state
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.error("Error selecting items for checkout:", error);
+  //   }
+  // };
 
   const handleQuantityChange = async (productId: number, quantity: number) => {
     try {

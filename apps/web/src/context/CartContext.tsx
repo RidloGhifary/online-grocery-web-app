@@ -2,14 +2,33 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getCartItems } from "@/api/cart/route";
 
+interface CartItem {
+  id: number;
+  product_id: number;
+  qty: number;
+  user_id: number;
+  store_id: number;
+  totalPrice: number;
+  product: {
+    name: string;
+    price: number;
+    image: string;
+    description: string;
+  };
+}
+
 interface CartContextProps {
   cartItemCount: number;
   refreshCart: () => void;
+  checkoutItems: CartItem[];
+  setCheckoutItems: (items: CartItem[]) => void;
 }
 
 const CartContext = createContext<CartContextProps>({
   cartItemCount: 0,
   refreshCart: () => {},
+  checkoutItems: [],
+  setCheckoutItems: () => {},
 });
 
 export const useCart = () => useContext(CartContext);
@@ -18,6 +37,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [cartItemCount, setCartItemCount] = useState<number>(0);
+  const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([]);
 
   const refreshCart = async () => {
     try {
@@ -42,7 +62,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   return (
-    <CartContext.Provider value={{ cartItemCount, refreshCart }}>
+    <CartContext.Provider
+      value={{
+        cartItemCount,
+        refreshCart,
+        checkoutItems,
+        setCheckoutItems,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

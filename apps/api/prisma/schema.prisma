@@ -347,8 +347,8 @@ model Cart {
   qty        Int
   user       User    @relation(fields: [user_id], references: [id])
   user_id    Int
-  store      Store   @relation(fields: [store_id], references: [id])
-  store_id   Int
+  store      Store?   @relation(fields: [store_id], references: [id])
+  store_id   Int?
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt

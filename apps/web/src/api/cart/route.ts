@@ -121,7 +121,7 @@ export async function updateCartItemQuantity(
 
 export const selectForCheckout = async (
   productIds: number[],
-  setCheckoutItems: (items: CartItem[]) => void,
+  quantities: number[],
 ) => {
   const token = getToken();
   if (!token) {
@@ -131,7 +131,7 @@ export const selectForCheckout = async (
   try {
     const response = await api.post<SelectForCheckoutResponse>(
       "/cart/select-for-checkout",
-      { productIds },
+      { productIds, quantities },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -139,32 +139,11 @@ export const selectForCheckout = async (
       },
     );
 
-    setCheckoutItems(response.data.data); // Store the checkout items in the context
     return response;
   } catch (error) {
     throw error;
   }
 };
-// export const selectForCheckout = async (
-//   productIds: number[],
-// ): Promise<AxiosResponse<SelectForCheckoutResponse>> => {
-//   const token = getToken();
-//   if (!token) {
-//     throw new Error("User is not authenticated");
-//   }
-
-//   const response = await api.post<SelectForCheckoutResponse>(
-//     "/cart/select-for-checkout",
-//     { productIds },
-//     {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     },
-//   );
-
-//   return response;
-// };
 
 export async function removeItemFromCart(
   productId: number,

@@ -23,7 +23,9 @@ const CartPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState<React.ReactNode>("");
   const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {});
-  const [selectedForCheckout, setSelectedForCheckout] = useState<number[]>([]);
+  const [selectedForCheckout, setSelectedForCheckout] = useState<
+    { product_id: number; qty: number }[]
+  >([]);
   const [page, setPage] = useState<number>(1);
   const [sort, setSort] = useState<string>("name");
   const [order, setOrder] = useState<string>("asc");
@@ -64,6 +66,27 @@ const CartPage: React.FC = () => {
         ? prevSelectedItems.filter((id) => id !== productId)
         : [...prevSelectedItems, productId],
     );
+
+    setSelectedForCheckout((prevSelectedForCheckout) => {
+      const isAlreadySelected = prevSelectedForCheckout.some(
+        (item) => item.product_id === productId,
+      );
+      if (isAlreadySelected) {
+        return prevSelectedForCheckout.filter(
+          (item) => item.product_id !== productId,
+        );
+      } else {
+        const selectedItem = items.find(
+          (item) => item.product_id === productId,
+        );
+        return selectedItem
+          ? [
+              ...prevSelectedForCheckout,
+              { product_id: selectedItem.product_id, qty: selectedItem.qty },
+            ]
+          : prevSelectedForCheckout;
+      }
+    });
   };
 
   const handleSelectAll = () => {
@@ -71,36 +94,41 @@ const CartPage: React.FC = () => {
       setSelectedItems([]);
       setSelectedForCheckout([]);
     } else {
-      const allProductIds = items.map((item) => item.product_id);
-      setSelectedItems(allProductIds);
-      setSelectedForCheckout(allProductIds);
+      const allSelectedItems = items.map((item) => ({
+        product_id: item.product_id,
+        qty: item.qty,
+      }));
+      setSelectedItems(allSelectedItems.map((item) => item.product_id));
+      setSelectedForCheckout(allSelectedItems);
     }
   };
 
   const handleProceedToCheckout = async () => {
     try {
-      // Pass `selectedItems` and `setCheckoutItems` to the API function
-      await selectForCheckout(selectedItems, setCheckoutItems);
-      // Navigate to the shipping subfolder after selection
-      router.push("/cart/shipping");
+      if (selectedForCheckout.length === 0) {
+        console.error("No items selected for checkout");
+        return;
+      }
+
+      setCheckoutItems(
+        selectedForCheckout.map((item) => ({
+          ...item,
+          product:
+            items.find((cartItem) => cartItem.product_id === item.product_id)
+              ?.product || {},
+        })),
+      );
+
+      await selectForCheckout(
+        selectedForCheckout.map((item) => item.product_id),
+        selectedForCheckout.map((item) => item.qty),
+      );
+
+      router.push("/cart/checkout");
     } catch (error) {
       console.error("Error selecting items for checkout:", error);
     }
   };
-
-  // const handleProceedToCheckout = async () => {
-  //   try {
-  //     const response = await selectForCheckout(selectedForCheckout);
-  //     const checkoutItems = response.data;
-  //     router.push("/cart/shipping", {
-  //       state: {
-  //         checkoutItems, // pass the items as state
-  //       },
-  //     });
-  //   } catch (error) {
-  //     console.error("Error selecting items for checkout:", error);
-  //   }
-  // };
 
   const handleQuantityChange = async (productId: number, quantity: number) => {
     try {
@@ -287,15 +315,15 @@ const CartPage: React.FC = () => {
               buttonText={`Proceed to Checkout (${selectedItems.reduce(
                 (total, productId) =>
                   total +
-                    items.find((item) => item.product_id === productId)?.qty ||
-                  0,
+                  (items.find((item) => item.product_id === productId)?.qty ||
+                    0),
                 0,
               )})`}
-              items={selectedItems.map((id) =>
-                items.find((item) => item.product_id === id),
-              )} //changed
-              disableButton={selectedItems.length === 0} // changed
-              onCheckout={handleProceedToCheckout} //changed
+              items={selectedItems
+                .map((id) => items.find((item) => item.product_id === id))
+                .filter((item): item is CartItem => item !== undefined)}
+              disableButton={selectedItems.length === 0}
+              onCheckout={handleProceedToCheckout}
               showDeliveryPrice={false}
               showVoucherButton={false}
               showSubtotal={false}

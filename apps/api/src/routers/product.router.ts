@@ -12,9 +12,9 @@ export class ProductRouter {
   }
 
   private initializeRoutes(): void {
-    // this.router.get('/', this.productController.getAllProducts);
-    this.router.get('/', this.productController.productList);
-    this.router.get('/discounts', this.productController.getDiscountProduct);
+    this.router.get('/', this.productController.getAllProducts);
+    // this.router.get('/', this.productController.productList);
+    // this.router.get('/discounts', this.productController.getDiscountProduct);
     this.router.get(
       '/info/:productId/total-stock',
       this.productController.getTotalStockAcrossStores,

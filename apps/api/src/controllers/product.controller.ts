@@ -28,22 +28,10 @@ export class ProductController {
                 gt: 0,
               },
             },
-          StoreHasProduct: {
-            some: {
-              qty: {
-                gt: 0,
-              },
-            },
           },
         },
         include: {
           product_discounts: true,
-          // store: {
-          //   include: {
-          //     city: true,
-          //     province: true,
-          //   },
-          // },
           StoreHasProduct: {
             include: {
               store: {
@@ -79,77 +67,77 @@ export class ProductController {
     }
   }
 
-  async getDiscountProduct(req: Request, res: Response) {
-    try {
-      const now = new Date();
+  // async getDiscountProduct(req: Request, res: Response) {
+  //   try {
+  //     const now = new Date();
 
-      const products = await prisma.product.findMany({
-        where: {
-          product_discounts: {
-            some: {
-              started_at: {
-                lte: now,
-              },
-              end_at: {
-                gte: now,
-              },
-            },
-          },
-          StoreHasProduct: {
-            some: {
-              qty: {
-                gt: 0,
-              },
-            },
-          StoreHasProduct: {
-            some: {
-              qty: {
-                gt: 0,
-              },
-            },
-          },
-        },
-        include: {
-          product_discounts: {
-            where: {
-              started_at: {
-                lte: now,
-              },
-              end_at: {
-                gte: now,
-              },
-            },
-          },
-          StoreHasProduct: {
-            include: {
-              store: {
-                include: {
-                  city: true,
-                  province: true,
-                },
-              },
-          StoreHasProduct: {
-            include: {
-              store: {
-                include: {
-                  city: true,
-                  province: true,
-                },
-              },
-            },
-          },
-        },
-      });
+  //     const products = await prisma.product.findMany({
+  //       where: {
+  //         product_discounts: {
+  //           some: {
+  //             started_at: {
+  //               lte: now,
+  //             },
+  //             end_at: {
+  //               gte: now,
+  //             },
+  //           },
+  //         },
+  //         StoreHasProduct: {
+  //           some: {
+  //             qty: {
+  //               gt: 0,
+  //             },
+  //           },
+  //         StoreHasProduct: {
+  //           some: {
+  //             qty: {
+  //               gt: 0,
+  //             },
+  //           },
+  //         },
+  //       },
+  //       include: {
+  //         product_discounts: {
+  //           where: {
+  //             started_at: {
+  //               lte: now,
+  //             },
+  //             end_at: {
+  //               gte: now,
+  //             },
+  //           },
+  //         },
+  //         StoreHasProduct: {
+  //           include: {
+  //             store: {
+  //               include: {
+  //                 city: true,
+  //                 province: true,
+  //               },
+  //             },
+  //         StoreHasProduct: {
+  //           include: {
+  //             store: {
+  //               include: {
+  //                 city: true,
+  //                 province: true,
+  //               },
+  //             },
+  //           },
+  //         },
+  //       },
+  //     })
 
-      res.status(200).json({
-        ok: true,
-        message: 'Success get discount product',
-        data: products,
-      });
-    } catch {
-      res.status(500).json({ ok: false, message: 'Internal server error' });
-    }
-  }
+  //     res.status(200).json({
+  //       ok: true,
+  //       message: 'Success get discount product',
+  //       data: products,
+  //     });
+  //   } catch {
+  //     res.status(500).json({ ok: false, message: 'Internal server error' });
+  //   }
+  // }
 
   getTotalStockAcrossStores = async (req: Request, res: Response) => {
     const productId = parseInt(req.params.productId, 10);
@@ -191,7 +179,6 @@ export class ProductController {
           .json({ ok: false, message: 'Invalid page or limit' });
       }
 
-      let products: Product[];
       let products: Product[];
 
       if (latitude && longitude) {

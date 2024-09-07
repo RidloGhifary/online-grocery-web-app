@@ -35,15 +35,15 @@ export default async function RootLayout({
           strategy="beforeInteractive"
           src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
         />
-        <QueryProvider>
-          <CartProvider>
+        <CartProvider>
+          <QueryProvider>
             <ToastContainer position="top-center" draggable={true} />
             <Marquee />
             <Navbar user={user as UserProps} />
             <main>{children}</main>
             <Footer />
-          </CartProvider>
-        </QueryProvider>
+          </QueryProvider>
+        </CartProvider>
       </body>
     </html>
   );

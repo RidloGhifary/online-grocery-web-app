@@ -1,7 +1,7 @@
 import React from "react";
 import VoucherButton from "@/components/VoucherButton";
 import MainButton from "@/components/MainButton";
-import convertToRupiah  from "@/utils/convertRupiah";
+import convertToRupiah from "@/utils/convertRupiah";
 
 interface Product {
   name: string;
@@ -35,7 +35,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
   onVoucherSelect,
   buttonText,
   showDeliveryPrice = true,
-  deliveryPrice = 0,
+  deliveryPrice,
   disableButton = false,
   onCheckout,
   showVoucherButton = true,

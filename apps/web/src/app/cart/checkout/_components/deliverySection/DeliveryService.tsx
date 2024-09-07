@@ -14,6 +14,7 @@ interface DeliveryDataProps {
 
 interface Props {
   setDeliveryService: (value: any) => void;
+  setSelectedCourierPrice: (value: number) => void;
   deliveryService: number;
   deliveryData: DeliveryDataProps[];
 }
@@ -22,6 +23,7 @@ export default function DeliveryService({
   setDeliveryService,
   deliveryService,
   deliveryData,
+  setSelectedCourierPrice,
 }: Props) {
   return (
     <div>
@@ -31,7 +33,13 @@ export default function DeliveryService({
       <select
         id="deliveryService"
         value={deliveryService}
-        onChange={(e) => setDeliveryService(e.target.value)}
+        onChange={(e) => {
+          const selectedIndex = e.target.selectedIndex;
+          const selectedPrice = deliveryData[selectedIndex]?.cost[0]?.value;
+
+          setDeliveryService(e.target.value);
+          setSelectedCourierPrice(selectedPrice);
+        }}
         className="select select-bordered w-full"
       >
         {deliveryData?.map((data, i) => (

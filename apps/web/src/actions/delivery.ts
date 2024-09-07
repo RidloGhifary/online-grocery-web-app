@@ -2,7 +2,7 @@
 
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 
-const RAJA_ONGKIR_API_KEY = process.env.RAJA_ONGKIR_API_KEY;
+const RAJA_ONGKIR_API_KEY = "9b5ac7bd48ba7e0e6d3b3faf14577dff";
 
 export async function getDeliveryOptions({
   origin,
@@ -20,6 +20,14 @@ export async function getDeliveryOptions({
   } as CommonResultInterface<any>;
 
   try {
+    // Log the request parameters
+    console.log("Request Parameters: ", {
+      origin,
+      destination,
+      weight,
+      courier,
+    });
+
     const body = new URLSearchParams({
       origin: origin.toString(),
       destination: destination.toString(),
@@ -36,19 +44,33 @@ export async function getDeliveryOptions({
       body: body.toString(),
     });
 
+    // Log response status and headers
+    console.log("Response Status: ", response.status);
+    console.log("Response Headers: ", response.headers);
+
+    // Parse response body
+    let responseData;
+    try {
+      responseData = await response.json(); // Attempt to parse JSON
+      console.log("Full API Response: ", responseData);
+    } catch (jsonError) {
+      console.error("Error parsing JSON: ", jsonError);
+      result.error = "Failed to parse response body";
+      return result;
+    }
+
     if (!response.ok) {
       result.error = `Failed to fetch product list: ${response.statusText}`;
       return result;
     }
 
-    const data = await response.json();
-    result.data = data.rajaongkir;
+    result.data = responseData.rajaongkir;
     result.ok = true;
     result.message = "Data fetched successfully";
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to fetch product list";
-    console.log(error);
+    console.log("Fetch error: ", error);
   }
 
   return result;

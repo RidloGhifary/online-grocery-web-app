@@ -1,3 +1,5 @@
+import { Store } from "./product";
+
 export interface ProductCompleteInterface {
   id: number;
   sku: string;
@@ -13,7 +15,8 @@ export interface ProductCompleteInterface {
   updatedAt: Date | string | null;
   deletedAt: Date | string | null;
   store_id: number | null;
-  product_category ?: ProductCategoryInterface 
+  product_category?: ProductCategoryInterface;
+  StoreHasProduct?: StoreHasProductInterface[]
 }
 
 export interface ProductCategoryInterface {
@@ -28,8 +31,8 @@ export interface ProductCategoryInterface {
 export interface ProductCardListInterface {
   name: string;
   price: number;
-  slug: string,
-  city ?: string
+  slug: string;
+  city?: string;
 }
 
 export interface ProductRecordInterface {
@@ -42,4 +45,15 @@ export interface ProductRecordInterface {
   price: number;
   image?: string | null;
   store_id: number | null;
+}
+
+export interface StoreHasProductInterface {
+  id: number;
+  qty?: number | null;
+  product_id?: number | null;
+  store_id?: number | null;
+  createdAt?: string | Date | null;
+  updatedAt?: string | Date | null;
+  deletedAt?: string | Date | null;
+  store?: Store
 }

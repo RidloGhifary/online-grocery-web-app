@@ -53,7 +53,7 @@ export default function () {
 
   return (
     <>
-      <div className="bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
+      <div className="bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)] rounded-lg">
         <div className="flex w-full max-w-full flex-wrap justify-center">
           <div className="flex max-w-full flex-1 flex-row items-center px-4 py-4">
             <SearchBar />

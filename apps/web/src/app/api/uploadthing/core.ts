@@ -28,6 +28,8 @@ export const ourFileRouter = {
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
       return { uploadedBy: metadata.userId };
     }),
+  productImage : f({image:{ maxFileCount:10}}).onUploadComplete((data)=>data)
+
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

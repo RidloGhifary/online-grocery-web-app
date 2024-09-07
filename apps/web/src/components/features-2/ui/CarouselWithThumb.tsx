@@ -10,16 +10,42 @@ import "./css/carouselFeat2.css";
 import Image from "next/image";
 import { productDefault as products } from "@/mocks/productData";
 
-const CarouselWithThumb: React.FC<{ images: string[] }> = ({ images }) => {
+const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
+  images 
+}) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
+  const ifNotEnoughImage: string[] = [];
+  let usedImg: string[] = images!
+  let imgExist = false
+  if (images && images.length>0) {
+    imgExist = true
+    if (images.length < 4) {
+      ifNotEnoughImage.push(...images);
+      ifNotEnoughImage.push(...images);
+      ifNotEnoughImage.push(...images);
+      ifNotEnoughImage.push(...images);
+      usedImg = ifNotEnoughImage
+    }
+  } else {
+    images = [
+      "https://placehold.co/400x400.svg",
+      "https://placehold.co/600x400.svg",
+      "https://placehold.co/400x400.svg",
+    ],
+    ifNotEnoughImage.push(...images);
+    ifNotEnoughImage.push(...images);
+    ifNotEnoughImage.push(...images);
+    ifNotEnoughImage.push(...images);
+    usedImg = ifNotEnoughImage
+  }
 
   return (
     <div className="w-full">
       <Swiper
         style={
           {
-            "--swiper-navigation-color": "#fff",
-            "--swiper-pagination-color": "#fff",
+            "--swiper-navigation-color": "#2a2e33",
+            "--swiper-pagination-color": "#2a2e33",
           } as CSSProperties
         }
         loop={true}
@@ -29,21 +55,22 @@ const CarouselWithThumb: React.FC<{ images: string[] }> = ({ images }) => {
         modules={[FreeMode, Navigation, Thumbs]}
         className="mySwiper2 h-80"
       >
-        {images.map((src, index) => (
-          <SwiperSlide key={index}>
+        {usedImg.map((src, index) => (
+          <SwiperSlide key={index} >
             <Image
-              src={src || "/images/placeholder.png"}
+              src={src}
               alt={`Image ${index + 1}`}
               className="aspect-square w-full object-scale-down"
               width={800}
               height={800}
               priority
+              
             />
           </SwiperSlide>
         ))}
       </Swiper>
 
-      <Swiper
+      {/* <Swiper
         onSwiper={setThumbsSwiper}
         loop={true}
         spaceBetween={10}
@@ -55,12 +82,12 @@ const CarouselWithThumb: React.FC<{ images: string[] }> = ({ images }) => {
         navigation={true}
         style={
           {
-            "--swiper-navigation-color": "#fff",
-            "--swiper-pagination-color": "#fff",
+            "--swiper-navigation-color": "#2a2e33",
+            "--swiper-pagination-color": "#2a2e33",
           } as CSSProperties
         }
       >
-        {images.map((src, index) => (
+        {usedImg.map((src, index) => (
           <SwiperSlide
             key={index}
             className="cursor-pointer opacity-40 hover:opacity-100"
@@ -75,7 +102,7 @@ const CarouselWithThumb: React.FC<{ images: string[] }> = ({ images }) => {
             />
           </SwiperSlide>
         ))}
-      </Swiper>
+      </Swiper> */}
     </div>
   );
 };

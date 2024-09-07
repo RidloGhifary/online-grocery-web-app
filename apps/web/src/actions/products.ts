@@ -39,7 +39,7 @@ export async function getProductListWithFilter({
     }
     
     const data = await response.json() as unknown as CommonPaginatedResultInterface<ProductCompleteInterface[]>;
-    console.log(data);
+    // console.log(data);
     result = data
     // result.data.data = data.data.data;
     // result.ok = true;
@@ -48,7 +48,6 @@ export async function getProductListWithFilter({
   } catch (error) {
     result.error = error instanceof Error ? error.message : "Failed to fetch product list";
     console.log(error);
-
   }
 
   return result;

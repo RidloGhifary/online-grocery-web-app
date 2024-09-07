@@ -22,9 +22,9 @@ export default function ({
             <th className="hidden text-lg font-extrabold sm:table-cell">
               Category
             </th>
-            <th className="hidden text-lg font-extrabold md:table-cell">
+            {/* <th className="hidden text-lg font-extrabold md:table-cell">
               Stock
-            </th>
+            </th> */}
             <th className="hidden text-lg font-extrabold md:table-cell">
               Unit
             </th>
@@ -44,7 +44,7 @@ export default function ({
                     alt={product.name}
                     width={50}
                     height={50}
-                    className="hidden rounded-md sm:table-cell"
+                    className="hidden rounded-md sm:table-cell aspect-square object-scale-down"
                   />
                   {/* {product.name} */}
                   <span>{product.name}</span>
@@ -52,9 +52,9 @@ export default function ({
               </td>
               <td className="hidden sm:table-cell">{product.sku}</td>
               <td className="hidden sm:table-cell">
-                {product.product_category_id}
+                {product.product_category?.display_name}
               </td>
-              <td className="hidden md:table-cell">{product.current_stock}</td>
+              {/* <td className="hidden md:table-cell">{product.current_stock}</td> */}
               <td className="hidden md:table-cell">{product.unit}</td>
               <td className="hidden md:table-cell">
                 {new Intl.NumberFormat("id-ID", {

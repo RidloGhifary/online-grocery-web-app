@@ -6,6 +6,7 @@ import AdminProductTable from "@/components/features-2/admin/AdminProductTable";
 import { Modal } from "@/components/features-2/ui/Modal";
 import SearchBar from "@/components/features-2/ui/SearchBar";
 import { queryKeys } from "@/constants/queryKeys";
+import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
 import { productDefault } from "@/mocks/productData";
@@ -50,12 +51,12 @@ export default function () {
 
   // Define products data
   const products =
-    (data as CommonResultInterface<ProductCompleteInterface[]>).data ||
+    (data as CommonPaginatedResultInterface<ProductCompleteInterface[]>).data ||
     productDefault;
 
   return (
     <>
-      <div className="bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
+      <div className="bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)] rounded-lg">
         <div className="flex w-full max-w-full flex-wrap justify-center">
           <div className="flex max-w-full flex-1 flex-row items-center px-4 py-4">
             <SearchBar />
@@ -77,7 +78,7 @@ export default function () {
             </button>
           </div>
         </div>
-        <AdminProductTable products={products} />
+        <AdminProductTable products={products.data!} />
       </div>
       <Modal show={operation === "filter" ?? false} onClose={handleClose}>
         <AdminFilter />

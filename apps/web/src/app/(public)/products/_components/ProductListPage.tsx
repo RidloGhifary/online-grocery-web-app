@@ -25,12 +25,12 @@ export default function () {
     error,
     data: products,
   } = useProductWithFilter({
-    search: queryParams.get("search") || undefined,
+    search: queryParams.get("search") || '',
     orderField: queryParams.get("orderField") || "product_name",
     order: (queryParams.get("order") as "asc" | "desc") || "asc",
-    category: queryParams.get("category") || undefined,
-    page: Number(queryParams.get("page")) || undefined,
-    limit: Number(queryParams.get("limit")) || undefined,
+    category: queryParams.get("category") || '',
+    page: Number(queryParams.get("page")) || 1,
+    limit: Number(queryParams.get("limit")) || 20,
   });
 
   const debounced = useDebouncedCallback(

@@ -12,8 +12,18 @@ export default async function Page() {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
     queryKey: [queryKeys.products],
-    queryFn: () => getProductListWithFilter({order:'asc',orderField:'product_name'}),
+    queryFn: () =>
+      getProductListWithFilter({
+        search: "",
+        orderField: "product_name",
+        order: "asc",
+        category: "",
+        page: 1,
+        limit: 20,
+      }),
   });
+  console.log('prefetch query');
+  
   await queryClient.prefetchQuery({
     queryKey: [queryKeys.productCategories],
     queryFn: async () => await getProductCategoryList(),
@@ -21,7 +31,7 @@ export default async function Page() {
   return (
     <>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <ProductListPage/>
+        <ProductListPage />
       </HydrationBoundary>
     </>
   );

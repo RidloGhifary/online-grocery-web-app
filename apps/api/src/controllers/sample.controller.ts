@@ -7,7 +7,7 @@ export class SampleController {
   }
 
   async getSampleDataById(req: Request, res: Response) {
-    // const ress = await prisma.productCategory.findFirst()
+    const ress = await prisma.store.findFirst()
     return res.status(200);
   }
 

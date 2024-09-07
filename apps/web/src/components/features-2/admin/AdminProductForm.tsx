@@ -8,6 +8,7 @@ import { queryKeys } from "@/constants/queryKeys";
 import Select from "react-select";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import { ProductCategoryInterface } from "@/interfaces/ProductInterface";
+import { UploadDropzone } from "@/utils/uploadthing";
 
 // Define the Zod schema for validation
 const productSchema = z.object({
@@ -17,8 +18,9 @@ const productSchema = z.object({
   description: z.string().nullable(),
   current_stock: z.number().nullable().optional(),
   unit: z.string().min(1, "Unit is required"),
+  unit_in_gram: z.number({ message: "Unit in gram is required" }),
   price: z.number().min(0, "Price must be a positive number"),
-  image: z.string().nullable(),
+  // image: z.string().nullable(),
   store_id: z.number().nullable(),
 });
 
@@ -52,7 +54,8 @@ export default function ProductForm() {
       current_stock: null,
       unit: "",
       price: 0,
-      image: null,
+      unit_in_gram: 0,
+      // image: null,
       store_id: null,
     },
   });
@@ -69,8 +72,9 @@ export default function ProductForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <h1 className="text-center text-xl font-extrabold">Add Product</h1>
       <label className="form-control w-full">
-        <div className="label">
+        <div className="label font-bold">
           <span className="label-text">SKU</span>
         </div>
         <input
@@ -83,7 +87,7 @@ export default function ProductForm() {
       </label>
 
       <label className="form-control w-full">
-        <div className="label">
+        <div className="label font-bold">
           <span className="label-text">Name</span>
         </div>
         <input
@@ -96,7 +100,7 @@ export default function ProductForm() {
       </label>
 
       <label className="form-control w-full">
-        <div className="label">
+        <div className="label font-bold">
           <span className="label-text">Product Category</span>
         </div>
         <Select
@@ -117,7 +121,7 @@ export default function ProductForm() {
       </label>
 
       <label className="form-control w-full">
-        <div className="label">
+        <div className="label font-bold">
           <span className="label-text">Unit</span>
         </div>
         <input
@@ -128,12 +132,28 @@ export default function ProductForm() {
         />
         {errors.unit && <p className="text-red-500">{errors.unit.message}</p>}
       </label>
+      <label className="form-control w-full">
+        <div className="label font-bold">
+          <span className="label-text">Unit in gram</span>
+        </div>
+        <input
+          type="number"
+          min={0}
+          placeholder="Type here"
+          className={`input input-bordered w-full ${errors.unit ? "input-error" : ""}`}
+          {...register("unit_in_gram")}
+        />
+        {errors.unit_in_gram && (
+          <p className="text-red-500">{errors.unit_in_gram.message}</p>
+        )}
+      </label>
 
       <label className="form-control w-full">
-        <div className="label">
+        <div className="label font-bold">
           <span className="label-text">Price</span>
         </div>
         <input
+          min={0}
           type="number"
           placeholder="Type here"
           className={`input input-bordered w-full ${errors.price ? "input-error" : ""}`}
@@ -143,7 +163,7 @@ export default function ProductForm() {
       </label>
 
       <label className="form-control w-full">
-        <div className="label">
+        <div className="label font-bold">
           <span className="label-text">Description</span>
         </div>
         <textarea
@@ -156,9 +176,9 @@ export default function ProductForm() {
         )}
       </label>
 
-      <label className="form-control w-full">
-        <div className="label">
-          <span className="label-text">Image URL</span>
+      {/* <label className="form-control w-full">
+        <div className="label font-bold">
+          <span className="label-text">Image</span>
         </div>
         <input
           type="text"
@@ -167,7 +187,18 @@ export default function ProductForm() {
           {...register("image")}
         />
         {errors.image && <p className="text-red-500">{errors.image.message}</p>}
-      </label>
+      </label> */}
+      <div className="form-control">
+        <div className="label font-bold">
+          <span className="label-text font-bold">Image</span>
+        </div>
+        <div className="flex max-w-full flex-col items-center justify-center">
+          <UploadDropzone
+            className="w-full cursor-pointer"
+            endpoint="productImage"
+          />
+        </div>
+      </div>
 
       <div className="flex max-w-full justify-end py-5">
         <ButtonWithAction type="submit" replaceTWClass="btn btn-primary">

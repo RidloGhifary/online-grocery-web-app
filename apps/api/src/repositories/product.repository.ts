@@ -84,6 +84,7 @@ class ProductRepository {
         take: safeLimitNumber , 
         include: {
           product_category: true,
+          StoreHasProduct : true
         },
         orderBy: !order
           ? undefined
@@ -147,6 +148,15 @@ class ProductRepository {
         },
         include: {
           product_category: true,
+          StoreHasProduct: {
+            include : {
+              store : {
+                include :{
+                  city : true
+                }
+              }
+            }
+          }
         },
       });
       if (!res) {

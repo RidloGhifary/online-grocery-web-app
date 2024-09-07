@@ -1,19 +1,22 @@
 //QuantityBox
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, MouseEvent, useState } from "react";
 import './css/quantityBox.css'
 
 export default function ({
   qty = 0,
   minimumQty = 0,
   maximumQty,
+  fieldName
 }: {
   qty?: number;
   maximumQty?: number;
   minimumQty?: number;
+  fieldName?:string
 }) {
   const [quantity, setQuantity] = useState<number>(qty);
 
-  function handleIncrement() {
+  function handleIncrement(e:MouseEvent) {
+    e.preventDefault()
     if (!maximumQty) {
       setQuantity((prev) => (prev += 1));
     } else {
@@ -24,7 +27,8 @@ export default function ({
       }
     }
   }
-  function handleDecrement() {
+  function handleDecrement(e:MouseEvent)  {
+    e.preventDefault()
     setQuantity((prev) => (prev > minimumQty ? (prev -= 1) : prev));
   }
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
@@ -58,6 +62,7 @@ export default function ({
       type="number"
         // defaultValue={qty}
         value={quantity??''}
+        name={`${fieldName?fieldName:"qty"}`}
         className="inline-flex max-w-14 select-none items-center border-b border-t border-gray-100 bg-gray-100 text-center text-gray-600 hover:bg-gray-100"
         onChange={handleChange}
       />

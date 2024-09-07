@@ -151,6 +151,7 @@ model Province {
 
   @@index([id])
   @@map("provinces")
+  // Store Store[]
 }
 
 model City {
@@ -193,21 +194,21 @@ model Expedition {
 }
 
 model Store {
-  id          Int       @id @default(autoincrement())
-  created_by  Int
-  creator     User      @relation(fields: [created_by], references: [id])
-  name        String
-  store_type  StoreType
-  city        City      @relation(fields: [city_id], references: [id])
-  city_id     Int
-  province    Province  @relation(fields: [province_id], references: [id])
-  province_id Int
-  address     String
-  kecamatan   String
-  kelurahan   String
-  image       String?
-  latitude    Decimal   @db.Decimal(9, 6)
-  longtitude  Decimal   @db.Decimal(9, 6)
+  id         Int       @id @default(autoincrement())
+  created_by Int
+  creator    User      @relation(fields: [created_by], references: [id])
+  name       String
+  store_type StoreType
+  city       City      @relation(fields: [city_id], references: [id])
+  city_id    Int
+  province    Province?  @relation(fields: [province_id], references: [id])
+  province_id Int?
+  address    String
+  kecamatan  String
+  kelurahan  String
+  image      String?
+  latitude   Decimal   @db.Decimal(9, 6)
+  longtitude Decimal   @db.Decimal(9, 6)
 
   store_admins        StoreHasAdmin[]
   // products            Product[]
@@ -307,6 +308,9 @@ model StoreHasProduct {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
   deletedAt DateTime?
+
+  @@index([id])
+  @@map("store_has_products")
 }
 
 model StocksAdjustment {
@@ -345,7 +349,7 @@ model Cart {
   qty        Int
   user       User    @relation(fields: [user_id], references: [id])
   user_id    Int
-  store      Store?   @relation(fields: [store_id], references: [id])
+  store      Store?  @relation(fields: [store_id], references: [id])
   store_id   Int?
 
   createdAt DateTime? @default(now())

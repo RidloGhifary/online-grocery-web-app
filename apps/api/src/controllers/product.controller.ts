@@ -42,7 +42,7 @@ export class ProductController {
               store :{
                 include :{
                   city : true ,
-                  province : true
+                  // province : true
                 }
               }
             }
@@ -112,7 +112,7 @@ export class ProductController {
               store: {
                 include: {
                   city: true,
-                  province: true,
+                  // province: true,
                 },
               },
             }

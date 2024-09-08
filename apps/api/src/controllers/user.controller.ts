@@ -1,4 +1,5 @@
 import prisma from '@/prisma';
+import { userRepository } from '@/repositories/user.repository';
 import getUserCoordinates from '@/utils/getUserCoordinates';
 import { changeImageSchema, removeImageSchema } from '@/validations/credential';
 import {
@@ -363,5 +364,17 @@ export class UserController {
     } catch {
       res.status(500).json({ ok: false, message: 'Something went wrong' });
     }
+  }
+
+  public async getUserWithRoleAndPermissionAndStore (req: Request, res: Response): Promise<void | Response> {
+    const token = req.headers['authorization']
+    const userData = await userRepository.getUserWithRoleAndPermission(token)
+    if (!userData.ok) {
+      console.log(userData);
+      
+      
+      return res.status(500).send(userData)
+    }
+    return res.status(200).send(userData)
   }
 }

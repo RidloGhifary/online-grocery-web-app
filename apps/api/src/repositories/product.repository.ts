@@ -2,9 +2,11 @@ import CommonPaginatedResultInterface from '@/interfaces/CommonPaginatedResultIn
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import prisma from '@/prisma';
 import paginate, { numberization } from '@/utils/paginate';
-import searchFriendlyForLikeQuery from '@/utils/searchFriendlyForLikeQuery';
+import productWhereInput from '@/utils/products/productWhereInput';
 import slugify from '@/utils/slugify';
-import { Product } from '@prisma/client';
+import {  Product } from '@prisma/client';
+import tokenValidation from '@/utils/tokenValidation';
+import { userRepository } from './user.repository';
 
 class ProductRepository {
   async publicProductList({
@@ -22,69 +24,27 @@ class ProductRepository {
     pageNumber?: number;
     limitNumber?: number;
   }): Promise<CommonPaginatedResultInterface<Product[]>> {
-    const searchable = await searchFriendlyForLikeQuery(search);
-    const searchableCategory = await searchFriendlyForLikeQuery(category);
     let result = {
       ok: false,
-      data :{
-        data : null,
-        pagination : null
-      }
-    } as unknown as CommonPaginatedResultInterface<Product[]> 
+      data: {
+        data: null,
+        pagination: null,
+      },
+    } as unknown as CommonPaginatedResultInterface<Product[]>;
     try {
-      const whereQuery = {
-        OR: [
-          {
-            name: {
-              contains: searchable,
-            },
-          },
-          {
-            description: {
-              contains: searchable,
-            },
-          },
-          {
-            sku: {
-              contains: searchable,
-            },
-          },
-          {
-            slug: {
-              contains: searchable,
-            },
-          },
-        ],
-        AND: [
-          {
-            product_category: category
-              ? {
-                  name: {
-                    contains: searchableCategory,
-                  },
-                  display_name: {
-                    contains: searchableCategory,
-                  },
-                }
-              : undefined,
-          },
-        ],
-        deletedAt: null,
-      };
       const count = await prisma.product.count({
-        where: { ...whereQuery },
+        where: { ...await productWhereInput({search:search, category:category}) },
       });
-      console.log('count : ', count);
-      
+
       const safePageNumber = numberization(pageNumber);
       const safeLimitNumber = numberization(limitNumber);
       const res = await prisma.product.findMany({
-        where: { ...whereQuery },
-        skip : (safePageNumber - 1 ) * safeLimitNumber,
-        take: safeLimitNumber , 
+        where: { ...await productWhereInput({search:search, category:category}) },
+        skip: (safePageNumber - 1) * safeLimitNumber,
+        take: safeLimitNumber,
         include: {
           product_category: true,
-          StoreHasProduct : true
+          StoreHasProduct: true,
         },
         orderBy: !order
           ? undefined
@@ -109,20 +69,19 @@ class ProductRepository {
               },
             ],
       });
-      
-      if (count <= 0 ) {
-        throw new Error("Not found 404");
-      } 
+
+      if (count <= 0) {
+        throw new Error('Not found 404');
+      }
 
       result.data.data = res;
-      
-      result.data.pagination = paginate({
-        pageNumber : safePageNumber,
-        limitNumber : safeLimitNumber,
-        totalData : count
-      })
 
-      
+      result.data.pagination = paginate({
+        pageNumber: safePageNumber,
+        limitNumber: safeLimitNumber,
+        totalData: count,
+      });
+
       result.ok = true;
       result.message = 'Query Success';
     } catch (error) {
@@ -133,14 +92,30 @@ class ProductRepository {
     }
     return result;
   }
+
   async getSingleProduct({
     slug,
+    token,
+    citiId
   }: {
     slug: string;
+    token?: string;
+    citiId?:number
   }): Promise<CommonResultInterface<Product>> {
     const result: CommonResultInterface<Product> = {
       ok: false,
     };
+    // const userLoggedIn = await userRepository.getUserWithRoleAndPermission(token)
+    // let userId:number|undefined = undefined
+    // if (userLoggedIn.ok && !userLoggedIn.error &&  userLoggedIn.data) {
+    //   userId = userLoggedIn.data.id
+    // }
+
+    const tokenRes = tokenValidation(token).data!
+    if (!tokenRes) {
+      citiId = 152 //Jakarta Pusat
+    }
+
     try {
       const res = await prisma.product.findFirst({
         where: {
@@ -149,14 +124,17 @@ class ProductRepository {
         include: {
           product_category: true,
           StoreHasProduct: {
-            include : {
-              store : {
-                include :{
-                  city : true
-                }
-              }
-            }
-          }
+            include: {
+              store: {
+                where :{
+                  city_id : citiId
+                },
+                include: {
+                  city: true,
+                },
+              },
+            },
+          },
         },
       });
       if (!res) {
@@ -172,6 +150,7 @@ class ProductRepository {
     }
     return result;
   }
+
   async createProduct(
     product: Product,
   ): Promise<CommonResultInterface<Product>> {

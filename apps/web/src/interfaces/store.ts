@@ -36,3 +36,13 @@ export interface StoreInterface {
   updatedAt: string | Date | null;
   deletedAt: string | Date | null;
 }
+
+export interface StoreHasAdminInterface {
+  id: number;
+  user_id: number;
+  store_id: number;
+  assignee_id: number;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  deletedAt: Date | null;
+}

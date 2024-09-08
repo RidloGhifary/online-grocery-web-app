@@ -1,3 +1,5 @@
+import { RoleInterface } from "./RoleInterface";
+
 export interface UserProps {
   id: number;
   username: string;
@@ -57,4 +59,35 @@ export interface ProvinceProps {
   createdAt: string;
   updatedAt: string | null;
   deletedAt: string | null;
+}
+
+export interface UserInterface {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string | null;
+  gender: "male" | "female";
+  password: string | null;
+  middle_name: string | null;
+  image: string | null;
+  referral: string | null;
+  is_google_linked: boolean | null;
+  validated_at: Date | null;
+  validation_sent_at: Date | null;
+  created_at: Date | null;
+  updated_at: Date | null;
+  deleted_at: Date | null;
+  role ?: UserHasRole
+}
+
+export interface UserHasRole {
+  id: number;
+  user_id: number;
+  role_id: number;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  deletedAt: Date | null;
+  role?: RoleInterface
 }

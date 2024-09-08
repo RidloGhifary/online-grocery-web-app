@@ -5,9 +5,9 @@ export class SampleController {
   async getSampleData(req: Request, res: Response) {
     return res.status(200);
   }
-
+ 
   async getSampleDataById(req: Request, res: Response) {
-    const ress = await prisma.store.findFirst()
+    const ress = await prisma.storeHasAdmin.findFirst()
     return res.status(200);
   }
 

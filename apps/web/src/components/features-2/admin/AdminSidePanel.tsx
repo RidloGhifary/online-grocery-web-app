@@ -1,15 +1,15 @@
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 export default function AdminSidePanel({
   children,
-  extraContentTWClass
+  extraContentTWClass,
 }: {
   children?: ReactNode;
-  extraContentTWClass ?: string
+  extraContentTWClass?: string;
 }) {
   return (
     <>
-      <div className="drawer-side no-scrollbar">
+      <div className="no-scrollbar drawer-side">
         <label
           htmlFor="my-drawer-3"
           aria-label="close sidebar"
@@ -24,7 +24,11 @@ export default function AdminSidePanel({
             <a>Sidebar Item 2</a>
           </li>
         </ul> */}
-        <div className={`w-64 ${extraContentTWClass||''}`}>{children}</div>
+        {/* <div className="flex w-full items-center justify-center pb-3 pt-5 text-2xl">
+          Logo
+        </div>
+        <div className={`w-64 bg-neutral ${extraContentTWClass || ""}`}>{children}</div> */}
+        {children}
       </div>
     </>
   );

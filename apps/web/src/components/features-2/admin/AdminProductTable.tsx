@@ -1,3 +1,4 @@
+'use client'
 import React from "react";
 import Image from "next/image";
 // import { productDefault as products } from "@/mocks/productData";
@@ -63,7 +64,7 @@ export default function ({
                 }).format(product.price)}
               </td>
               <td>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 ">
                   <ButtonWithAction replaceTWClass="btn btn-info btn-sm">
                     <FaInfoCircle />
                   </ButtonWithAction>

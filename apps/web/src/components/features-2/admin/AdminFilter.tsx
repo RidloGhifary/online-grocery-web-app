@@ -10,7 +10,7 @@ import { getProductCategoryList } from "@/actions/categories";
 export default function () {
   const { data }  = useQuery({
     queryKey: [queryKeys.productCategories],
-    queryFn: async () => await getProductCategoryList(),
+    queryFn: getProductCategoryList,
   })
   return (
     <>

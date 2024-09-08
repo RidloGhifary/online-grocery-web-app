@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,6 +9,8 @@ import Select from "react-select";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import { ProductCategoryInterface } from "@/interfaces/ProductInterface";
 import { UploadDropzone } from "@/utils/uploadthing";
+import { FaTrash } from "react-icons/fa";
+import Image from "next/image";
 
 // Define the Zod schema for validation
 const productSchema = z.object({
@@ -20,8 +22,8 @@ const productSchema = z.object({
   unit: z.string().min(1, "Unit is required"),
   unit_in_gram: z.number({ message: "Unit in gram is required" }),
   price: z.number().min(0, "Price must be a positive number"),
-  // image: z.string().nullable(),
   store_id: z.number().nullable(),
+  images: z.array(z.string()).optional(), // Add the images field
 });
 
 // TypeScript type for the form values
@@ -38,6 +40,8 @@ export default function ProductForm() {
     ? categoriesData.data
     : [];
 
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+
   const {
     register,
     handleSubmit,
@@ -53,9 +57,9 @@ export default function ProductForm() {
       description: null,
       current_stock: null,
       unit: "",
-      price: 0,
-      unit_in_gram: 0,
-      // image: null,
+      price: undefined,
+      unit_in_gram: undefined,
+      images: [], // Initialize images as an empty array
       store_id: null,
     },
   });
@@ -69,6 +73,20 @@ export default function ProductForm() {
     value: category.id,
     label: category.display_name || category.name,
   }));
+
+  // Handle successful upload and set image URLs
+  const handleUploadComplete = (urls: string[]) => {
+    const updatedImages = [...uploadedImages, ...urls];
+    setUploadedImages(updatedImages);
+    setValue("images", updatedImages);
+  };
+
+  // Handle image removal
+  const removeImage = (url: string) => {
+    const updatedImages = uploadedImages.filter((img) => img !== url);
+    setUploadedImages(updatedImages);
+    setValue("images", updatedImages);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -110,7 +128,6 @@ export default function ProductForm() {
             setValue("product_category_id", option?.value || 0)
           }
           placeholder="Select a category"
-          // isClearable
           value={categoryOptions.find(
             (option) => option.value === watch("product_category_id"),
           )}
@@ -132,6 +149,7 @@ export default function ProductForm() {
         />
         {errors.unit && <p className="text-red-500">{errors.unit.message}</p>}
       </label>
+
       <label className="form-control w-full">
         <div className="label font-bold">
           <span className="label-text">Unit in gram</span>
@@ -140,7 +158,7 @@ export default function ProductForm() {
           type="number"
           min={0}
           placeholder="Type here"
-          className={`input input-bordered w-full ${errors.unit ? "input-error" : ""}`}
+          className={`input input-bordered w-full ${errors.unit_in_gram ? "input-error" : ""}`}
           {...register("unit_in_gram")}
         />
         {errors.unit_in_gram && (
@@ -176,33 +194,55 @@ export default function ProductForm() {
         )}
       </label>
 
-      {/* <label className="form-control w-full">
-        <div className="label font-bold">
-          <span className="label-text">Image</span>
-        </div>
-        <input
-          type="text"
-          placeholder="Type here"
-          className={`input input-bordered w-full ${errors.image ? "input-error" : ""}`}
-          {...register("image")}
-        />
-        {errors.image && <p className="text-red-500">{errors.image.message}</p>}
-      </label> */}
+      {/* Image upload section */}
       <div className="form-control">
         <div className="label font-bold">
-          <span className="label-text font-bold">Image</span>
+          <span className="label-text">Images</span>
+        </div>
+        <div className="collapse collapse-arrow w-full">
+          <input type="checkbox" className="peer" />
+          <div className="collapse-title bg-base-100 text-primary-content peer-checked:bg-base-100 peer-checked:text-secondary-content">
+            Uploaded Images ({uploadedImages.length})
+          </div>
+          <div className="collapse-content bg-base-100 text-primary-content peer-checked:bg-base-100 peer-checked:text-secondary-content">
+            <table className="table border-none">
+              <tbody>
+                {uploadedImages.map((url) => (
+                  <tr key={url}>
+                    {/* <td>{url}</td> */}
+                    <td><Image className="aspect-square object-scale-down max-w-16" src={url} alt="https://placehold.co/600x400.svg" width={50} height={50} quality={25}/></td>
+                    <td className="flex items-end justify-end">
+                      <ButtonWithAction
+                        replaceTWClass="btn btn-error btn-sm"
+                        action={() => removeImage(url)}
+                        type="button"
+                        eventType="onClick"
+                      >
+                        <FaTrash />
+                      </ButtonWithAction>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
         <div className="flex max-w-full flex-col items-center justify-center">
           <UploadDropzone
             className="w-full cursor-pointer"
             endpoint="productImage"
+            config={{ mode: "auto" }}
+            onClientUploadComplete={(res) => {
+              const urls = res.map((file) => file.url);
+              handleUploadComplete(urls);
+            }}
           />
         </div>
       </div>
 
       <div className="flex max-w-full justify-end py-5">
         <ButtonWithAction type="submit" replaceTWClass="btn btn-primary">
-          Add
+          Add Product
         </ButtonWithAction>
       </div>
     </form>

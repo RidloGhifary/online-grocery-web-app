@@ -6,12 +6,13 @@ import { notFound, useParams } from "next/navigation";
 import { getSingleProduct } from "@/actions/products";
 import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
 import PublicProductDetailV2 from "@/components/features-2/product/PublicProductDetailV2";
+import { queryKeys } from "@/constants/queryKeys";
 
 export default function Page() {
   const { slug } = useParams<{ slug: string }>();
 
   const { isLoading, error, data: product } = useQuery({
-    queryKey: ['publicProduct', slug],
+    queryKey: [queryKeys.products, slug],
     queryFn: async () => {
       const response = await getSingleProduct({ slug });
       

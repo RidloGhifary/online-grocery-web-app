@@ -283,12 +283,14 @@ export class ProductController {
     }
     return res.status(200).send(result);
   }
+
   public async productSingle(
     req: Request,
     res: Response,
   ): Promise<void | Response> {
     const { slug } = req.params;
-
+    
+    const token = req.headers['authorization']
     if (!slug || slug === '') {
       const response: CommonResultInterface<null> = {
         ok: false,
@@ -296,6 +298,7 @@ export class ProductController {
       };
       return res.status(401).send(response);
     }
+
     const result = await productRepository.getSingleProduct({
       slug: slug as string,
     });
@@ -307,6 +310,7 @@ export class ProductController {
     }
     return res.status(200).send(result);
   }
+
   public async createProduct(
     req: Request,
     res: Response,
@@ -318,6 +322,7 @@ export class ProductController {
     }
     return res.status(201).send(newData);
   }
+
   getProductById = async (req: Request, res: Response) => {
     const productId = parseInt(req.params.id, 10);
     if (isNaN(productId)) {

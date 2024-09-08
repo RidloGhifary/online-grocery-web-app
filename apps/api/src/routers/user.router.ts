@@ -38,6 +38,10 @@ export class UserRouter {
       verifyToken,
       this.userController.useAddressAsPrimary,
     );
+    this.router.get('/admin/info',
+      verifyToken,
+      this.userController.getUserWithRoleAndPermissionAndStore
+    )
   }
 
   getRouter(): Router {

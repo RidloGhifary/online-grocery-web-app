@@ -51,7 +51,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
   const { data: nearestStoreData, error: nearestStoreError } = useQuery({
     queryKey: ["nearestStore", selectedAddress?.id],
     queryFn: () => getNearestStore(selectedAddress?.id as number),
-    enabled: !!selectedAddress?.id, // Only fetch if the address exists
+    enabled: !!selectedAddress?.id,
     retry: false,
     staleTime: 0,
   });

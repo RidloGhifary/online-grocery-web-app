@@ -1,6 +1,10 @@
 import { Response, Request } from 'express';
 import prisma from '@/prisma';
-import { createOrderSchema } from '@/validations/order';
+import {
+  createOrderSchema,
+  getOrdersByUserSchema,
+  getOrderByIdSchema,
+} from '@/validations/order';
 
 export interface CustomRequest extends Request {
   currentUser?: {
@@ -10,6 +14,142 @@ export interface CustomRequest extends Request {
 }
 
 export class OrderController {
+  getOrdersByUser = async (req: CustomRequest, res: Response) => {
+    const { userId } = req.params;
+
+    try {
+      const validation = getOrdersByUserSchema.safeParse({ userId });
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error.errors });
+      }
+
+      const currentUser = req.currentUser;
+      if (!currentUser || Number(userId) !== currentUser.id) {
+        return res.status(403).json({
+          message: 'You do not have permission to view these orders',
+        });
+      }
+
+      const orders = await prisma.order.findMany({
+        where: { customer_id: Number(userId) },
+        include: {
+          store: {
+            select: {
+              name: true,
+              address: true,
+              city: { select: { city_name: true } },
+            },
+          },
+          expedition: {
+            select: { name: true },
+          },
+          address: {
+            select: {
+              address: true,
+              kecamatan: true,
+              kelurahan: true,
+              city: { select: { city_name: true } },
+            },
+          },
+          order_details: {
+            include: {
+              product: { select: { name: true } },
+            },
+          },
+        },
+      });
+
+      const enhancedOrders = orders.map((order) => {
+        const totalProductPrice = order.order_details.reduce((total, item) => {
+          return total + item.price * item.qty;
+        }, 0);
+
+        const deliveryPrice =
+          order.order_details[0].sub_total -
+          order.order_details[0].price * order.order_details[0].qty;
+
+        return {
+          ...order,
+          totalProductPrice,
+          deliveryPrice,
+        };
+      });
+
+      return res.status(200).json({ orders: enhancedOrders });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  getOrderById = async (req: CustomRequest, res: Response) => {
+    const { orderId } = req.params;
+
+    try {
+      const validation = getOrderByIdSchema.safeParse({ orderId });
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error.errors });
+      }
+
+      const order = await prisma.order.findUnique({
+        where: { id: Number(orderId) },
+        include: {
+          store: {
+            select: {
+              name: true,
+              address: true,
+              city: { select: { city_name: true } },
+            },
+          },
+          expedition: {
+            select: { name: true },
+          },
+          address: {
+            select: {
+              address: true,
+              kecamatan: true,
+              kelurahan: true,
+              city: { select: { city_name: true } },
+            },
+          },
+          order_details: {
+            include: {
+              product: { select: { name: true } },
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+
+      const currentUser = req.currentUser;
+      if (!currentUser || order.customer_id !== currentUser.id) {
+        return res.status(403).json({
+          message: 'You do not have permission to view this order',
+        });
+      }
+
+      const totalProductPrice = order.order_details.reduce((total, item) => {
+        return total + item.price * item.qty;
+      }, 0);
+
+      const deliveryPrice =
+        order.order_details[0].sub_total -
+        order.order_details[0].price * order.order_details[0].qty;
+
+      return res.status(200).json({
+        ...order,
+        totalProductPrice,
+        deliveryPrice,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
   createOrder = async (req: CustomRequest, res: Response) => {
     try {
       const validation = createOrderSchema.safeParse(req.body);

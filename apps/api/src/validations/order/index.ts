@@ -14,3 +14,11 @@ export const createOrderSchema = z.object({
   selectedCourier: z.string(),
   selectedCourierPrice: z.number(),
 });
+
+export const getOrdersByUserSchema = z.object({
+  userId: z.coerce.number(),
+});
+
+export const getOrderByIdSchema = z.object({
+  orderId: z.coerce.number(),
+});

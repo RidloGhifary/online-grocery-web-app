@@ -20,6 +20,7 @@ import { UserRouter } from './routers/user.router';
 import { CredentialRouter } from './routers/credential.router';
 import { StoreRouter } from './routers/store.router';
 import { CheckoutRouter } from './routers/checkout.router';
+import { OrderRouter } from './routers/order.router';
 
 export default class App {
   private app: Express;
@@ -74,6 +75,7 @@ export default class App {
     const credentialRouter = new CredentialRouter();
     const storeRouter = new StoreRouter();
     const checkoutRouter = new CheckoutRouter();
+    const orderRouter = new OrderRouter();
 
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, Purwadhika Student API!`);
@@ -88,6 +90,7 @@ export default class App {
     this.app.use('/api/users', userRouter.getRouter());
     this.app.use('/api/credentials', credentialRouter.getRouter());
     this.app.use('/api/stores', storeRouter.getRouter());
+    this.app.use('/api/orders', orderRouter.getRouter());
   }
 
   public start(): void {

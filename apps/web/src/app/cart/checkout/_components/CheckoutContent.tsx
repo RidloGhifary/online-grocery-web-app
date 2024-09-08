@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
-import CheckoutSummary from "@/components/checkoutSummary";
+import CheckoutSummary from "@/components/CheckoutSummary";
 import CartItem from "@/components/CartItems";
 import AddressSection from "./addressSection/AddressSection";
 import { UserAddressProps, UserProps } from "@/interfaces/user";
@@ -13,6 +13,8 @@ import DeliveryService from "./deliverySection/DeliveryService";
 import DeliveryNotes from "./deliverySection/DeliveryNotes";
 import ErrorInfo from "@/components/ErrorInfo";
 import { getNearestStore } from "@/api/checkout/route";
+import { createOrder } from "@/api/order/route";
+import { useRouter } from "next/navigation";
 
 interface Props {
   user: UserProps | null;
@@ -34,6 +36,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     useState<UserAddressProps | null>(
       selectedAddressActive as UserAddressProps,
     );
+  const router = useRouter();
 
   useEffect(() => {
     refreshCart();
@@ -97,6 +100,38 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     setSelectedVoucher(voucher);
   };
 
+  const handleCreateOrder = async () => {
+    try {
+      const orderData = {
+        userId: user?.id as number,
+        checkoutItems: checkoutItems.map((item) => ({
+          product_id: item.product_id,
+          quantity: item.qty,
+          price: item.product.price,
+        })),
+        selectedAddressId: selectedAddress?.id as number,
+        storeId: nearestStoreData?.data?.closestStore.id as number,
+        selectedCourier,
+        selectedCourierPrice,
+      };
+
+      console.log("Order data being sent to API:", orderData);
+
+      const response = await createOrder(orderData);
+
+      console.log("Order creation response:", response);
+
+      if (response.status === 200) {
+        router.push("/");
+      } else {
+        console.log("Failed to create order: ", response.data);
+      }
+    } catch (error: any) {
+      console.error("Error creating order: ", error);
+      console.log("API Error Response:", error.response?.data);
+    }
+  };
+
   return (
     <div className="container mx-auto mb-20 h-screen p-4">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
@@ -158,8 +193,10 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
             deliveryPrice={selectedCourierPrice}
             showDeliveryPrice={true}
             buttonText="Proceed to Payment"
-            selectedVoucher={selectedVoucher}
-            onVoucherSelect={handleVoucherSelect}
+            // selectedVoucher={selectedVoucher}
+            showVoucherButton={false}
+            // onVoucherSelect={handleVoucherSelect}
+            onCheckout={handleCreateOrder}
           />
         </div>
       </div>

@@ -210,7 +210,7 @@ export const cancelOrder = async (
 
 export const uploadPaymentProof = async (
   orderId: number,
-  paymentProof: File,
+  paymentProofUrl: string,
 ): Promise<AxiosResponse<GenericResponse>> => {
   const token = getToken();
 
@@ -218,17 +218,14 @@ export const uploadPaymentProof = async (
     throw new Error("User is not authenticated");
   }
 
-  const formData = new FormData();
-  formData.append("paymentProof", paymentProof);
-
   try {
     const response = await api.post<GenericResponse>(
       `/orders/upload-payment/${orderId}`,
-      formData,
+      { payment_proof: paymentProofUrl },
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data", // Since we are sending a file
+          "Content-Type": "application/json",
         },
       },
     );

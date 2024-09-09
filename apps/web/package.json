@@ -15,7 +15,7 @@
     "@tanstack/react-query": "^5.52.1",
     "@tanstack/react-query-devtools": "^5.53.1",
     "@types/lodash.debounce": "^4.0.9",
-    "@uploadthing/react": "^6.7.2",
+    "@uploadthing/react": "^6.8.0",
     "axios": "^1.7.5",
     "cross-env": "^7.0.3",
     "daisyui": "^4.12.10",
@@ -36,7 +36,7 @@
     "react-spinners": "^0.14.1",
     "react-toastify": "^10.0.5",
     "swiper": "^11.1.10",
-    "uploadthing": "^6.13.2",
+    "uploadthing": "^6.13.3",
     "use-debounce": "^10.0.3",
     "zod": "^3.23.8"
   },

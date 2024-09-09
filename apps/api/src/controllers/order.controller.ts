@@ -362,6 +362,8 @@ export class OrderController {
     const { id } = req.params;
     const result = uploadPaymentProofSchema.safeParse(req.body);
 
+    console.log('Request body:', req.body);
+
     if (!result.success) {
       return res
         .status(400)
@@ -379,12 +381,11 @@ export class OrderController {
           .json({ ok: false, message: 'Order not found or unauthorized' });
       }
 
-      // Update the order status and add payment proof
       const updatedOrder = await prisma.order.update({
         where: { id: parseInt(id) },
         data: {
           payment_proof: result.data.payment_proof,
-          order_status_id: 2, // waiting payment confirmation
+          order_status_id: 2,
         },
       });
 
@@ -406,7 +407,7 @@ export class OrderController {
         if (order?.order_status_id === 4) {
           await prisma.order.update({
             where: { id: orderId },
-            data: { order_status_id: 5 }, // completed
+            data: { order_status_id: 5 },
           });
         }
       },

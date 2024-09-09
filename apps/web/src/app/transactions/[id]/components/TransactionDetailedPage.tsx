@@ -8,8 +8,13 @@ import TransactionItemsTable from "./TransactionItemsTable";
 import MainLink from "@/components/MainLink";
 import MainButton from "@/components/MainButton";
 import { useParams } from "next/navigation";
-import { getOrderById, cancelOrder } from "@/api/order/route";
+import {
+  getOrderById,
+  cancelOrder,
+  uploadPaymentProof,
+} from "@/api/order/route";
 import DeliveryInformationBox from "./DeliveryInformation";
+import { useUploadThing } from "@/utils/uploadthing";
 
 interface Props {
   user: UserProps | null;
@@ -26,8 +31,9 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
   const [transactionDetails, setTransactionDetails] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { startUpload } = useUploadThing("imageUploader");
 
-  // Fetch transaction details
   useEffect(() => {
     const fetchTransactionDetails = async () => {
       try {
@@ -35,7 +41,8 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
         console.log(response);
         setTransactionDetails(response.data);
         setPaymentStage(response.data.order_status);
-        setTimeLeft(3600); // Sync time left from API
+        console.log(paymentStage);
+        setTimeLeft(3600);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -46,7 +53,6 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     fetchTransactionDetails();
   }, [id]);
 
-  // Timer countdown and auto-cancel order when timeLeft is 0
   useEffect(() => {
     if (paymentStage === "waiting for payment" && !fileUploaded) {
       const timer = setInterval(() => {
@@ -54,24 +60,49 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
       }, 1000);
 
       if (timeLeft === 0) {
-        handleCancelTransaction(); // Automatically cancel when time runs out
+        handleCancelTransaction();
       }
 
       return () => clearInterval(timer);
     }
   }, [timeLeft, paymentStage, fileUploaded]);
 
-  // Handle file upload for payment proof
-  const handleFileUpload = () => {
-    setFileUploaded(true);
-    setPaymentStage("waiting payment confirmation");
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
   };
 
-  // Cancel transaction handler
+  // Handle file upload for payment proof
+  const handleFileUpload = async () => {
+    if (!selectedFile) {
+      return setError("No file selected");
+    }
+
+    setIsUploadingPaymentProof(true);
+    try {
+      const uploadResult = await startUpload([selectedFile]);
+      const uploadedUrl = uploadResult?.[0]?.url;
+
+      if (!uploadedUrl) {
+        throw new Error("File upload failed");
+      }
+      await uploadPaymentProof(Number(id), uploadedUrl);
+      setFileUploaded(true);
+      setPaymentStage("waiting payment confirmation");
+    } catch (error) {
+      console.error("Failed to upload payment proof", error);
+      setError("Payment proof upload failed");
+    } finally {
+      setIsUploadingPaymentProof(false);
+    }
+  };
+
   const handleCancelTransaction = async () => {
     setIsCancelingOrder(true);
     try {
-      await cancelOrder(id); // Assuming the cancelOrder API is implemented
+      await cancelOrder(id);
       setPaymentStage("cancelled");
       setTransactionDetails({
         ...transactionDetails,
@@ -84,14 +115,12 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     }
   };
 
-  // Format time function for countdown timer
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  // Find the current stage index based on order_status
   const currentStageIndex = paymentStages.findIndex(
     (stage) => stage.label === transactionDetails?.order_status.status,
   );
@@ -188,6 +217,23 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
           disabled={isCancelingOrder}
         />
       )}
+
+      <div className="mt-2">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="disabled:cursor-not-allowed disabled:opacity-50"
+        />
+        <MainButton
+          text={"upload"}
+          onClick={handleFileUpload}
+          disabled={isUploadingPaymentProof}
+        >
+          Upload Payment Proof
+        </MainButton>
+        {error && <div className="text-red-500">{error}</div>}
+      </div>
 
       <DeliveryInformationBox
         address={address}

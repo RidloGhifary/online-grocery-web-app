@@ -183,9 +183,6 @@ export class OrderController {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      const orderCount = await prisma.order.count();
-      const invoice = `INV-${orderCount.toString().padStart(7, '0')}`;
-
       const storeAdmin = await prisma.storeHasAdmin.findFirst({
         where: { store_id: storeId },
         select: { assignee_id: true },
@@ -204,7 +201,7 @@ export class OrderController {
 
       const newOrder = await prisma.order.create({
         data: {
-          invoice,
+          invoice: 'INV-TEMPDATA',
           customer_id: userId,
           managed_by_id: storeAdmin.assignee_id,
           store_id: storeId,
@@ -221,6 +218,13 @@ export class OrderController {
             })),
           },
         },
+      });
+
+      const invoice = `INV-${newOrder.id.toString().padStart(7, '0')}`;
+
+      await prisma.order.update({
+        where: { id: newOrder.id },
+        data: { invoice },
       });
 
       // Schedule automatic cancellation after 1 hour if no payment proof is uploaded
@@ -297,7 +301,7 @@ export class OrderController {
 
   //   try {
   //     const order = await prisma.order.findUnique({
-  //       where: { id: parseInt(id) },
+  //       where: { id: parseInt(id) },s
   //     });
 
   //     if (!order || order.customer_id !== req.currentUser?.id) {

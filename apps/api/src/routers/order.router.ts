@@ -24,6 +24,20 @@ export class OrderRouter {
     this.router.get('/order/:orderId', verifyToken, (req, res) =>
       this.orderController.getOrderById(req as CustomRequest, res),
     );
+
+    this.router.post('/cancel-order/:id', verifyToken, (req, res) =>
+      this.orderController.cancelOrder(req as CustomRequest, res),
+    );
+
+    // Upload Payment Proof (new)
+    this.router.post('/upload-payment/:id', verifyToken, (req, res) =>
+      this.orderController.uploadPaymentProof(req as CustomRequest, res),
+    );
+
+    // Confirm Delivery (new)
+    this.router.post('/confirm-delivery/:id', verifyToken, (req, res) =>
+      this.orderController.confirmDelivery(req as CustomRequest, res),
+    );
   }
 
   getRouter(): Router {

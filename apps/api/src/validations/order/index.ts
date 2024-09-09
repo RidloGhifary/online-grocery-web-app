@@ -22,3 +22,11 @@ export const getOrdersByUserSchema = z.object({
 export const getOrderByIdSchema = z.object({
   orderId: z.coerce.number(),
 });
+
+export const cancelOrderSchema = z.object({
+  orderId: z.coerce.number(),
+});
+
+export const uploadPaymentProofSchema = z.object({
+  payment_proof: z.string(),
+});

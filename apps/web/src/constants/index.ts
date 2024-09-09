@@ -1,9 +1,10 @@
 import {
   FaCheckCircle,
-  FaCog,
   FaTruck,
   FaHandHoldingHeart,
+  FaMoneyBillWave,
   FaHandshake,
+  FaBoxOpen,
 } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 
@@ -17,13 +18,12 @@ export interface mockCartItem {
 }
 
 export const paymentStages = [
-  { label: "Menunggu Pembayaran", icon: FaCheckCircle },
-  { label: "Menunggu Konfirmasi Pembayaran", icon: FaCheckCircle },
-  { label: "Diproses", icon: FaCog },
-  { label: "Dikirim", icon: FaTruck },
-  { label: "Diterima", icon: FaHandHoldingHeart },
-  { label: "Pesanan Selesai", icon: FaHandshake },
-  { label: "Dibatalkan", icon: MdCancel },
+  { id: 1, label: "waiting for payment", icon: FaMoneyBillWave },
+  { id: 2, label: "waiting payment confirmation", icon: FaCheckCircle },
+  { id: 3, label: "processing", icon: FaTruck },
+  { id: 4, label: "delivered", icon: FaBoxOpen },
+  { id: 5, label: "completed", icon: FaHandshake },
+  // { label: "Pesanan Selesai", icon: FaHandHoldingHeart },
 ];
 
 export const mockCartItems: mockCartItem[] = [

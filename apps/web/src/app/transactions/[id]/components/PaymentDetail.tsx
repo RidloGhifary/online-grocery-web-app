@@ -1,4 +1,5 @@
 import React from "react";
+import convertRupiah from "@/utils/convertRupiah";
 
 interface PaymentDetailsProps {
   totalItemPrice: number;
@@ -22,9 +23,9 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({
       <h2 className="mb-4 text-xl font-bold">
         Detailed Transaction Information
       </h2>
-      <p>Items Total Price: Rp. {totalItemPrice}</p>
-      <p>Delivery Total Price: Rp. {deliveryPrice}</p>
-      <p>Sub Total: Rp. {subTotal.toFixed(2)}</p>
+      <p>Items Total Price: {convertRupiah(totalItemPrice)}</p>
+      <p>Delivery Total Price: {convertRupiah(deliveryPrice)}</p>
+      <p>Sub Total: {convertRupiah(subTotal)}</p>
       <p>Bank Name: {paymentBank}</p>
       <p>Account ID: {paymentAccountId}</p>
       <p>Account Name: {paymentAccountName}</p>

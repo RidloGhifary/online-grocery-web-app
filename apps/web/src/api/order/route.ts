@@ -43,10 +43,28 @@ interface OrderResponse {
   order_details: OrderItem[];
   totalProductPrice: number;
   deliveryPrice: number;
+  order_status: string;
 }
 
 interface OrdersByUserResponse {
   orders: OrderResponse[];
+}
+
+interface CancelOrderRequest {
+  orderId: number;
+}
+
+interface UploadPaymentProofRequest {
+  orderId: number;
+  paymentProof: File; // Assuming you upload a file
+}
+
+interface ConfirmDeliveryRequest {
+  orderId: number;
+}
+
+interface GenericResponse {
+  message: string;
 }
 
 function getToken(): string | undefined {
@@ -154,5 +172,111 @@ export const getOrderById = async (
     }
     console.error("Unknown error:", error.message);
     throw new Error("An unknown error occurred while fetching the order.");
+  }
+};
+
+export const cancelOrder = async (
+  orderId: number,
+): Promise<AxiosResponse<GenericResponse>> => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  try {
+    const response = await api.post<GenericResponse>(
+      `/orders/cancel-order/${orderId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return response;
+  } catch (error: any) {
+    if (error.response) {
+      console.error("API call error:", error.response.data);
+      throw new Error(
+        `Failed to cancel order: ${error.response.data.message || error.message}`,
+      );
+    }
+    console.error("Unknown error:", error.message);
+    throw new Error("An unknown error occurred while canceling the order.");
+  }
+};
+
+export const uploadPaymentProof = async (
+  orderId: number,
+  paymentProof: File,
+): Promise<AxiosResponse<GenericResponse>> => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  const formData = new FormData();
+  formData.append("paymentProof", paymentProof);
+
+  try {
+    const response = await api.post<GenericResponse>(
+      `/orders/upload-payment/${orderId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data", // Since we are sending a file
+        },
+      },
+    );
+
+    return response;
+  } catch (error: any) {
+    if (error.response) {
+      console.error("API call error:", error.response.data);
+      throw new Error(
+        `Failed to upload payment proof: ${error.response.data.message || error.message}`,
+      );
+    }
+    console.error("Unknown error:", error.message);
+    throw new Error(
+      "An unknown error occurred while uploading the payment proof.",
+    );
+  }
+};
+
+export const confirmDelivery = async (
+  orderId: number,
+): Promise<AxiosResponse<GenericResponse>> => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("User is not authenticated");
+  }
+
+  try {
+    const response = await api.post<GenericResponse>(
+      `/orders/confirm-delivery/${orderId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return response;
+  } catch (error: any) {
+    if (error.response) {
+      console.error("API call error:", error.response.data);
+      throw new Error(
+        `Failed to confirm delivery: ${error.response.data.message || error.message}`,
+      );
+    }
+    console.error("Unknown error:", error.message);
+    throw new Error("An unknown error occurred while confirming the delivery.");
   }
 };

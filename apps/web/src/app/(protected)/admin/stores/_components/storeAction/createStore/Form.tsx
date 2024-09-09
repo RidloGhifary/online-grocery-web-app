@@ -1,7 +1,7 @@
 "use client";
 
 import { Provinces } from "@/constants";
-import { FormData } from "./CreateStoreForm";
+import { FormData } from "./CreateStore";
 import {
   FieldErrors,
   SubmitHandler,

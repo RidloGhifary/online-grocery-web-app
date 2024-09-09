@@ -1,4 +1,4 @@
-import { CityProps, ProvinceProps } from "./user";
+import { CityProps, ProvinceProps, UserProps } from "./user";
 
 export interface StoreProps {
   id: number;
@@ -16,8 +16,8 @@ export interface StoreProps {
   createdAt: string;
   updatedAt: string;
   deletedAt: any;
-  province: ProvinceProps;
-  city: CityProps;
+  province?: ProvinceProps;
+  city?: CityProps;
 }
 
 export interface StoreHasProductProps {
@@ -28,5 +28,20 @@ export interface StoreHasProductProps {
   createdAt: string;
   updatedAt: string;
   deletedAt: any;
-  store: StoreProps;
+  store?: StoreProps;
+}
+
+export interface DetailStoreProps extends StoreProps {
+  store_admins?: StoreAdmins[];
+}
+
+export interface StoreAdmins {
+  id: number;
+  user_id: number;
+  store_id: number;
+  assignee_id: number;
+  createdAt: string;
+  updatedAt: any;
+  deletedAt: any;
+  user?: UserProps;
 }

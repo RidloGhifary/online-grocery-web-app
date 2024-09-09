@@ -194,7 +194,6 @@ async function main() {
           unit: 'Piece',
           product_category_id: 1,
           description: 'High-quality UHT milk from Ultramilk.',
-          current_stock: 50,
           slug: 'susu-uht-ultramilk-500ml',
         },
         {
@@ -205,7 +204,6 @@ async function main() {
           unit: 'Piece',
           product_category_id: 1,
           description: 'Rich and creamy cheese from Kraft.',
-          current_stock: 30,
           slug: 'keju-kraft-250gr',
         },
         {
@@ -216,7 +214,6 @@ async function main() {
           unit: 'Piece',
           product_category_id: 1,
           description: 'Delicious yogurt from Cimory.',
-          current_stock: 40,
           slug: 'yogurt-cimory-200ml',
         },
         {
@@ -227,7 +224,6 @@ async function main() {
           unit: 'Piece',
           product_category_id: 1,
           description: 'High-quality butter from Blue Band.',
-          current_stock: 20,
           slug: 'butter-blue-band-200gr',
         },
         {
@@ -238,7 +234,6 @@ async function main() {
           unit: 'Piece',
           product_category_id: 1,
           description: 'Smooth and creamy cheese from Philadelphia.',
-          current_stock: 25,
           slug: 'cream-cheese-philadelphia-150gr',
         },
         {
@@ -249,7 +244,6 @@ async function main() {
           unit: 'Kilogram',
           product_category_id: 2,
           description: 'Fresh and ripe tomatoes.',
-          current_stock: 100,
           slug: 'tomat-1kg',
         },
         {
@@ -260,7 +254,6 @@ async function main() {
           unit: 'Lusin',
           product_category_id: 1,
           description: 'Fresh eggs, perfect for daily consumption.',
-          current_stock: 150,
           slug: 'telur-ayam-1-lusin',
         },
         {
@@ -271,7 +264,6 @@ async function main() {
           unit: 'Kilogram',
           product_category_id: 3,
           description: 'Juicy and fresh pears.',
-          current_stock: 50,
           slug: 'pear-1kg',
         },
       ],

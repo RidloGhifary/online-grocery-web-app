@@ -1,10 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { getCookies } from "@/actions/cookies";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,6 +13,7 @@ import { Cities } from "@/constants";
 import { GetCaptchaToken } from "@/utils/captcha";
 import VerifyCaptchaToken from "@/actions/verifyCaptcha";
 import FormEditStore from "./FormEditStore";
+import { editStore } from "@/actions/stores";
 
 const schema = z.object({
   name: z
@@ -54,11 +53,10 @@ export type FormData = {
 
 interface EditStoreProps {
   id: number;
-  api_url: string;
   store: false | StoreProps | undefined;
 }
 
-export default function EditStore({ id, api_url, store }: EditStoreProps) {
+export default function EditStore({ id, store }: EditStoreProps) {
   const [image, setImage] = useState<File[]>([]);
   const [isUploadImageLoading, setIsUploadImageLoading] =
     useState<boolean>(false);
@@ -77,9 +75,9 @@ export default function EditStore({ id, api_url, store }: EditStoreProps) {
       name: (store && store?.name) || "",
       store_type: (store && (store?.store_type as any)) || "central",
       province:
-        (store && `${store.province.id},${store.province.province}`) || "",
+        (store && `${store?.province?.id},${store?.province?.province}`) || "",
       province_id: (store && store?.province?.id) || 0,
-      city: (store && `${store.city.id},${store.city.city_name}`) || "",
+      city: (store && `${store?.city?.id},${store?.city?.city_name}`) || "",
       city_id: (store && store?.city?.id) || 0,
       address: (store && store?.address) || "",
       kelurahan: (store && store?.kelurahan) || "",
@@ -98,26 +96,15 @@ export default function EditStore({ id, api_url, store }: EditStoreProps) {
   });
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async (data: FormData) => {
-      const token = await getCookies("token");
-      if (!token) return;
-
-      const res = await axios.patch(`${api_url}/stores/${id}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      return res.data;
-    },
+    mutationFn: async (data: FormData) =>
+      editStore({ storeId: id, formData: data }),
     onSuccess: (res) => {
       if (!res.ok) {
         return toast.error(res.message || "Something went wrong!");
       } else {
-        toast.success(res.message || "Store created successfully!");
-        router.push("/user/stores");
-        router.refresh();
+        toast.success(res.message || "Store edited successfully!");
         queryClient.invalidateQueries({ queryKey: ["stores"] });
+        router.push("/admin/stores");
         return;
       }
     },

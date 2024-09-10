@@ -3,7 +3,6 @@ import prisma from '@/prisma';
 import nodeSchedule from 'node-schedule';
 import {
   createOrderSchema,
-  getOrdersByUserSchema,
   querySchema,
   getOrderByIdSchema,
   uploadPaymentProofSchema,
@@ -20,15 +19,13 @@ export class OrderController {
   getOrdersByUser = async (req: CustomRequest, res: Response) => {
     const currentUser = req.currentUser;
 
-    // Check if the user is authenticated
     if (!currentUser) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
-    const userId = currentUser.id; // Get user ID from authenticated user
+    const userId = currentUser.id;
 
     try {
-      // Validate query params
       const queryValidation = querySchema.safeParse(req.query);
       if (!queryValidation.success) {
         return res.status(400).json({ error: queryValidation.error.errors });
@@ -37,7 +34,6 @@ export class OrderController {
       const { filter, search, sortBy, order, page, limit } =
         queryValidation.data;
 
-      // Define order status IDs for filtering
       const filterOptions: { [key: string]: number[] | undefined } = {
         all: undefined, // No filtering for 'all'
         ongoing: [1, 2, 3, 4], // Order statuses for ongoing
@@ -50,9 +46,8 @@ export class OrderController {
       const currentPage = page;
       const offset = (currentPage - 1) * pageSize;
 
-      // Build the where clause based on the authenticated user's ID
       const whereClause: any = {
-        customer_id: userId, // Use the authenticated user's ID
+        customer_id: userId,
       };
 
       if (req.query.startDate && req.query.endDate) {
@@ -72,14 +67,13 @@ export class OrderController {
           {
             order_details: {
               some: {
-                product: { name: { contains: search, mode: 'insensitive' } }, // Search in order details
+                product: { name: { contains: search, mode: 'insensitive' } },
               },
             },
           },
         ];
       }
 
-      // Fetch orders with pagination, filtering, and sorting
       const orders = await prisma.order.findMany({
         where: whereClause,
         include: {
@@ -96,7 +90,7 @@ export class OrderController {
             },
           },
           expedition: {
-            select: { name: true },
+            select: { name: true, display_name: true },
           },
           address: {
             select: {
@@ -119,10 +113,8 @@ export class OrderController {
         },
       });
 
-      // Get total number of orders for pagination
       const totalOrders = await prisma.order.count({ where: whereClause });
 
-      // Enhance orders with additional calculated fields
       const enhancedOrders = orders.map((order) => {
         const totalProductPrice = order.order_details.reduce(
           (total: number, item: any) => {
@@ -142,7 +134,6 @@ export class OrderController {
         };
       });
 
-      // Return the response with pagination info
       return res.status(200).json({
         orders: enhancedOrders,
         pagination: {
@@ -255,7 +246,7 @@ export class OrderController {
             },
           },
           expedition: {
-            select: { name: true },
+            select: { name: true, display_name: true },
           },
           address: {
             select: {
@@ -347,7 +338,7 @@ export class OrderController {
           managed_by_id: storeAdmin.assignee_id,
           store_id: storeId,
           expedition_id: expedition.id,
-          order_status_id: 1, // waiting for payment
+          order_status_id: 1,
           address_id: selectedAddressId,
           order_details: {
             create: checkoutItems.map((item) => ({
@@ -368,7 +359,6 @@ export class OrderController {
         data: { invoice },
       });
 
-      // Schedule automatic cancellation after 1 hour if no payment proof is uploaded
       const cancelJob = nodeSchedule.scheduleJob(
         newOrder.id.toString(),
         new Date(Date.now() + 60 * 60 * 1000),
@@ -377,11 +367,10 @@ export class OrderController {
             where: { id: newOrder.id },
           });
 
-          // If no payment proof is uploaded, cancel the order
           if (!order?.payment_proof) {
             await prisma.order.update({
               where: { id: newOrder.id },
-              data: { order_status_id: 6 }, // cancelled
+              data: { order_status_id: 6 },
             });
           }
         },
@@ -400,7 +389,7 @@ export class OrderController {
     console.log('Received order ID:', id);
 
     try {
-      const orderId = parseInt(id); // Parse and log to ensure it's an integer
+      const orderId = parseInt(id);
       if (isNaN(orderId)) {
         return res.status(400).json({ ok: false, message: 'Invalid order ID' });
       }
@@ -423,12 +412,12 @@ export class OrderController {
 
       const cancelledOrder = await prisma.order.update({
         where: { id: orderId },
-        data: { order_status_id: 6 }, // cancelled
+        data: { order_status_id: 6 },
       });
 
       return res.status(200).json({ ok: true, order: cancelledOrder });
     } catch (error: any) {
-      console.error('Order cancellation error:', error); // Log the full error
+      console.error('Order cancellation error:', error);
       return res.status(500).json({
         ok: false,
         message: 'Order cancellation failed',
@@ -436,39 +425,6 @@ export class OrderController {
       });
     }
   };
-
-  // cancelOrder = async (req: CustomRequest, res: Response) => {
-  //   const { id } = req.params;
-
-  //   try {
-  //     const order = await prisma.order.findUnique({
-  //       where: { id: parseInt(id) },s
-  //     });
-
-  //     if (!order || order.customer_id !== req.currentUser?.id) {
-  //       return res
-  //         .status(404)
-  //         .json({ ok: false, message: 'Order not found or unauthorized' });
-  //     }
-
-  //     if (order.order_status_id !== 1) {
-  //       return res
-  //         .status(400)
-  //         .json({ ok: false, message: 'Cannot cancel order at this stage' });
-  //     }
-
-  //     const cancelledOrder = await prisma.order.update({
-  //       where: { id: parseInt(id) },
-  //       data: { order_status_id: 6 }, // cancelled
-  //     });
-
-  //     return res.status(200).json({ ok: true, order: cancelledOrder });
-  //   } catch (error) {
-  //     return res
-  //       .status(500)
-  //       .json({ ok: false, message: 'Order cancellation failed', error });
-  //   }
-  // };
 
   confirmDelivery = async (req: CustomRequest, res: Response) => {
     const { id } = req.params;
@@ -505,14 +461,19 @@ export class OrderController {
 
   uploadPaymentProof = async (req: CustomRequest, res: Response) => {
     const { id } = req.params;
-    const result = uploadPaymentProofSchema.safeParse(req.body);
+    const { payment_proof, fileType, fileSize } = req.body;
 
-    console.log('Request body:', req.body);
+    const result = uploadPaymentProofSchema.safeParse({
+      payment_proof,
+      fileType,
+      fileSize,
+    });
 
     if (!result.success) {
+      console.log('Validation errors:', result.error.format());
       return res
         .status(400)
-        .json({ ok: false, message: 'Invalid payment proof' });
+        .json({ ok: false, message: 'Invalid payment proof format or size' });
     }
 
     try {
@@ -536,6 +497,7 @@ export class OrderController {
 
       return res.status(200).json({ ok: true, order: updatedOrder });
     } catch (error) {
+      console.error('Error updating payment proof:', error);
       return res
         .status(500)
         .json({ ok: false, message: 'Payment proof upload failed', error });
@@ -623,5 +585,44 @@ export class OrderController {
 //     return res.status(200).json(newOrder);
 //   } catch (error) {
 //     return res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+// uploadPaymentProof = async (req: CustomRequest, res: Response) => {
+//   const { id } = req.params;
+//   const result = uploadPaymentProofSchema.safeParse(req.body);
+
+//   console.log('Request body:', req.body);
+
+//   if (!result.success) {
+//     return res
+//       .status(400)
+//       .json({ ok: false, message: 'Invalid payment proof' });
+//   }
+
+//   try {
+//     const order = await prisma.order.findUnique({
+//       where: { id: parseInt(id) },
+//     });
+
+//     if (!order || order.customer_id !== req.currentUser?.id) {
+//       return res
+//         .status(404)
+//         .json({ ok: false, message: 'Order not found or unauthorized' });
+//     }
+
+//     const updatedOrder = await prisma.order.update({
+//       where: { id: parseInt(id) },
+//       data: {
+//         payment_proof: result.data.payment_proof,
+//         order_status_id: 2,
+//       },
+//     });
+
+//     return res.status(200).json({ ok: true, order: updatedOrder });
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ ok: false, message: 'Payment proof upload failed', error });
 //   }
 // };

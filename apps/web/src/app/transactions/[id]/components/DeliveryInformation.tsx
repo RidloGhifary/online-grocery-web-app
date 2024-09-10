@@ -37,7 +37,7 @@ const DeliveryInformationBox: React.FC<DeliveryInformationBoxProps> = ({
         </p>
         <p>
           <span className="font-semibold">Delivery Service:</span>{" "}
-          {expedition.name}
+          {expedition.display_name}
         </p>
         <p>
           <span className="font-semibold">From Store:</span> {store.name}

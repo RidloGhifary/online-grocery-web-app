@@ -15,7 +15,7 @@ const OrdersContent = () => {
   >("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("invoice");
-  const [order, setOrder] = useState("asc");
+  const [order, setOrder] = useState("desc");
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [page, setPage] = useState(1);
   const [limit] = useState(12);

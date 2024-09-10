@@ -86,6 +86,13 @@ const api = axios.create({
   },
 });
 
+const uploadApi = axios.create({
+  baseURL: "http://localhost:8000/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 export const createOrder = async (
   orderData: CreateOrderRequest,
 ): Promise<AxiosResponse<CreateOrderResponse>> => {
@@ -236,6 +243,8 @@ export const cancelOrder = async (
 export const uploadPaymentProof = async (
   orderId: number,
   paymentProofUrl: string,
+  fileType: string,
+  fileSize: number,
 ): Promise<AxiosResponse<GenericResponse>> => {
   const token = getToken();
 
@@ -244,9 +253,13 @@ export const uploadPaymentProof = async (
   }
 
   try {
-    const response = await api.post<GenericResponse>(
+    const response = await uploadApi.post<GenericResponse>(
       `/orders/upload-payment/${orderId}`,
-      { payment_proof: paymentProofUrl },
+      {
+        payment_proof: paymentProofUrl,
+        fileType,
+        fileSize,
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -302,3 +315,40 @@ export const confirmDelivery = async (
     throw new Error("An unknown error occurred while confirming the delivery.");
   }
 };
+
+// export const uploadPaymentProof = async (
+//   orderId: number,
+//   paymentProofUrl: string,
+// ): Promise<AxiosResponse<GenericResponse>> => {
+//   const token = getToken();
+
+//   if (!token) {
+//     throw new Error("User is not authenticated");
+//   }
+
+//   try {
+//     const response = await api.post<GenericResponse>(
+//       `/orders/upload-payment/${orderId}`,
+//       { payment_proof: paymentProofUrl },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "application/json",
+//         },
+//       },
+//     );
+
+//     return response;
+//   } catch (error: any) {
+//     if (error.response) {
+//       console.error("API call error:", error.response.data);
+//       throw new Error(
+//         `Failed to upload payment proof: ${error.response.data.message || error.message}`,
+//       );
+//     }
+//     console.error("Unknown error:", error.message);
+//     throw new Error(
+//       "An unknown error occurred while uploading the payment proof.",
+//     );
+//   }
+// };

@@ -79,6 +79,15 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     if (!selectedFile) {
       return setError("No file selected");
     }
+
+    // Extract file type and size
+    const fileType = selectedFile.type;
+    const fileSize = selectedFile.size;
+
+    if (fileSize > 1_000_000) {
+      return setError("File size exceeds 1MB");
+    }
+
     setIsUploadingPaymentProof(true);
     try {
       const uploadResult = await startUpload([selectedFile]);
@@ -86,7 +95,9 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
       if (!uploadedUrl) {
         throw new Error("File upload failed");
       }
-      await uploadPaymentProof(Number(id), uploadedUrl);
+
+      // Pass fileType and fileSize to the API call
+      await uploadPaymentProof(Number(id), uploadedUrl, fileType, fileSize);
       setFileUploaded(true);
       setPaymentStage("waiting payment confirmation");
     } catch (error) {
@@ -161,8 +172,8 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
   return (
     <div className="container mx-auto mb-20 p-4">
       <MainLink
-        href="/transaction-history"
-        text="Back to Transaction History"
+        href="/user/orders"
+        text="Back to Order History"
         Icon={MdArrowBack}
       />
       <PaymentDetail

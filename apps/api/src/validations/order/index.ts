@@ -36,6 +36,12 @@ export const cancelOrderSchema = z.object({
   orderId: z.coerce.number(),
 });
 
+// export const uploadPaymentProofSchema = z.object({
+//   payment_proof: z.string(),
+// });
+
 export const uploadPaymentProofSchema = z.object({
   payment_proof: z.string(),
+  fileType: z.enum(['image/jpeg', 'image/jpg', 'image/png']),
+  fileSize: z.number().max(1_000_000, 'File size should be less than 1MB'),
 });

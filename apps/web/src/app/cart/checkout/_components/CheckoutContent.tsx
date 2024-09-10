@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import convertRupiah from "@/utils/convertRupiah";
 import { useCart } from "@/context/CartContext";
 import CheckoutSummary from "@/components/CheckoutSummary";
 import CartItem from "@/components/CartItems";
@@ -15,6 +16,8 @@ import ErrorInfo from "@/components/ErrorInfo";
 import { getNearestStore } from "@/api/checkout/route";
 import { createOrder } from "@/api/order/route";
 import { useRouter } from "next/navigation";
+import { Modal } from "@/components/Modal";
+import MainButton from "@/components/MainButton";
 
 interface Props {
   user: UserProps | null;
@@ -36,17 +39,12 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     useState<UserAddressProps | null>(
       selectedAddressActive as UserAddressProps,
     );
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const router = useRouter();
 
   useEffect(() => {
     refreshCart();
   }, []);
-
-  console.log(
-    "Query enabled:",
-    !!selectedAddress?.id,
-    checkoutItems.length > 0,
-  );
 
   const { data: nearestStoreData, error: nearestStoreError } = useQuery({
     queryKey: ["nearestStore", selectedAddress?.id],
@@ -58,10 +56,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     if (nearestStoreData) {
-      console.log("nearestStoreData exists:", nearestStoreData);
       setStoreCityId(nearestStoreData.data.closestStore.city_id);
-    } else {
-      console.log("nearestStoreData is null or undefined.");
     }
   }, [nearestStoreData]);
 
@@ -83,22 +78,12 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     if (deliveryData) {
-      console.log("Delivery Data: ", deliveryData);
-    }
-  }, [deliveryData]);
-
-  useEffect(() => {
-    if (deliveryData && deliveryData?.data?.results[0]?.costs.length > 0) {
       const initialPrice =
         deliveryData?.data?.results[0]?.costs[0]?.cost[0]?.value;
       setSelectedCourierPrice(initialPrice);
       setDeliveryService(initialPrice);
     }
   }, [deliveryData]);
-
-  const handleVoucherSelect = (voucher: string) => {
-    setSelectedVoucher(voucher);
-  };
 
   const handleCreateOrder = async () => {
     try {
@@ -115,21 +100,25 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
         selectedCourierPrice,
       };
 
-      console.log("Order data being sent to API:", orderData);
-
       const response = await createOrder(orderData);
 
-      console.log("Order creation response:", response);
-
       if (response.status === 200) {
-        router.push("/");
+        router.push(`/user/orders`);
       } else {
         console.log("Failed to create order: ", response.data);
       }
     } catch (error: any) {
       console.error("Error creating order: ", error);
-      console.log("API Error Response:", error.response?.data);
     }
+  };
+
+  const handleModalConfirm = () => {
+    setIsModalOpen(false);
+    handleCreateOrder();
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
   };
 
   return (
@@ -193,13 +182,79 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
             deliveryPrice={selectedCourierPrice}
             showDeliveryPrice={true}
             buttonText="Proceed to Payment"
-            // selectedVoucher={selectedVoucher}
+            onCheckout={handleOpenModal}
             showVoucherButton={false}
-            // onVoucherSelect={handleVoucherSelect}
-            onCheckout={handleCreateOrder}
           />
         </div>
       </div>
+
+      {/* Modal Confirmation */}
+      <Modal
+        show={isModalOpen}
+        closeButton={false}
+        onClose={() => setIsModalOpen(false)}
+      >
+        <div>
+          <h2 className="mb-4 text-center text-lg font-semibold">
+            Confirm Your Order
+          </h2>
+          <p>
+            <strong>Delivery Address:</strong> {selectedAddress?.address},{" "}
+            {selectedAddress?.city?.city_name},{selectedAddress?.postal_code}.
+          </p>
+          <p>
+            <strong>From Store:</strong>{" "}
+            {nearestStoreData?.data?.closestStore.name},{" "}
+            {nearestStoreData?.data?.closestStore.city_name}.
+          </p>
+          <h3 className="font-semibold">Your Items:</h3>
+          <ul>
+            {checkoutItems.map((item) => (
+              <li key={item.product_id}>
+                {item.product.name} x {item.qty}
+              </li>
+            ))}
+          </ul>
+          <p>
+            <strong>Courier:</strong>{" "}
+            <span className="uppercase">{selectedCourier}</span>
+          </p>
+          <p>
+            <strong>Subtotal:</strong>{" "}
+            {convertRupiah(
+              checkoutItems.reduce(
+                (acc, item) => acc + item.qty * item.product.price,
+                0,
+              ),
+            )}
+          </p>
+          <p>
+            <strong>Delivery Price:</strong>{" "}
+            {convertRupiah(selectedCourierPrice)}
+          </p>
+          <p>
+            <strong>Total:</strong>{" "}
+            {convertRupiah(
+              checkoutItems.reduce(
+                (acc, item) => acc + item.qty * item.product.price,
+                0,
+              ) + selectedCourierPrice,
+            )}
+          </p>
+        </div>
+        <div className="modal-action flex justify-center">
+          <MainButton
+            onClick={() => setIsModalOpen(false)}
+            text="Cancel"
+            variant="danger"
+          />
+          <MainButton
+            onClick={handleModalConfirm}
+            text="Yes"
+            variant="primary"
+          />
+        </div>
+      </Modal>
     </div>
   );
 };

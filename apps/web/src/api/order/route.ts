@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import Cookies from "js-cookie";
 
-interface OrderItem {
+export interface OrderItem {
   product_id: number;
   quantity: number;
   price: number;
@@ -9,6 +9,13 @@ interface OrderItem {
   product: {
     name: string;
   };
+}
+
+interface PaginationInfo {
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 interface CreateOrderRequest {
@@ -31,7 +38,7 @@ interface CreateOrderResponse {
   order_details: OrderItem[];
 }
 
-interface OrderResponse {
+export interface OrderResponse {
   id: number;
   invoice: string;
   customer_id: number;
@@ -48,6 +55,7 @@ interface OrderResponse {
 
 interface OrdersByUserResponse {
   orders: OrderResponse[];
+  pagination: PaginationInfo;
 }
 
 interface CancelOrderRequest {
@@ -56,7 +64,7 @@ interface CancelOrderRequest {
 
 interface UploadPaymentProofRequest {
   orderId: number;
-  paymentProof: File; // Assuming you upload a file
+  paymentProof: File;
 }
 
 interface ConfirmDeliveryRequest {
@@ -115,7 +123,14 @@ export const createOrder = async (
 };
 
 export const getOrdersByUser = async (
-  userId: number,
+  filter: "all" | "ongoing" | "completed" | "cancelled" = "all",
+  search?: string,
+  sortBy: "invoice" | "createdAt" = "invoice",
+  order: "asc" | "desc" = "asc",
+  page: number = 1,
+  limit: number = 12,
+  startDate?: string,
+  endDate?: string,
 ): Promise<AxiosResponse<OrdersByUserResponse>> => {
   const token = getToken();
 
@@ -125,8 +140,18 @@ export const getOrdersByUser = async (
 
   try {
     const response = await api.get<OrdersByUserResponse>(
-      `/orders/user-orders/${userId}`,
+      `/orders/user-orders/`,
       {
+        params: {
+          filter,
+          search,
+          sortBy,
+          order,
+          page,
+          limit,
+          startDate,
+          endDate,
+        },
         headers: {
           Authorization: `Bearer ${token}`,
         },

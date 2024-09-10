@@ -17,7 +17,7 @@ export class OrderRouter {
       this.orderController.createOrder(req as CustomRequest, res),
     );
 
-    this.router.get('/user-orders/:userId', verifyToken, (req, res) =>
+    this.router.get('/user-orders', verifyToken, (req, res) =>
       this.orderController.getOrdersByUser(req as CustomRequest, res),
     );
 

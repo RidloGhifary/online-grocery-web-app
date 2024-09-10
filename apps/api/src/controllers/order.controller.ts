@@ -4,6 +4,7 @@ import nodeSchedule from 'node-schedule';
 import {
   createOrderSchema,
   getOrdersByUserSchema,
+  querySchema,
   getOrderByIdSchema,
   uploadPaymentProofSchema,
 } from '@/validations/order';
@@ -17,23 +18,70 @@ export interface CustomRequest extends Request {
 
 export class OrderController {
   getOrdersByUser = async (req: CustomRequest, res: Response) => {
-    const { userId } = req.params;
+    const currentUser = req.currentUser;
+
+    // Check if the user is authenticated
+    if (!currentUser) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const userId = currentUser.id; // Get user ID from authenticated user
 
     try {
-      const validation = getOrdersByUserSchema.safeParse({ userId });
-      if (!validation.success) {
-        return res.status(400).json({ error: validation.error.errors });
+      // Validate query params
+      const queryValidation = querySchema.safeParse(req.query);
+      if (!queryValidation.success) {
+        return res.status(400).json({ error: queryValidation.error.errors });
       }
 
-      const currentUser = req.currentUser;
-      if (!currentUser || Number(userId) !== currentUser.id) {
-        return res.status(403).json({
-          message: 'You do not have permission to view these orders',
-        });
+      const { filter, search, sortBy, order, page, limit } =
+        queryValidation.data;
+
+      // Define order status IDs for filtering
+      const filterOptions: { [key: string]: number[] | undefined } = {
+        all: undefined, // No filtering for 'all'
+        ongoing: [1, 2, 3, 4], // Order statuses for ongoing
+        completed: [5], // Completed orders
+        cancelled: [6], // Cancelled orders
+      };
+
+      // Pagination options
+      const pageSize = limit;
+      const currentPage = page;
+      const offset = (currentPage - 1) * pageSize;
+
+      // Build the where clause based on the authenticated user's ID
+      const whereClause: any = {
+        customer_id: userId, // Use the authenticated user's ID
+      };
+
+      if (req.query.startDate && req.query.endDate) {
+        whereClause.createdAt = {
+          gte: new Date(req.query.startDate as string),
+          lte: new Date(req.query.endDate as string),
+        };
       }
 
+      if (filter !== 'all' && filterOptions[filter]) {
+        whereClause.order_status_id = { in: filterOptions[filter] };
+      }
+
+      if (search) {
+        whereClause.OR = [
+          { invoice: { contains: search, mode: 'insensitive' } }, // Search by invoice
+          {
+            order_details: {
+              some: {
+                product: { name: { contains: search, mode: 'insensitive' } }, // Search in order details
+              },
+            },
+          },
+        ];
+      }
+
+      // Fetch orders with pagination, filtering, and sorting
       const orders = await prisma.order.findMany({
-        where: { customer_id: Number(userId) },
+        where: whereClause,
         include: {
           store: {
             select: {
@@ -64,12 +112,24 @@ export class OrderController {
             },
           },
         },
+        take: pageSize,
+        skip: offset,
+        orderBy: {
+          [sortBy]: order,
+        },
       });
 
+      // Get total number of orders for pagination
+      const totalOrders = await prisma.order.count({ where: whereClause });
+
+      // Enhance orders with additional calculated fields
       const enhancedOrders = orders.map((order) => {
-        const totalProductPrice = order.order_details.reduce((total, item) => {
-          return total + item.price * item.qty;
-        }, 0);
+        const totalProductPrice = order.order_details.reduce(
+          (total: number, item: any) => {
+            return total + item.price * item.qty;
+          },
+          0,
+        );
 
         const deliveryPrice =
           order.order_details[0].sub_total -
@@ -82,12 +142,93 @@ export class OrderController {
         };
       });
 
-      return res.status(200).json({ orders: enhancedOrders });
+      // Return the response with pagination info
+      return res.status(200).json({
+        orders: enhancedOrders,
+        pagination: {
+          total: totalOrders,
+          page: currentPage,
+          pageSize,
+          totalPages: Math.ceil(totalOrders / pageSize),
+        },
+      });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
+  // getOrdersByUser = async (req: CustomRequest, res: Response) => {
+  //   const { userId } = req.params;
+
+  //   try {
+  //     const validation = getOrdersByUserSchema.safeParse({ userId });
+  //     if (!validation.success) {
+  //       return res.status(400).json({ error: validation.error.errors });
+  //     }
+
+  //     const currentUser = req.currentUser;
+  //     if (!currentUser || Number(userId) !== currentUser.id) {
+  //       return res.status(403).json({
+  //         message: 'You do not have permission to view these orders',
+  //       });
+  //     }
+
+  //     const orders = await prisma.order.findMany({
+  //       where: { customer_id: Number(userId) },
+  //       include: {
+  //         store: {
+  //           select: {
+  //             name: true,
+  //             address: true,
+  //             city: { select: { city_name: true } },
+  //           },
+  //         },
+  //         order_status: {
+  //           select: {
+  //             status: true,
+  //           },
+  //         },
+  //         expedition: {
+  //           select: { name: true },
+  //         },
+  //         address: {
+  //           select: {
+  //             address: true,
+  //             kecamatan: true,
+  //             kelurahan: true,
+  //             city: { select: { city_name: true } },
+  //           },
+  //         },
+  //         order_details: {
+  //           include: {
+  //             product: { select: { name: true, image: true } },
+  //           },
+  //         },
+  //       },
+  //     });
+
+  //     const enhancedOrders = orders.map((order) => {
+  //       const totalProductPrice = order.order_details.reduce((total, item) => {
+  //         return total + item.price * item.qty;
+  //       }, 0);
+
+  //       const deliveryPrice =
+  //         order.order_details[0].sub_total -
+  //         order.order_details[0].price * order.order_details[0].qty;
+
+  //       return {
+  //         ...order,
+  //         totalProductPrice,
+  //         deliveryPrice,
+  //       };
+  //     });
+
+  //     return res.status(200).json({ orders: enhancedOrders });
+  //   } catch (error) {
+  //     console.error(error);
+  //     return res.status(500).json({ error: 'Internal server error' });
+  //   }
+  // };
 
   getOrderById = async (req: CustomRequest, res: Response) => {
     const { orderId } = req.params;

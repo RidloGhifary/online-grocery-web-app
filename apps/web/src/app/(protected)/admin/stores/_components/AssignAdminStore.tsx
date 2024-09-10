@@ -100,6 +100,7 @@ export default function AssignAdminStore({
         }}
         actions={[
           <button
+            key="submit-assign-admin"
             disabled={isLoading || isPending || !selectedAdmin}
             type="button"
             className="btn btn-secondary"

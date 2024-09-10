@@ -55,6 +55,7 @@ export default function DeleteStore({ id, store_name }: DeleteStoreProps) {
         }}
         actions={[
           <button
+            key="confirm-delete-store"
             disabled={isLoading}
             type="button"
             className="btn btn-secondary"

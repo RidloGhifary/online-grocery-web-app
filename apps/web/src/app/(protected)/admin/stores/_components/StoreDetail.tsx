@@ -194,6 +194,7 @@ export default function StoreDetailPage({ storeId }: { storeId: number }) {
                         }}
                         actions={[
                           <button
+                            key={"unassign"}
                             disabled={isLoading || isPending}
                             type="button"
                             className="btn btn-secondary"
@@ -220,7 +221,7 @@ export default function StoreDetailPage({ storeId }: { storeId: number }) {
                           </h3>
                           <p className="text-sm text-gray-600">
                             Are you sure you want to unassign this admin? Your
-                            store wouldn't have any admin for a while.
+                            store wouldn&apos;t have any admin for a while.
                           </p>
                         </div>
                       </Modal>

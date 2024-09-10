@@ -93,7 +93,6 @@ export default function AddAddressForm({ api_url }: { api_url: string }) {
       }
     },
     onError: (res) => {
-      console.log("🚀 ~ AddAddressForm ~ res:", res);
       toast.error(res.message || "Something went wrong!");
     },
   });

@@ -65,7 +65,6 @@ export default function ChangeEmail({ email }: ChangeNameProps) {
   const isEmailChanged = watchedEmail !== email;
 
   const onSubmit: (data: z.infer<typeof schema>) => void = async (data) => {
-    console.log("🚀 ~ data:", data);
     mutate(data);
   };
 

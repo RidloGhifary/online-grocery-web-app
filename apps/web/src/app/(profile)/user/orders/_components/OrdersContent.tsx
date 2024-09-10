@@ -5,7 +5,6 @@ import MainButton from "@/components/MainButton";
 import debounce from "lodash.debounce";
 import OrderItems from "./OrderItems";
 import { OrderResponse } from "@/api/order/route";
-import { FaCalendarCheck } from "react-icons/fa";
 
 const OrdersContent = () => {
   const [startDate, setStartDate] = useState<string | null>(null);
@@ -18,7 +17,8 @@ const OrdersContent = () => {
   const [order, setOrder] = useState("desc");
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [page, setPage] = useState(1);
-  const [limit] = useState(12);
+  const [limit] = useState(6);
+  const [hasMore, setHasMore] = useState(true);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -35,7 +35,12 @@ const OrdersContent = () => {
       if (page === 1) {
         setOrders(response.data.orders);
       } else {
-        setOrders((prevOrders) => [...prevOrders, ...response.data.orders]); // Append for load more
+        setOrders((prevOrders) => [...prevOrders, ...response.data.orders]);
+      }
+      if (response.data.orders.length < limit) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -118,7 +123,7 @@ const OrdersContent = () => {
           <OrderItems key={order.id} order={order} />
         ))}
       </div>
-      {orders.length >= limit && (
+      {hasMore && orders.length >= limit && (
         <MainButton
           text="Load More"
           onClick={() => setPage((prev) => prev + 1)}

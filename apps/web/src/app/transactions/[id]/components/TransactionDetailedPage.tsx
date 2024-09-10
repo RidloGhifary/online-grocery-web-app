@@ -34,6 +34,8 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
   const [error, setError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { startUpload } = useUploadThing("imageUploader");
+  const [timeLeftUntilConfirmation, setTimeLeftUntilConfirmation] =
+    useState<number>(0);
 
   useEffect(() => {
     const fetchTransactionDetails = async () => {
@@ -41,7 +43,19 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
         const response = await getOrderById(Number(id));
         setTransactionDetails(response.data);
         setPaymentStage(response.data.order_status.status);
-        setTimeLeft(3600);
+        const orderCreatedAt = new Date(
+          response.data.order_details[0].createdAt,
+        ).getTime();
+        const currentTime = new Date().getTime();
+        const timeElapsed = Math.floor((currentTime - orderCreatedAt) / 1000);
+        const timeRemaining = 60 - timeElapsed;
+
+        setTimeLeft(timeRemaining > 0 ? timeRemaining : 0);
+
+        if (response.data.order_status.status === "delivered") {
+          const timeRemainingForAutoConfirmation = 60;
+          setTimeLeftUntilConfirmation(timeRemainingForAutoConfirmation);
+        }
       } catch (error: any) {
         setError(error.message);
       } finally {
@@ -50,63 +64,6 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     };
     fetchTransactionDetails();
   }, [id]);
-
-  useEffect(() => {
-    if (
-      ["waiting for payment", "waiting payment confirmation"].includes(
-        paymentStage,
-      ) &&
-      !fileUploaded
-    ) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
-      if (timeLeft === 0) {
-        handleCancelTransaction();
-      }
-      return () => clearInterval(timer);
-    }
-  }, [timeLeft, paymentStage, fileUploaded]);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-    }
-  };
-
-  const handleFileUpload = async () => {
-    if (!selectedFile) {
-      return setError("No file selected");
-    }
-
-    // Extract file type and size
-    const fileType = selectedFile.type;
-    const fileSize = selectedFile.size;
-
-    if (fileSize > 1_000_000) {
-      return setError("File size exceeds 1MB");
-    }
-
-    setIsUploadingPaymentProof(true);
-    try {
-      const uploadResult = await startUpload([selectedFile]);
-      const uploadedUrl = uploadResult?.[0]?.url;
-      if (!uploadedUrl) {
-        throw new Error("File upload failed");
-      }
-
-      // Pass fileType and fileSize to the API call
-      await uploadPaymentProof(Number(id), uploadedUrl, fileType, fileSize);
-      setFileUploaded(true);
-      setPaymentStage("waiting payment confirmation");
-    } catch (error) {
-      console.error("Failed to upload payment proof", error);
-      setError("Payment proof upload failed");
-    } finally {
-      setIsUploadingPaymentProof(false);
-    }
-  };
 
   const handleCancelTransaction = async () => {
     setIsCancelingOrder(true);
@@ -124,6 +81,23 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     }
   };
 
+  useEffect(() => {
+    if (
+      ["waiting for payment", "waiting payment confirmation"].includes(
+        paymentStage,
+      ) &&
+      !fileUploaded
+    ) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+      // if (timeLeft === 0) {
+      //   handleCancelTransaction();
+      // }
+      return () => clearInterval(timer);
+    }
+  }, [timeLeft, paymentStage, fileUploaded]);
+
   const handleConfirmDelivery = async () => {
     setIsConfirmingDelivery(true);
     try {
@@ -134,6 +108,59 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
       setError("Delivery confirmation failed");
     } finally {
       setIsConfirmingDelivery(false);
+    }
+  };
+
+  useEffect(() => {
+    if (paymentStage === "delivered") {
+      const confirmationTimer = setInterval(() => {
+        setTimeLeftUntilConfirmation((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+
+      // console.log(timeLeftUntilConfirmation);
+      if (timeLeftUntilConfirmation == 0) {
+        handleConfirmDelivery();
+      }
+
+      return () => clearInterval(confirmationTimer);
+    }
+  }, [timeLeftUntilConfirmation, paymentStage]);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) {
+      return setError("No file selected");
+    }
+
+    const fileType = selectedFile.type;
+    const fileSize = selectedFile.size;
+
+    if (fileSize > 1_000_000) {
+      return setError("File size exceeds 1MB");
+    }
+
+    setIsUploadingPaymentProof(true);
+    try {
+      const uploadResult = await startUpload([selectedFile]);
+      const uploadedUrl = uploadResult?.[0]?.url;
+      if (!uploadedUrl) {
+        throw new Error("File upload failed");
+      }
+
+      await uploadPaymentProof(Number(id), uploadedUrl, fileType, fileSize);
+      setFileUploaded(true);
+      setPaymentStage("waiting payment confirmation");
+    } catch (error) {
+      console.error("Failed to upload payment proof", error);
+      setError("Payment proof upload failed");
+    } finally {
+      setIsUploadingPaymentProof(false);
     }
   };
 

@@ -6,6 +6,7 @@ export interface OrderItem {
   quantity: number;
   price: number;
   sub_total: number;
+  createdAt: string;
   product: {
     name: string;
   };

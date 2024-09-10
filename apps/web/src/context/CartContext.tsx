@@ -87,7 +87,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     // Attach the listeners
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    // window.addEventListener("beforeunload", handleBeforeUnload);
     window.addEventListener("popstate", handlePopState);
 
     // Load checkoutItems from local storage on component mount (page reload)
@@ -99,7 +99,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // Clean up the listeners on unmount
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      // window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("popstate", handlePopState);
     };
   }, []);

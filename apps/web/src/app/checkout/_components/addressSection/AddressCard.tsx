@@ -28,7 +28,13 @@ const AddressCard: React.FC<Props> = ({
           )}
         </div>
         <p className="text-sm">{currentUser?.phone_number}</p>
-        <p className="text-sm">{address?.address}</p>
+        <p className="text-sm">
+          {address?.address}
+          {", "}
+          {address?.kelurahan}
+          {", "}
+          {address?.kecamatan}
+        </p>
         <div className="text-sm">
           {address?.city?.city_name}, {address?.city?.province?.province},{" "}
           <i>{address?.postal_code}</i>

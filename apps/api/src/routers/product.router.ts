@@ -1,4 +1,7 @@
 import { ProductController } from '@/controllers/product.controller';
+import validateRequestVerbose from '@/middlewares/validateRequestVerbose';
+import { verifyToken } from '@/middlewares/verifyToken';
+import { createProductSchema, updateProductSchema } from '@/validations/product';
 import { Router } from 'express';
 
 export class ProductRouter {
@@ -14,9 +17,20 @@ export class ProductRouter {
   private initializeRoutes(): void {
     // this.router.get('/', this.productController.getAllProducts);
     this.router.get('/', this.productController.productList);
+    this.router.post(
+      '/',
+      verifyToken,
+      validateRequestVerbose(createProductSchema),
+      this.productController.createProduct,
+    );
+    this.router.patch(
+      '/update',
+      verifyToken,
+      validateRequestVerbose(updateProductSchema),
+      this.productController.updateProduct,
+    );
     this.router.get('/discounts', this.productController.getDiscountProduct);
     this.router.get('/locations', this.productController.getProductByLocation);
-    this.router.post('/', this.productController.createProduct);
     this.router.get('/:slug', this.productController.productSingle);
     this.router.get('/:id', (req, res) =>
       this.productController.getProductById(req, res),

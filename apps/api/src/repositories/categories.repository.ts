@@ -19,6 +19,9 @@ class CategoryRepository {
     }
     return result
   }
+  async isProductCategoryIdExist (id?:number) : Promise<boolean>{
+    return !!(await prisma.productCategory.findFirst({select:{id:true},where:{id:id}})&&id)
+  }
   
 }
 

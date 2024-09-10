@@ -1,4 +1,5 @@
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
+import { UpdateProductInputInterface } from '@/interfaces/ProductInterface';
 import prisma from '@/prisma';
 import { productRepository } from '@/repositories/product.repository';
 import getCityFromCoordinates from '@/utils/getCityFromCoordinates';
@@ -316,11 +317,27 @@ export class ProductController {
     res: Response,
   ): Promise<void | Response> {
     const product: Product = req.body;
+    console.log(product);
+    
     const newData = await productRepository.createProduct(product);
     if (!newData.ok) {
       return res.status(400).send(newData);
     }
     return res.status(201).send(newData);
+  }
+  
+  public async updateProduct(
+    req: Request,
+    res: Response,
+  ): Promise<void | Response> {
+    const product: UpdateProductInputInterface = req.body;
+    console.log(product);
+    
+    const updatedData = await productRepository.updateProduct(product);
+    if (!updatedData.ok) {
+      return res.status(400).send(updatedData);
+    }
+    return res.status(201).send(updatedData);
   }
 
   getProductById = async (req: Request, res: Response) => {

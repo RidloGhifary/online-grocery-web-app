@@ -19,6 +19,7 @@
     "axios": "^1.7.5",
     "cross-env": "^7.0.3",
     "daisyui": "^4.12.10",
+    "framer-motion": "^11.5.4",
     "immer": "^10.1.1",
     "jose": "^5.8.0",
     "jotai": "^2.9.3",

@@ -3,53 +3,45 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import ButtonWithAction from "../ui/ButtonWithAction";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/constants/queryKeys";
 import Select from "react-select";
-import CommonResultInterface from "@/interfaces/CommonResultInterface";
-import {
-  ProductCategoryInterface,
-  ProductCompleteInterface,
-  ProductRecordInterface,
-} from "@/interfaces/ProductInterface";
+import { useMutation } from "@tanstack/react-query";
+import { toast, Bounce } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { updateProduct } from "@/actions/products";
+import { ProductCategoryInterface, UpdateProductInputInterface } from "@/interfaces/ProductInterface";
 import { UploadDropzone } from "@/utils/uploadthing";
 import { FaCheck, FaTrash } from "react-icons/fa";
 import Image from "next/image";
+import ButtonWithAction from "../ui/ButtonWithAction";
 import { Reorder, useDragControls } from "framer-motion";
 import { IoReorderFour } from "react-icons/io5";
-import { createProduct } from "@/actions/products";
-import { Bounce, toast } from "react-toastify";
-import { useRouter } from "next/navigation";
 
 // Define the Zod schema for validation
-const productSchema = z.object({
-  sku: z.string().min(1, "SKU is required"),
-  name: z.string().min(1, "Name is required"),
-  product_category_id: z.number().int().min(1, "Category ID is required"),
-  description: z.string().nullable(),
-  unit: z.string().min(1, "Unit is required"),
-  unit_in_gram: z.number({ message: "Unit in gram is required" }),
-  price: z.number().min(0, "Price must be a positive number"),
-  image: z.string().optional(), // Add the image field
+const updateProductSchema = z.object({
+  id: z.number().positive(),
+  sku: z.string().min(1, "SKU is required").optional(),
+  name: z.string().min(1, "Name is required").optional(),
+  product_category_id: z.number().int().min(1, "Category ID is required").optional(),
+  description: z.string().nullable().optional(),
+  unit: z.string().min(1, "Unit is required").optional(),
+  unit_in_gram: z.number().positive("Unit in grams must be a positive number").optional(),
+  price: z.number().positive("Price must be a positive number").optional(),
+  image: z.string().nullable().optional(), // Handle image as a string or null
 });
 
 // TypeScript type for the form values
-type ProductFormValues = z.infer<typeof productSchema>;
+type UpdateProductFormValues = z.infer<typeof updateProductSchema>;
 
-export default function ProductForm() {
+interface ProductUpdateFormProps {
+  initialData: UpdateProductInputInterface;
+  categories: ProductCategoryInterface[];
+}
+
+export default function ProductUpdateForm({ initialData, categories }: ProductUpdateFormProps) {
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const categoriesData = queryClient.getQueryData<
-    CommonResultInterface<ProductCategoryInterface[]>
-  >([queryKeys.productCategories]);
+  const [uploadedImages, setUploadedImages] = useState<string[]>(initialData.image ? JSON.parse(initialData.image) : []);
+  const controls = useDragControls();
 
-  // Check if categoriesData is valid and contains data
-  const categories = Array.isArray(categoriesData?.data)
-    ? categoriesData.data
-    : [];
-
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
 
   const {
     register,
@@ -57,25 +49,20 @@ export default function ProductForm() {
     formState: { errors },
     setValue,
     watch,
-  } = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      sku: "",
-      name: "",
-      product_category_id: 0,
-      description: null,
-      unit: "",
-      price: undefined,
-      unit_in_gram: undefined,
-      image: "[]", // Initialize image as an empty string
-    },
+    reset,
+  } = useForm<UpdateProductFormValues>({
+    resolver: zodResolver(updateProductSchema),
+    defaultValues: initialData,
   });
-  const controls = useDragControls();
-  const mutation = useMutation({
-    mutationFn: createProduct,
-    onSuccess: () => {
 
-      toast.success("Success add data", {
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
+
+  const mutation = useMutation({
+    mutationFn: updateProduct,
+    onSuccess: () => {
+      toast.success("Product updated successfully", {
         position: "top-right",
         autoClose: 2000,
         hideProgressBar: false,
@@ -85,76 +72,45 @@ export default function ProductForm() {
         progress: undefined,
         theme: "colored",
         transition: Bounce,
-        containerId:10912
       });
-      setTimeout(()=>{router.refresh();},2000)
-      // router.refresh();
+      setTimeout(() => { router.refresh(); }, 2000);
     },
-    onError : (e)=>{
-     let error : any  = ''
-     if (typeof JSON.parse(e.message) === 'string') {
-      error = JSON.parse(JSON.parse(e.message)) as unknown as CommonResultInterface<ProductCompleteInterface>
-      error = (error as unknown as CommonResultInterface<ProductCompleteInterface>).error
-     } else {
-      error = JSON.parse(e.message) as unknown as CommonResultInterface<ProductCompleteInterface>
-      error = (error as unknown as CommonResultInterface<ProductCompleteInterface>).error
-     }
-      
-      if (typeof error === 'object') {
-        if (Array.isArray(error)) {
-          (error as Array<{message:string}>).forEach((e,i)=>{
-            toast.error(e.message, {
-              position: "top-right",
-              autoClose: 2000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: false,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-              transition: Bounce,
-              containerId:10912,
-              toastId:i
-            });
-          })
-        }
-      } else {
-        toast.error(error.error, {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          transition: Bounce,
-          containerId:10912
-        });
+    onError: (error) => {
+      let errorMessage = '';
+      try {
+        const parsedError = JSON.parse(error.message);
+        errorMessage = parsedError.error || 'An error occurred';
+      } catch {
+        errorMessage = 'An error occurred';
       }
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+      });
     }
   });
-  const onSubmit = (data: ProductFormValues) => {
-    console.log("Form Data:", data);
-    mutation.mutate(data as unknown as ProductRecordInterface);
-  };
-  
 
-  // Transform categories data for React Select
+  const onSubmit = (data: UpdateProductFormValues) => {
+    mutation.mutate(data as UpdateProductInputInterface);
+  };
+
   const categoryOptions = categories.map((category) => ({
     value: category.id,
     label: category.display_name || category.name,
   }));
 
-  // Handle successful upload and set image URLs
   const handleUploadComplete = (urls: string[]) => {
-    const updatedImages = [...uploadedImages, ...urls];
-    setUploadedImages(updatedImages);
-
-    setValue("image", JSON.stringify(updatedImages));
+    setUploadedImages(urls);
+    setValue("image", JSON.stringify(urls));
   };
 
-  // Handle image removal
   const removeImage = (url: string) => {
     const updatedImages = uploadedImages.filter((img) => img !== url);
     setUploadedImages(updatedImages);
@@ -163,7 +119,7 @@ export default function ProductForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <h1 className="text-center text-xl font-extrabold">Add Product</h1>
+      <h1 className="text-center text-xl font-extrabold">Update Product</h1>
 
       {/* SKU */}
       <label className="form-control w-full">
@@ -282,8 +238,8 @@ export default function ProductForm() {
         )}
       </label>
 
-      {/* Image upload section */}
-      <div className="form-control">
+       {/* Image upload section */}
+       <div className="form-control">
         <div className="label font-bold">
           <span className="label-text">Images</span>
         </div>
@@ -358,6 +314,7 @@ export default function ProductForm() {
         </div>
       </div>
 
+      {/* Submit button */}
       <div className="flex max-w-full justify-end py-5">
         <ButtonWithAction type="submit" replaceTWClass="btn btn-primary">
           Save{" "}

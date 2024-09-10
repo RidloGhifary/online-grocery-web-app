@@ -1,4 +1,13 @@
+'use client'
+import { getAdmin } from "@/actions/user";
+import { queryKeys } from "@/constants/queryKeys";
+import { useQuery } from "@tanstack/react-query";
+
 export default function () {
+  const {data, isLoading, error} = useQuery({
+    queryKey: [queryKeys.adminInfo],
+    queryFn: ()=> getAdmin(),
+  })
   return (
     <>
       <div className="navbar bg-base-100">
@@ -27,6 +36,7 @@ export default function () {
         
         {/* Profile on the right */}
         <div className="flex-none ml-auto">
+          {isLoading?'loading . .  .': data?.data?.email}
           <div className="dropdown dropdown-end">
             <div
               tabIndex={0}

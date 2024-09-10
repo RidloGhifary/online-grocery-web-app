@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["omitApi"]
 }
 
@@ -149,10 +149,10 @@ model Province {
 
   cities City[]
   stores Store[]
+  // Store Store[]
 
   @@index([id])
   @@map("provinces")
-  // Store Store[]
 }
 
 model City {
@@ -195,21 +195,21 @@ model Expedition {
 }
 
 model Store {
-  id         Int       @id @default(autoincrement())
-  created_by Int
-  creator    User      @relation(fields: [created_by], references: [id])
-  name       String
-  store_type StoreType
-  city       City      @relation(fields: [city_id], references: [id])
-  city_id    Int
-  province    Province?  @relation(fields: [province_id], references: [id])
+  id          Int       @id @default(autoincrement())
+  created_by  Int
+  creator     User      @relation(fields: [created_by], references: [id])
+  name        String
+  store_type  StoreType
+  city        City      @relation(fields: [city_id], references: [id])
+  city_id     Int
+  province    Province? @relation(fields: [province_id], references: [id])
   province_id Int?
-  address    String
-  kecamatan  String
-  kelurahan  String
-  image      String?
-  latitude   Decimal   @db.Decimal(9, 6)
-  longtitude Decimal   @db.Decimal(9, 6)
+  address     String
+  kecamatan   String
+  kelurahan   String
+  image       String?
+  latitude    Decimal   @db.Decimal(9, 6)
+  longtitude  Decimal   @db.Decimal(9, 6)
 
   store_admins        StoreHasAdmin[]
   // products            Product[]
@@ -275,7 +275,7 @@ model Product {
   description         String?
   unit                String
   price               Float
-  image               String?
+  image               String?         @db.LongText
   unit_in_gram        Float? //newly added
 
   createdAt DateTime? @default(now())

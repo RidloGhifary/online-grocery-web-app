@@ -41,7 +41,7 @@ export default function ({
               <td>
                 <div className="flex min-w-40 flex-col items-start justify-start sm:flex-row sm:items-center sm:space-x-4">
                   <Image
-                    src={product.image || "https://via.placeholder.com/150"}
+                    src={product.image? JSON.parse(product.image!)[0] : "https://via.placeholder.com/150"}
                     alt={product.name}
                     width={50}
                     height={50}

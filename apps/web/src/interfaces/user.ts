@@ -79,7 +79,7 @@ export interface UserInterface {
   created_at: Date | null;
   updated_at: Date | null;
   deleted_at: Date | null;
-  role ?: UserHasRole
+  role ?: UserHasRole[]
 }
 
 export interface UserHasRole {

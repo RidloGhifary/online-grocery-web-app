@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
 } from "react";
+import { ToastContainer } from "react-toastify";
 
 const getFullWidthRespectingScrollbarInVw = () => {
   const viewportWidth = window.innerWidth;
@@ -103,6 +104,8 @@ export function Modal({
           close
         </button>
       </form>
+      <ToastContainer containerId={10912}  position="top-center" draggable={true}  />
+
     </dialog>
   );
 }

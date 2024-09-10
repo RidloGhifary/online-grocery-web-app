@@ -24,6 +24,7 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
       ifNotEnoughImage.push(...images);
       ifNotEnoughImage.push(...images);
       ifNotEnoughImage.push(...images);
+      ifNotEnoughImage.push(...images);
       usedImg = ifNotEnoughImage
     }
   } else {
@@ -53,14 +54,14 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
         navigation={true}
         thumbs={thumbsSwiper ? { swiper: thumbsSwiper } : undefined}
         modules={[FreeMode, Navigation, Thumbs]}
-        className="mySwiper2 h-80"
+        className="mySwiper2 h-80 rounded-lg"
       >
         {usedImg.map((src, index) => (
           <SwiperSlide key={index} >
             <Image
               src={src}
               alt={`Image ${index + 1}`}
-              className="aspect-square w-full object-scale-down"
+              className="aspect-square w-full object-scale-down rounded-lg"
               width={800}
               height={800}
               priority
@@ -70,7 +71,7 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
         ))}
       </Swiper>
 
-      {/* <Swiper
+      <Swiper
         onSwiper={setThumbsSwiper}
         loop={true}
         spaceBetween={10}
@@ -93,16 +94,16 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
             className="cursor-pointer opacity-40 hover:opacity-100"
           >
             <Image
-              width={100}
-              height={100}
-              quality={25}
+              width={50}
+              height={50}
+              quality={15}
               src={src}
               alt={`Thumbnail ${index + 1}`}
               className="aspect-square w-full object-scale-down"
             />
           </SwiperSlide>
         ))}
-      </Swiper> */}
+      </Swiper>
     </div>
   );
 };

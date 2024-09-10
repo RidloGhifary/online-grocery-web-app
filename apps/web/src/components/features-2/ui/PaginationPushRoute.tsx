@@ -7,17 +7,16 @@ export default function Pagination({ pagination }: { pagination?: PaginationInte
   const next = pagination?.next ?? null;
   const back = pagination?.back ?? null;
   const total_page = pagination?.total_page ?? 1;
-  const queryParams = useSearchParams();
-
-  // Extract values from query parameters
-  const [selectedPage, setSelectedPage] = useState(queryParams.get("page") || "1");
-
-  useEffect(() => {
-    setSelectedPage(queryParams.get("page") || "1");
-  }, [queryParams]);
-
+  // const queryParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  
+  // const [selectedPage, setSelectedPage] = useState(queryParams.get("page") || "1");
+
+  // useEffect(() => {
+  //   setSelectedPage(queryParams.get("page") || "1");
+  // }, [queryParams]);
+
 
   const onPageChange = (page: number) => {
     const params = new URLSearchParams(window.location.search);
@@ -90,7 +89,7 @@ export default function Pagination({ pagination }: { pagination?: PaginationInte
             type="radio"
             name="options"
             aria-label={`${page}`}
-            checked={current_page === page}
+            defaultChecked={current_page === page}
             onClick={() => onPageChange(page)}
           />
         ) : (

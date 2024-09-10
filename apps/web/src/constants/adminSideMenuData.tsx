@@ -21,32 +21,32 @@ const adminSideMenuDatas : { baseUrlGroup: string; menu: AdminSideMenuInterface[
       href: "",
       permission: "admin_dashboard_access",
     },
-    // {
-    //   name: "admin.users.menu",
-    //   displayName:'User',
-    //   icon: <FaUserFriends size={'1.5em'} />,
-    //   permission: "admin_users_access",
-    //   subMenu: [
-    //     {
-    //       name: "admin.users.list",
-    //       displayName: "User",
-    //       href: "/user",
-    //       permission: "admin_users_list",
-    //     },
-    //     {
-    //       name: "admin.users.roles.list",
-    //       displayName: "Roles",
-    //       href: "/roles",
-    //       permission: "admin_users_roles_list",
-    //     },
-    //     {
-    //       name: "admin.users.permissions.list",
-    //       displayName: "Permissions",
-    //       href: "/permissions",
-    //       permission: "admin_users_permissions_list",
-    //     },
-    //   ],
-    // },
+    {
+      name: "admin.users.menu",
+      displayName:'User',
+      icon: <FaUserFriends size={'1.5em'} />,
+      permission: "admin_users_access",
+      subMenu: [
+        {
+          name: "admin.users.list",
+          displayName: "User",
+          href: "/user",
+          permission: "admin_users_list",
+        },
+        {
+          name: "admin.users.roles.list",
+          displayName: "Roles",
+          href: "/roles",
+          permission: "admin_users_roles_list",
+        },
+        {
+          name: "admin.users.permissions.list",
+          displayName: "Permissions",
+          href: "/permissions",
+          permission: "admin_users_permissions_list",
+        },
+      ],
+    },
     {
       name: "admin.products.menu",
       displayName: "Products",

@@ -7,7 +7,7 @@ export interface ProductCompleteInterface {
   slug: string | null;
   product_category_id: number;
   description: string | null;
-  current_stock: number | null;
+  // current_stock: number | null;
   unit: string;
   price: number;
   image: string | null;
@@ -56,4 +56,17 @@ export interface StoreHasProductInterface {
   updatedAt?: string | Date | null;
   deletedAt?: string | Date | null;
   store?: Store
+}
+
+export interface UpdateProductInputInterface {
+  id?: number;
+  sku?: string;
+  name?: string;
+  slug?: string | null;
+  product_category_id?: number;
+  description?: string | null;
+  unit?: string;
+  price?: number;
+  image?: string | null;
+  unit_in_gram?: number ;
 }

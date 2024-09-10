@@ -32,12 +32,13 @@ export default function Page() {
     }
     return <div>{errorMessage}</div>;
   }
+  
 
   return (
     <div className="w-full max-w-full items-center justify-center">
       <div className="flex w-full max-w-full flex-wrap justify-center shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
-        <div className="w-full max-w-xl">
-          {product?.data ? <CarouselWithThumb images={[]} /> : <div className="flex w-full justify-center py-5">
+        <div className="w-full max-w-xl mt-5 ">
+          {product?.data ? <CarouselWithThumb images={JSON.parse(product?.data.image!)} /> : <div className="flex w-full justify-center py-5">
         {/* <div className="w-full max-w-xl">
           {product?.data ? <CarouselWithThumb images={[]} /> : <div className="flex w-full justify-center py-5"> */}
           <span className="loading loading-spinner loading-lg text-primary"></span>

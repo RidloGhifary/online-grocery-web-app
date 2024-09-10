@@ -24,6 +24,7 @@ function generateProducts() {
     const sku = `SKU${i.toString().padStart(4, '0')}`;
     const description = faker.commerce.productDescription();
     const unitInGram = faker.number.int({ min: 10, max: 100 });
+    const imageUrl = JSON.stringify([faker.image.url()])
 
     products.push({
       id: i,
@@ -32,7 +33,7 @@ function generateProducts() {
       sku,
       unit,
       product_category_id: randomCategory,
-      image: faker.image.url(),
+      image: imageUrl,
       description,
       slug: faker.helpers.slugify(name).toLowerCase(),
       unit_in_gram: unitInGram,
@@ -543,10 +544,12 @@ async function main() {
       res_store,
     );
 
-    await generateStoreHasProduct(
+    const generateStoreHasProductData =  await generateStoreHasProduct(
       await prisma.product.findMany(),
       await prisma.store.findMany(),
     );
+    console.log(generateStoreHasProductData);
+    
   } catch (error) {
     console.error(error);
   } finally {

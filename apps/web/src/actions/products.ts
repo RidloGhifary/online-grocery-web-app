@@ -2,9 +2,10 @@
 
 import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
-import { ProductCompleteInterface, ProductRecordInterface } from "@/interfaces/ProductInterface";
+import { ProductCompleteInterface, ProductRecordInterface, UpdateProductInputInterface } from "@/interfaces/ProductInterface";
 import createQueryParams from "@/utils/createQueryParams";
 import { Params } from "next/dist/shared/lib/router/utils/route-matcher";
+import { getCookies } from "./cookies";
 
 export async function getProductListWithFilter({
   category,
@@ -83,7 +84,7 @@ export async function getSingleProduct({
     result.data = data.data as ProductCompleteInterface;
     result.ok = true;
     result.message = "Got the product";
-    console.log('result',result);
+    // console.log('result',result);
     
   } catch (error) {
     
@@ -98,25 +99,63 @@ export async function createProduct(product:ProductRecordInterface) : Promise<Co
     ok: false,
   } as CommonResultInterface<ProductCompleteInterface>;
   try {
+    const token = await getCookies("token");
+    if (!token) throw new Error("403");
     const prep = await fetch( `${process.env.BACKEND_URL}/products`,
       {
         method : "POST",
         headers: {
           'Content-type': 'application/json',
+          'Authorization':`Bearer ${token}`
       },
         body: JSON.stringify(product),
       }
     );
-    const response = await prep.json()
+    const response = await prep.json() as CommonResultInterface<ProductCompleteInterface>
+    console.log(response);
+    
     if (!response.ok) {
-      result.error = ` ${response.status}`;
-      throw new Error(result.error);
+      result.error = ` ${response.error}`;
+      throw new Error(JSON.stringify(response));
     }
     result.data = response.data as ProductCompleteInterface
-    response.ok = true
+    result.ok = true
     result.message = 'Data created'
   } catch (error) {
-    result.error = error instanceof Error ? error.message : "Failed to fetch product";
+    throw new Error(JSON.stringify((error as Error).message))
+  }
+  return result
+}
+
+export async function updateProduct(product:UpdateProductInputInterface) : Promise<CommonResultInterface<ProductCompleteInterface>> {
+  const result = {
+    ok: false,
+  } as CommonResultInterface<ProductCompleteInterface>;
+  try {
+    const token = await getCookies("token");
+    if (!token) throw new Error("403");
+    const prep = await fetch( `${process.env.BACKEND_URL}/products/update`,
+      {
+        method : "PATCH",
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization':`Bearer ${token}`
+      },
+        body: JSON.stringify(product),
+      }
+    );
+    const response = await prep.json() as CommonResultInterface<ProductCompleteInterface>
+    console.log(response);
+    
+    if (!response.ok) {
+      result.error = ` ${response.error}`;
+      throw new Error(JSON.stringify(response));
+    }
+    result.data = response.data as ProductCompleteInterface
+    result.ok = true
+    result.message = 'Data updated'
+  } catch (error) {
+    throw new Error(JSON.stringify((error as Error).message))
   }
   return result
 }

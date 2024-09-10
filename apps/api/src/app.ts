@@ -20,6 +20,7 @@ import { CartRouter } from './routers/cart.router';
 import { UserRouter } from './routers/user.router';
 import { CredentialRouter } from './routers/credential.router';
 import { StoreRouter } from './routers/store.router';
+import { AdminRouter } from './routers/admin.router';
 
 export default class App {
   private app: Express;
@@ -71,24 +72,26 @@ export default class App {
 
     const authRouter = new AuthRouter();
     const productRouter = new ProductRouter();
-    const categoryRouter = new CategoryRouter()
+    const categoryRouter = new CategoryRouter();
     const cartRouter = new CartRouter();
     const userRouter = new UserRouter();
     const credentialRouter = new CredentialRouter();
     const storeRouter = new StoreRouter();
+    const adminRouter = new AdminRouter();
 
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, Purwadhika Student API!`);
     });
 
     this.app.use('/api/auth', authRouter.getRouter());
-    this.app.use('/api/products', productRouter.getRouter())
-    this.app.use('/api/categories', categoryRouter.getRouter())
+    this.app.use('/api/products', productRouter.getRouter());
+    this.app.use('/api/categories', categoryRouter.getRouter());
 
     this.app.use('/api/cart', cartRouter.getRouter());
     this.app.use('/api/users', userRouter.getRouter());
     this.app.use('/api/credentials', credentialRouter.getRouter());
     this.app.use('/api/stores', storeRouter.getRouter());
+    this.app.use('/api/admins', adminRouter.getRouter());
   }
 
   public start(): void {

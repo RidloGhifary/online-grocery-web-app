@@ -18,4 +18,5 @@ export interface ModalPropsInterface {
   theRef?: MutableRefObject<HTMLDialogElement | null> | undefined | null;
   useTCustomContentWidthClass?: string;
   hideCloseButton?: Boolean;
+  toasterContainer?: ReactNode
 }

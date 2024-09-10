@@ -5,7 +5,7 @@ import { categoryRepository } from '@/repositories/categories.repository';
 // Assume that isProductNameExist and isSKUExist are async functions that check the existence of a name and SKU
 
 export const createProductSchema = z.object({
-  id:z.number().positive(),
+  // id:z.number().positive(),
   sku: z.string().min(1, "SKU is required").refine(
     async (sku) => !(await productRepository.isSKUExist(sku)),
     { message: "SKU already exists, it must be unique" }

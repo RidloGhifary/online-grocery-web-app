@@ -99,9 +99,10 @@ export default function ProductForm() {
       error = JSON.parse(e.message) as unknown as CommonResultInterface<ProductCompleteInterface>
       error = (error as unknown as CommonResultInterface<ProductCompleteInterface>).error
      }
-      
-      if (typeof error === 'object') {
-        if (Array.isArray(error)) {
+     
+     if (typeof error === 'object') {
+       if (Array.isArray(error)) {
+          // console.log(error);
           (error as Array<{message:string}>).forEach((e,i)=>{
             toast.error(e.message, {
               position: "top-right",
@@ -135,7 +136,7 @@ export default function ProductForm() {
     }
   });
   const onSubmit = (data: ProductFormValues) => {
-    console.log("Form Data:", data);
+    // console.log("Form Data:", data);
     mutation.mutate(data as unknown as ProductRecordInterface);
   };
   
@@ -309,6 +310,7 @@ export default function ProductForm() {
                   key={url}
                   value={url}
                   className="flex w-full items-center justify-between"
+                  aria-disabled={mutation.isSuccess}
                 >
                   <div className="flex items-center space-x-2">
                     <Image

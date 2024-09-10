@@ -11,19 +11,31 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChangeEventHandler, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { useDebouncedCallback } from "use-debounce";
+import { useAtom } from "jotai";
+import {
+  currentDetailProductsAtom,
+  currentProductOperation,
+} from "@/stores/productStores";
+import AdminProductUpdateForm from "@/components/features-2/admin/AdminProductUpdateForm";
+import AdminProductDelete from "@/components/features-2/admin/AdminProductDelete";
+import { ToastContainer } from "react-toastify";
 
 export default function AdminProductPage() {
   const [operation, setOperation] = useState<
     "edit" | "detail" | "delete" | "add" | "filter"
   >();
+  const [currentOperation, setCurrentOperation] = useAtom(
+    currentProductOperation,
+  );
   function handleClose() {
     setOperation(undefined);
+    setCurrentOperation("idle");
   }
-
   const [isDebouncing, setIsDebouncing] = useState<boolean>(false);
   const queryParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const [currentProduct] = useAtom(currentDetailProductsAtom);
 
   const {
     isLoading,
@@ -59,15 +71,6 @@ export default function AdminProductPage() {
     setIsDebouncing(true);
     debounced(e.currentTarget.value);
   };
-
-  // Handle loading state
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex h-full min-h-96 items-center justify-center">
-  //       <span className="loading loading-spinner loading-lg text-primary"></span>
-  //     </div>
-  //   );
-  // }
 
   // Handle error state
   if (isError) {
@@ -129,7 +132,7 @@ export default function AdminProductPage() {
               </div>
             </div>
           </>
-        ): (
+        ) : (
           <div className="flex w-full justify-center py-5">
             <p>No products found.</p>
           </div>
@@ -143,11 +146,33 @@ export default function AdminProductPage() {
       </Modal>
 
       <Modal
-        show={operation === "add" ?? false}
+        show={currentOperation === "edit" ?? false}
         onClose={handleClose}
         closeButton={false}
       >
+        <AdminProductUpdateForm />
+      </Modal>
+
+      <Modal
+        show={operation === "add" ?? false}
+        onClose={handleClose}
+        closeButton={false}
+        toasterContainer={
+          <ToastContainer
+            containerId={10912}
+            position="top-center"
+            draggable={true}
+          />
+        }
+      >
         <AdminProductForm />
+      </Modal>
+      <Modal
+        show={currentOperation === "delete" ?? false}
+        onClose={handleClose}
+        closeButton={false}
+      >
+        <AdminProductDelete />
       </Modal>
     </>
   );

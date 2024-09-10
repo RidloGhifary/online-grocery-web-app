@@ -1,30 +1,48 @@
-'use client'
+"use client";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Select from "react-select";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast, Bounce } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { updateProduct } from "@/actions/products";
-import { ProductCategoryInterface, UpdateProductInputInterface } from "@/interfaces/ProductInterface";
+import {
+  ProductCategoryInterface,
+  ProductCompleteInterface,
+  UpdateProductInputInterface,
+} from "@/interfaces/ProductInterface";
 import { UploadDropzone } from "@/utils/uploadthing";
 import { FaCheck, FaTrash } from "react-icons/fa";
 import Image from "next/image";
 import ButtonWithAction from "../ui/ButtonWithAction";
 import { Reorder, useDragControls } from "framer-motion";
 import { IoReorderFour } from "react-icons/io5";
+import CommonResultInterface from "@/interfaces/CommonResultInterface";
+import { queryKeys } from "@/constants/queryKeys";
+import { useAtom } from "jotai";
+import {
+  currentDetailProductsAtom,
+  currentProductOperation,
+} from "@/stores/productStores";
 
 // Define the Zod schema for validation
 const updateProductSchema = z.object({
   id: z.number().positive(),
   sku: z.string().min(1, "SKU is required").optional(),
   name: z.string().min(1, "Name is required").optional(),
-  product_category_id: z.number().int().min(1, "Category ID is required").optional(),
+  product_category_id: z
+    .number()
+    .int()
+    .min(1, "Category ID is required")
+    .optional(),
   description: z.string().nullable().optional(),
   unit: z.string().min(1, "Unit is required").optional(),
-  unit_in_gram: z.number().positive("Unit in grams must be a positive number").optional(),
+  unit_in_gram: z
+    .number()
+    .positive("Unit in grams must be a positive number")
+    .optional(),
   price: z.number().positive("Price must be a positive number").optional(),
   image: z.string().nullable().optional(), // Handle image as a string or null
 });
@@ -32,16 +50,21 @@ const updateProductSchema = z.object({
 // TypeScript type for the form values
 type UpdateProductFormValues = z.infer<typeof updateProductSchema>;
 
-interface ProductUpdateFormProps {
-  initialData: UpdateProductInputInterface;
-  categories: ProductCategoryInterface[];
-}
+// interface ProductUpdateFormProps {
+//   initialData?: UpdateProductInputInterface;
+// }
 
-export default function ProductUpdateForm({ initialData, categories }: ProductUpdateFormProps) {
-  const router = useRouter();
-  const [uploadedImages, setUploadedImages] = useState<string[]>(initialData.image ? JSON.parse(initialData.image) : []);
+export default function AdminProductUpdateForm() {
+  const [initialData] = useAtom(currentDetailProductsAtom);
+  const queryParams = useSearchParams();
+
+  // const router = useRouter();
+  const queryClient = useQueryClient();
+  const categories = queryClient.getQueryData<
+    CommonResultInterface<ProductCategoryInterface[]>
+  >([queryKeys.productCategories]);
+
   const controls = useDragControls();
-
 
   const {
     register,
@@ -54,6 +77,26 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
     resolver: zodResolver(updateProductSchema),
     defaultValues: initialData,
   });
+
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [, setCurrentOperation] = useAtom(
+    currentProductOperation,
+  );
+
+  useEffect(() => {
+    if (initialData) {
+      // Check if the image is a valid JSON string or already an array
+      const parsedImages =
+        typeof initialData.image === "string"
+          ? JSON.parse(initialData.image)
+          : Array.isArray(initialData.image)
+            ? initialData.image
+            : [];
+
+      setUploadedImages(parsedImages);
+      reset(initialData); // Reset form values with initial data
+    }
+  }, [initialData, reset]);
 
   useEffect(() => {
     reset(initialData);
@@ -73,15 +116,30 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
         theme: "colored",
         transition: Bounce,
       });
-      setTimeout(() => { router.refresh(); }, 2000);
+      // setCurrentOperation('idle')
+      const params = {
+        search: queryParams.get("search") || "",
+        orderField: queryParams.get("orderField") || "product_name",
+        order: (queryParams.get("order") as "asc" | "desc") || "asc",
+        category: queryParams.get("category") || "",
+        page: Number(queryParams.get("page")) || 1,
+        limit: Number(queryParams.get("limit")) || 20,
+      };
+      setTimeout(() => {
+        mutation.reset();
+      }, 500);
+      return queryClient.invalidateQueries({
+        queryKey: [queryKeys.products, { ...params }],
+      });
+
     },
     onError: (error) => {
-      let errorMessage = '';
+      let errorMessage = "";
       try {
         const parsedError = JSON.parse(error.message);
-        errorMessage = parsedError.error || 'An error occurred';
+        errorMessage = parsedError.error || "An error occurred";
       } catch {
-        errorMessage = 'An error occurred';
+        errorMessage = "An error occurred";
       }
       toast.error(errorMessage, {
         position: "top-right",
@@ -94,20 +152,55 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
         theme: "colored",
         transition: Bounce,
       });
-    }
+    },
   });
 
   const onSubmit = (data: UpdateProductFormValues) => {
-    mutation.mutate(data as UpdateProductInputInterface);
+    // Create a copy of the submitted data
+    const modifiedData = { ...data };
+
+    // Iterate over the keys of the submitted data
+    Object.keys(data).forEach((key) => {
+      // Skip the 'id' field
+      if (key === "id") return;
+
+      // Compare the submitted value with the initial value
+      type CommonKeys = keyof UpdateProductFormValues &
+        keyof ProductCompleteInterface;
+
+      if (data[key as CommonKeys] === initialData?.[key as CommonKeys]) {
+        // If the value is the same as the initial data, delete the field
+        delete modifiedData[key as keyof UpdateProductFormValues];
+      }
+    });
+
+    // Check if there are any changes (i.e., modifiedData contains more than just the 'id')
+    if (Object.keys(modifiedData).length > 1) {
+      // Submit the modified data
+      mutation.mutate(modifiedData as UpdateProductInputInterface);
+    } else {
+      // No changes, notify the user or handle accordingly
+      toast.info("No changes to update", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+      });
+    }
   };
 
-  const categoryOptions = categories.map((category) => ({
+  const categoryOptions = categories?.data?.map((category) => ({
     value: category.id,
     label: category.display_name || category.name,
   }));
 
   const handleUploadComplete = (urls: string[]) => {
-    setUploadedImages(urls);
+    setUploadedImages((prev) => [...prev, ...urls]);
     setValue("image", JSON.stringify(urls));
   };
 
@@ -117,6 +210,16 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
     setValue("image", JSON.stringify(updatedImages));
   };
 
+  useEffect(() => {
+    if (mutation.isSuccess) {
+      console.log("success");
+      setCurrentOperation("idle");
+    }
+  }, [mutation.isSuccess]);
+
+  if (!initialData) {
+    return <></>;
+  }
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <h1 className="text-center text-xl font-extrabold">Update Product</h1>
@@ -130,7 +233,6 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
           type="text"
           placeholder="Type here"
           className={`input input-bordered w-full ${errors.sku ? "input-error" : ""}`}
-          disabled={mutation.isSuccess}
           {...register("sku")}
         />
         {errors.sku && <p className="text-red-500">{errors.sku.message}</p>}
@@ -145,7 +247,6 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
           type="text"
           placeholder="Type here"
           className={`input input-bordered w-full ${errors.name ? "input-error" : ""}`}
-          disabled={mutation.isSuccess}
           {...register("name")}
         />
         {errors.name && <p className="text-red-500">{errors.name.message}</p>}
@@ -163,10 +264,9 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
             setValue("product_category_id", option?.value || 0)
           }
           placeholder="Select a category"
-          value={categoryOptions.find(
+          value={categoryOptions?.find(
             (option) => option.value === watch("product_category_id"),
           )}
-          isDisabled={mutation.isSuccess}
         />
         {errors.product_category_id && (
           <p className="text-red-500">{errors.product_category_id.message}</p>
@@ -182,7 +282,6 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
           type="text"
           placeholder="Type here"
           className={`input input-bordered w-full ${errors.unit ? "input-error" : ""}`}
-          disabled={mutation.isSuccess}
           {...register("unit")}
         />
         {errors.unit && <p className="text-red-500">{errors.unit.message}</p>}
@@ -198,7 +297,6 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
           min={0}
           placeholder="Type here"
           className={`input input-bordered w-full ${errors.unit_in_gram ? "input-error" : ""}`}
-          disabled={mutation.isSuccess}
           {...register("unit_in_gram", { valueAsNumber: true })}
         />
         {errors.unit_in_gram && (
@@ -216,7 +314,6 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
           type="number"
           placeholder="Type here"
           className={`input input-bordered w-full ${errors.price ? "input-error" : ""}`}
-          disabled={mutation.isSuccess}
           {...register("price", { valueAsNumber: true })}
         />
         {errors.price && <p className="text-red-500">{errors.price.message}</p>}
@@ -230,7 +327,6 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
         <textarea
           placeholder="Type here"
           className={`textarea textarea-bordered w-full ${errors.description ? "textarea-error" : ""}`}
-          disabled={mutation.isSuccess}
           {...register("description")}
         />
         {errors.description && (
@@ -238,8 +334,8 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
         )}
       </label>
 
-       {/* Image upload section */}
-       <div className="form-control">
+      {/* Image upload section */}
+      <div className="form-control">
         <div className="label font-bold">
           <span className="label-text">Images</span>
         </div>
@@ -258,7 +354,6 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
                 setValue("image", JSON.stringify(newImages));
               }}
               className="space-y-2"
-              aria-disabled={mutation.isSuccess}
             >
               {uploadedImages.map((url) => (
                 <Reorder.Item
@@ -309,7 +404,6 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
               const urls = res.map((file) => file.url);
               handleUploadComplete(urls);
             }}
-            disabled={mutation.isSuccess}
           />
         </div>
       </div>
@@ -322,7 +416,7 @@ export default function ProductUpdateForm({ initialData, categories }: ProductUp
             <span className="loading loading-spinner loading-xs"></span>
           ) : mutation.isSuccess ? (
             <>
-            <FaCheck />
+              <FaCheck />
             </>
           ) : (
             ""

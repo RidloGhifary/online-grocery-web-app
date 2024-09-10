@@ -1,5 +1,5 @@
 'use client'
-import React from "react";
+import React, { MouseEvent } from "react";
 import Image from "next/image";
 // import { productDefault as products } from "@/mocks/productData";
 import { FaInfoCircle } from "react-icons/fa";
@@ -7,12 +7,30 @@ import { FaTrash } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
 import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
 import ButtonWithAction from "../ui/ButtonWithAction";
+import { useAtom } from "jotai";
+import { currentDetailProductsAtom, currentProductOperation } from "@/stores/productStores";
 
 export default function ({
   products,
 }: {
   products: ProductCompleteInterface[];
 }) {
+  const [, setCurrenctProduct] = useAtom(currentDetailProductsAtom)
+  const [, setProductOperation] = useAtom(currentProductOperation)
+  function handleEdit(e:MouseEvent) {
+    e.preventDefault()
+    const currentId = Number(e.currentTarget.id)
+    const currentData = products.filter(product=>product.id == currentId )[0]
+    setCurrenctProduct(currentData)
+    setProductOperation('edit')
+  }
+  function handleDelete(e:MouseEvent) {
+    e.preventDefault()
+    const currentId = Number(e.currentTarget.id)
+    const currentData = products.filter(product=>product.id == currentId )[0]
+    setCurrenctProduct(currentData)
+    setProductOperation('delete')
+  }
   return (
     <div className="overflow-x-auto">
       <table className="table w-full text-base">
@@ -65,13 +83,13 @@ export default function ({
               </td>
               <td>
                 <div className="flex flex-wrap gap-2 ">
-                  <ButtonWithAction replaceTWClass="btn btn-info btn-sm">
+                  <ButtonWithAction replaceTWClass="btn btn-info btn-sm" id={product.id}>
                     <FaInfoCircle />
                   </ButtonWithAction>
-                  <ButtonWithAction replaceTWClass="btn btn-accent btn-sm">
+                  <ButtonWithAction replaceTWClass="btn btn-accent btn-sm" action={handleEdit} eventType="onClick" type="button" id={product.id}>
                     <FaEdit />
                   </ButtonWithAction>
-                  <ButtonWithAction replaceTWClass="btn btn-error btn-sm">
+                  <ButtonWithAction replaceTWClass="btn btn-error btn-sm" id={product.id}  action={handleDelete} eventType="onClick" type="button">
                     <FaTrash />
                   </ButtonWithAction>
                 </div>

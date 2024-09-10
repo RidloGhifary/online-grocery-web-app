@@ -20,6 +20,12 @@ export class AdminRouter {
       verifySuperAdmin,
       this.adminController.getAllAdmins,
     );
+    this.router.get(
+      '/available',
+      verifyToken,
+      verifySuperAdmin,
+      this.adminController.getAvailableAdmin,
+    );
     this.router.post(
       '/assigns/:user_id/stores/:store_id',
       verifyToken,

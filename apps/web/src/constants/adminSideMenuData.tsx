@@ -84,8 +84,8 @@ const adminSideMenuDatas: {
         },
         {
           name: "admin.stores.admin",
-          displayName: "Admin Store",
-          href: "/admin-store",
+          displayName: "Admins",
+          href: "/admins",
           permission: "super",
         },
       ],

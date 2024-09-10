@@ -22,7 +22,7 @@ export async function getStores(): Promise<
     });
 
     if (!response.ok) {
-      result.error = `Failed to fetch product list: ${response.statusText}`;
+      result.error = `Failed to stores: ${response.statusText}`;
       return result;
     }
 
@@ -33,7 +33,7 @@ export async function getStores(): Promise<
     return result;
   } catch (error) {
     result.error =
-      error instanceof Error ? error.message : "Failed to fetch product list";
+      error instanceof Error ? error.message : "Failed to stores";
     console.log(error);
   }
 
@@ -63,7 +63,7 @@ export async function getDetailStores({
     );
 
     if (!response.ok) {
-      result.error = `Failed to fetch product list: ${response.statusText}`;
+      result.error = `Failed to store detail: ${response.statusText}`;
       return result;
     }
 
@@ -74,7 +74,7 @@ export async function getDetailStores({
     return result;
   } catch (error) {
     result.error =
-      error instanceof Error ? error.message : "Failed to fetch product list";
+      error instanceof Error ? error.message : "Failed to store detail";
     console.log(error);
   }
 

@@ -28,6 +28,31 @@ export class AdminController {
     }
   }
 
+  async getAvailableAdmin(req: Request, res: Response) {
+    try {
+      const availableAdmins = await prisma.user.findMany({
+        where: {
+          role: {
+            some: {
+              role: {
+                name: 'store_admin',
+              },
+            },
+          },
+          store_admins: {
+            none: {},
+          },
+        },
+      });
+
+      res
+        .status(200)
+        .json({ ok: true, message: 'Success', data: availableAdmins });
+    } catch {
+      res.status(500).json({ ok: false, message: 'Internal server error' });
+    }
+  }
+
   async assignAdminToStore(req: Request, res: Response) {
     try {
       const { user_id, store_id } = req.params;

@@ -6,15 +6,15 @@ import { z } from "zod";
 import { Cities } from "@/constants";
 import Form from "./Form";
 import Image from "next/image";
-import axios from "axios";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { getCookies } from "@/actions/cookies";
 import { GetCaptchaToken } from "@/utils/captcha";
 import VerifyCaptchaToken from "@/actions/verifyCaptcha";
 import { useUploadThing } from "@/utils/uploadthing";
 import { ChangeEvent, useState } from "react";
+import { MdOutlineKeyboardArrowLeft } from "react-icons/md";
+import { createStore } from "@/actions/stores";
 
 interface Props {
   api_url: string;
@@ -56,12 +56,13 @@ export type FormData = {
   kecamatan: string;
 };
 
-export default function CreateStoreForm({ api_url }: Props) {
+export default function CreateStore({ api_url }: Props) {
   const [image, setImage] = useState<File[]>([]);
   const [isUploadImageLoading, setIsUploadImageLoading] =
     useState<boolean>(false);
   const router = useRouter();
   const { startUpload } = useUploadThing("imageUploader");
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -94,24 +95,14 @@ export default function CreateStoreForm({ api_url }: Props) {
   });
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async (data: FormData) => {
-      const token = await getCookies("token");
-      if (!token) return;
-
-      const res = await axios.post(`${api_url}/stores`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      return res.data;
-    },
+    mutationFn: async (data: FormData) => createStore({ formData: data }),
     onSuccess: (res) => {
       if (!res.ok) {
         return toast.error(res.message || "Something went wrong!");
       } else {
         toast.success(res.message || "Store created successfully!");
-        router.push("/user/settings");
+        queryClient.invalidateQueries({ queryKey: ["stores"] });
+        router.back();
         return;
       }
     },
@@ -179,7 +170,16 @@ export default function CreateStoreForm({ api_url }: Props) {
   };
 
   return (
-    <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2">
+    <div className="grid w-full grid-cols-1 gap-3">
+      <button
+        onClick={() => router.back()}
+        disabled={isLoading || isUploadImageLoading}
+        type="button"
+        className="btn btn-secondary btn-sm w-fit normal-case"
+      >
+        <MdOutlineKeyboardArrowLeft />
+        Back
+      </button>
       <div className="flex flex-col items-center justify-start gap-2">
         <label
           htmlFor="file"

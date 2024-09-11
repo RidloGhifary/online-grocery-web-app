@@ -8,16 +8,16 @@ import {  MdSpaceDashboard } from "react-icons/md";
 
 export const AdminNavbarItems = [
   {
-    name:"Dashboard",
-    href:"/admin",
-    icon:MdSpaceDashboard,
+    name: "Dashboard",
+    href: "/admin",
+    icon: MdSpaceDashboard,
   },
   {
-    name:"Add Store",
-    href:"/create-store",
-    icon:FaStore,
-  }
-]
+    name: "Add Store",
+    href: "/admin/stores?actions=create-store",
+    icon: FaStore,
+  },
+];
 
 export const NavbarItems = [
   {

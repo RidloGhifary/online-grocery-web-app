@@ -7,17 +7,20 @@ export interface AdminSideMenuInterface {
   displayName?: string | React.ReactNode | IconType; // Adjusted type to accept JSX.Element
   href?: string;
   permission?: string;
-  icon?:string | React.ReactNode | IconType;
+  icon?: string | React.ReactNode | IconType;
   subMenu?: AdminSideMenuInterface[];
 }
 
-const adminSideMenuDatas : { baseUrlGroup: string; menu: AdminSideMenuInterface[] } = {
+const adminSideMenuDatas: {
+  baseUrlGroup: string;
+  menu: AdminSideMenuInterface[];
+} = {
   baseUrlGroup: "/admin",
   menu: [
     {
       name: "admin.dashboard.menu",
-      displayName: 'Dashboard', 
-      icon: <FaHome size={'1.5em'} />, 
+      displayName: "Dashboard",
+      icon: <FaHome size={"1.5em"} />,
       href: "",
       permission: "admin_dashboard_access",
     },
@@ -51,7 +54,7 @@ const adminSideMenuDatas : { baseUrlGroup: string; menu: AdminSideMenuInterface[
       name: "admin.products.menu",
       displayName: "Products",
       permission: "admin_product_access",
-      icon : <FaShoppingBag size={'1.5em'} />,
+      icon: <FaShoppingBag size={"1.5em"} />,
       subMenu: [
         {
           name: "admin.products.list",
@@ -67,17 +70,37 @@ const adminSideMenuDatas : { baseUrlGroup: string; menu: AdminSideMenuInterface[
         },
       ],
     },
+    {
+      name: "admin.stores.menu",
+      displayName: "Stores",
+      permission: "super",
+      icon: <FaShoppingBag size={"1.5em"} />,
+      subMenu: [
+        {
+          name: "admin.stores.list",
+          displayName: "Stores",
+          href: "/stores",
+          permission: "super",
+        },
+        {
+          name: "admin.stores.admin",
+          displayName: "Admins",
+          href: "/admins",
+          permission: "super",
+        },
+      ],
+    },
   ],
 };
 
-export {adminSideMenuDatas}
+export { adminSideMenuDatas };
 
 // export default <{ baseUrlGroup: string; menu: AdminSideMenuInterface[] }>{
 //   baseUrlGroup: "/admin",
 //   menu: [
 //     {
 //       name: "admin.dashboard.menu",
-//       displayName: RxDashboard, 
+//       displayName: RxDashboard,
 //       href: "",
 //       permission: "admin_dashboard_access",
 //     },

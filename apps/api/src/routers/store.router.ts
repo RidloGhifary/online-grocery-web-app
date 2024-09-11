@@ -22,6 +22,12 @@ export class StoreRouter {
       verifySuperAdmin,
       this.storeController.getStores,
     );
+    this.router.get(
+      '/:id',
+      verifyToken,
+      verifySuperAdmin,
+      this.storeController.getDetailStore,
+    );
     this.router.post(
       '/',
       validateRequest(createStoreSchema),

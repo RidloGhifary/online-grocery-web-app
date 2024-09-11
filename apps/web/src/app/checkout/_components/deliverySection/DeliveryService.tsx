@@ -36,7 +36,8 @@ export default function DeliveryService({
       >
         {deliveryData?.map((data, i) => (
           <option key={i} value={data?.cost[0]?.value}>
-            {data?.service} - {convertRupiah(data?.cost[0]?.value)}
+            {data?.service} - {convertRupiah(data?.cost[0]?.value)} - ETD{" "}
+            {data?.cost[0]?.etd} days
           </option>
         ))}
       </select>

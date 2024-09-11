@@ -19,6 +19,7 @@ import { CartRouter } from './routers/cart.router';
 import { UserRouter } from './routers/user.router';
 import { CredentialRouter } from './routers/credential.router';
 import { StoreRouter } from './routers/store.router';
+import { AdminRouter } from './routers/admin.router';
 import { CheckoutRouter } from './routers/checkout.router';
 import { OrderRouter } from './routers/order.router';
 
@@ -74,6 +75,7 @@ export default class App {
     const userRouter = new UserRouter();
     const credentialRouter = new CredentialRouter();
     const storeRouter = new StoreRouter();
+    const adminRouter = new AdminRouter();
     const checkoutRouter = new CheckoutRouter();
     const orderRouter = new OrderRouter();
 
@@ -91,6 +93,7 @@ export default class App {
     this.app.use('/api/credentials', credentialRouter.getRouter());
     this.app.use('/api/stores', storeRouter.getRouter());
     this.app.use('/api/orders', orderRouter.getRouter());
+    this.app.use('/api/admins', adminRouter.getRouter());
   }
 
   public start(): void {

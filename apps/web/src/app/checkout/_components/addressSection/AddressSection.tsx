@@ -24,7 +24,7 @@ export default function AddressSection({
       {user?.addresses && user.addresses.length === 0 ? (
         <Link
           href={`/user/address?action=add-address&callbackUrl=${pathname}`}
-          className="block text-center"
+          className="block rounded-md border border-error p-4 text-center"
         >
           You have no primary address yet.{" "}
           <span className="link link-primary">Click here</span> to add one.

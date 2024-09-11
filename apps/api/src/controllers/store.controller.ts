@@ -15,11 +15,58 @@ export class StoreController {
           city: true,
         },
         orderBy: {
-          store_type: 'asc',
+          createdAt: 'asc',
         },
       });
 
       res.status(200).json({ ok: true, data: stores });
+    } catch {
+      res.status(500).json({ ok: false, message: 'Internal server error' });
+    }
+  }
+
+  async getDetailStore(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ ok: false, message: 'Invalid store id' });
+      }
+
+      const { ok, message } = await getUserPermission({
+        user_id: req.currentUser?.id,
+        role: 'super_admin',
+        permission: 'super',
+      });
+
+      if (!ok) {
+        return res.status(400).json({ ok, message });
+      }
+
+      const store = await prisma.store.findUnique({
+        where: {
+          id: Number(id),
+        },
+        include: {
+          city: true,
+          province: true,
+          store_admins: {
+            include: {
+              user: true,
+            },
+          },
+          StoreHasProduct: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
+
+      if (!store) {
+        return res.status(404).json({ ok: false, message: 'Store not found' });
+      }
+
+      res.status(200).json({ ok: true, message: 'success', data: store });
     } catch {
       res.status(500).json({ ok: false, message: 'Internal server error' });
     }
@@ -64,6 +111,23 @@ export class StoreController {
           .json({ ok: false, message: 'Store in this city already exists' });
       }
 
+      // TODO: CHECK IF USER HAS A CENTRAL STORE
+      if (store_type === 'central') {
+        const isUserHasCentralStore = await prisma.store.findFirst({
+          where: {
+            created_by: Number(req.currentUser?.id),
+            store_type: 'central',
+          },
+        });
+
+        if (isUserHasCentralStore) {
+          return res
+            .status(400)
+            .json({ ok: false, message: 'Already has a central store' });
+        }
+      }
+
+      // TODO: CHECK IF USER HAS A CENTRAL STORE
       if (store_type === 'branch') {
         const isUserHasCentralStore = await prisma.store.findFirst({
           where: {
@@ -75,7 +139,7 @@ export class StoreController {
         if (!isUserHasCentralStore) {
           return res
             .status(400)
-            .json({ ok: false, message: 'User must have a central store' });
+            .json({ ok: false, message: 'You must have a central store' });
         }
       }
 
@@ -114,8 +178,18 @@ export class StoreController {
   async updateStore(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { name, image, store_type, province, province_id, city, city_id } =
-        req.body;
+      const {
+        name,
+        image,
+        store_type,
+        province,
+        province_id,
+        city,
+        city_id,
+        address,
+        kelurahan,
+        kecamatan,
+      } = req.body;
 
       // Check user permissions
       const { ok, message } = await getUserPermission({
@@ -139,6 +213,38 @@ export class StoreController {
       // If store is not found
       if (!currentStore) {
         return res.status(404).json({ ok: false, message: 'Store not found' });
+      }
+
+      // TODO: CHECK IF USER HAS A CENTRAL STORE
+      if (store_type === 'central') {
+        const isUserHasCentralStore = await prisma.store.findFirst({
+          where: {
+            created_by: Number(req.currentUser?.id),
+            store_type: 'central',
+          },
+        });
+
+        if (isUserHasCentralStore) {
+          return res
+            .status(400)
+            .json({ ok: false, message: 'Already has a central store' });
+        }
+      }
+
+      // TODO: CHECK IF USER HAS A CENTRAL STORE
+      if (store_type === 'branch') {
+        const isUserHasCentralStore = await prisma.store.findFirst({
+          where: {
+            created_by: Number(req.currentUser?.id),
+            store_type: 'central',
+          },
+        });
+
+        if (!isUserHasCentralStore) {
+          return res
+            .status(400)
+            .json({ ok: false, message: 'You must have a central store' });
+        }
       }
 
       // Check if the city is already taken by another store
@@ -189,6 +295,9 @@ export class StoreController {
           store_type,
           province_id,
           city_id,
+          address,
+          kelurahan,
+          kecamatan,
           latitude,
           longtitude: longitude,
         },

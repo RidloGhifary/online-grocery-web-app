@@ -1,9 +1,8 @@
 "use client";
 
-import { getCookies } from "@/actions/cookies";
+import { deleteStore } from "@/actions/stores";
 import { Modal } from "@/components/Modal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaTrash } from "react-icons/fa";
@@ -11,37 +10,23 @@ import { toast } from "react-toastify";
 
 interface DeleteStoreProps {
   id: number;
-  api_url: string;
   store_name: string;
 }
 
-export default function DeleteStore({
-  id,
-  api_url,
-  store_name,
-}: DeleteStoreProps) {
+export default function DeleteStore({ id, store_name }: DeleteStoreProps) {
   const [modalActive, setModalActive] = useState<boolean>(false);
   const queryClient = useQueryClient();
   const router = useRouter();
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async () => {
-      const token = await getCookies("token");
-      if (!token) return;
-      const { data } = await axios.delete(`${api_url}/stores/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return data;
-    },
+    mutationFn: async () => deleteStore({ storeId: id }),
     onSuccess: (res) => {
       if (res.ok) {
         toast.success("Store deleted successfully");
         queryClient.invalidateQueries({ queryKey: ["stores"] });
-        router.refresh();
+        // router.refresh();
       } else {
-        toast.error(res.message || "Something went wrong!");
+        toast.error(res.error || "Something went wrong!");
       }
     },
     onError: (res) => {
@@ -54,15 +39,13 @@ export default function DeleteStore({
       <button
         onClick={() => setModalActive(true)}
         disabled={isLoading}
-        className="btn btn-error btn-xs text-white sm:btn-sm"
+        className="btn btn-error btn-sm tooltip tooltip-primary text-white"
+        data-tip="Delete"
       >
         {isLoading ? (
           <span className="loading loading-spinner loading-sm"></span>
         ) : (
-          <>
-            <FaTrash size={12} />
-            Delete
-          </>
+          <FaTrash />
         )}
       </button>
       <Modal
@@ -72,9 +55,10 @@ export default function DeleteStore({
         }}
         actions={[
           <button
+            key="confirm-delete-store"
             disabled={isLoading}
             type="button"
-            className="btn btn-primary text-white"
+            className="btn btn-secondary"
             onClick={() => {
               mutate();
               setModalActive(false);
@@ -88,7 +72,7 @@ export default function DeleteStore({
           <h3 className="text-3xl font-bold">Delete {store_name} Store</h3>
           <p className="text-sm text-gray-600">
             Are you sure you want to delete this store? This action cannot be
-            undone.
+            undone. All data associated with this store will be deleted.
           </p>
         </div>
       </Modal>

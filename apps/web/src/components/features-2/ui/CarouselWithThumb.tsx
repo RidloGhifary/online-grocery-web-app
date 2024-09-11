@@ -8,7 +8,6 @@ import "swiper/css/navigation";
 import "swiper/css/thumbs";
 import "./css/carouselFeat2.css";
 import Image from "next/image";
-import { productDefault as products } from "@/mocks/productData";
 
 const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
   images 

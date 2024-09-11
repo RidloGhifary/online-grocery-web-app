@@ -48,7 +48,6 @@ export default function ProductsList({ api_url }: Props) {
         const query = geoLocation
           ? `?latitude=${geoLocation?.coords.latitude}&longitude=${geoLocation?.coords.longitude}&page=${pageParam}`
           : `?page=${pageParam}`;
-        console.log("🚀 ~ queryFn: ~ query:", query);
         const { data } = await axios.get(
           `${api_url}/products/locations${query}`,
         );
@@ -92,7 +91,11 @@ export default function ProductsList({ api_url }: Props) {
     );
   }
 
-  if (error) return <ErrorInfo />;
+  if (error) return <ErrorInfo error="Ups, no products found" />;
+
+  if (products?.length === 0) {
+    return <ErrorInfo error="Ups, no products found" />;
+  }
 
   return (
     <div className="my-8 space-y-6">

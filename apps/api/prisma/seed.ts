@@ -192,18 +192,8 @@ async function main() {
       where: { id: 1 },
       update: {},
       create: {
-        id: 1,
-        email: 'super.admin@ogro.com',
-        first_name: 'Super',
-        last_name: 'Admin',
-        username: 'super_admin',
-        password: await bcrypt.hash(
-          process.env.SUPERUSER_PASSWORD!,
-          await bcrypt.genSalt(),
-        ),
-        validated_at: new Date().toISOString(),
-        validation_sent_at: new Date().toISOString(),
-        referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
+        id: parseInt(province.province_id),
+        province: province.province,
       },
     });
 

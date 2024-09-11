@@ -46,3 +46,14 @@ export interface StoreHasAdminInterface {
   updatedAt: Date | null;
   deletedAt: Date | null;
 }
+
+export interface StoreHasProductProps {
+  id: number;
+  qty: number;
+  product_id: number;
+  store_id: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: any;
+  store: StoreProps;
+}

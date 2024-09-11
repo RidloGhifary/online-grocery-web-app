@@ -126,38 +126,49 @@ export class CartController {
     try {
       const result = await prisma.$transaction(async (prisma) => {
         const currentUserAddress = await prisma.user.findFirst({
-          include :{
-            addresses :{
-              where :{
-                is_primary: true
+          include: {
+            addresses: {
+              where: {
+                is_primary: true,
               },
-            }
-          }
-        })
+            },
+          },
+        });
         const product = await prisma.product.findUnique({
           where: { id: productId },
-          include :{
-            StoreHasProduct : {
-              where :{
-                store :{
-                  city_id : currentUserAddress?.addresses[0].city_id
-                  
-                }
-              }
+          include: {
+            StoreHasProduct: {
+              where: {
+                store: {
+                  city_id: currentUserAddress?.addresses[0].city_id,
+                },
+              },
               // include:{
               //   store : true
               // }
-            }
-          }
+            },
+          },
         });
 
         if (!product) {
           throw new Error('Product not found');
         }
 
-        // if (product.current_stock === 0) {
-        if (product.StoreHasProduct[0].qty === 0) {
-          throw new Error('Product ran out of stock, cannot add to cart');
+        const totalStockAcrossStores = await prisma.storeHasProduct.aggregate({
+          _sum: { qty: true },
+          where: { product_id: productId },
+        });
+
+        const totalStock = totalStockAcrossStores._sum.qty || 0;
+
+        if (totalStock === 0) {
+          throw new Error('Product ran out of stock across all stores');
+        }
+
+        if (quantity > totalStock) {
+          throw new Error(
+            `Remaining stock across all stores is ${totalStock}, cannot add more.`,
+          );
         }
 
         const existingCart = await prisma.cart.findFirst({
@@ -167,27 +178,14 @@ export class CartController {
           },
         });
 
-        const additionalQuantityNeeded = quantity;
-
         if (existingCart) {
-          if (additionalQuantityNeeded > product.StoreHasProduct[0].qty!) {
+          const additionalQuantityNeeded = quantity;
+
+          if (additionalQuantityNeeded > totalStock) {
             throw new Error(
-              `Remaing stock are only ${product.StoreHasProduct[0].qty}, cannot add more.`,
+              `Remaining stock across all stores is ${totalStock}, cannot add more.`,
             );
           }
-
-          // const updatedProduct = await prisma.product.update({
-          //   where: { id: productId,  },
-          //   data: {
-          //     current_stock: product.current_stock! - additionalQuantityNeeded,
-          //   },
-          // });
-
-          const updatedProduct = await prisma.storeHasProduct.update({
-            where :{
-              product_id : productId
-            }
-          })
 
           const updatedCart = await prisma.cart.update({
             where: { id: existingCart.id },
@@ -196,17 +194,6 @@ export class CartController {
 
           return updatedCart;
         } else {
-          if (quantity > product.current_stock!) {
-            throw new Error(
-              `Remaing stock are only ${product.current_stock}, cannot add more.`,
-            );
-          }
-
-          const updatedProduct = await prisma.product.update({
-            where: { id: productId },
-            data: { current_stock: product.current_stock! - quantity },
-          });
-
           const newCartItem = await prisma.cart.create({
             data: {
               product_id: productId,
@@ -269,16 +256,19 @@ export class CartController {
           throw new Error('Product not found');
         }
 
+        const totalStockAcrossStores = await prisma.storeHasProduct.aggregate({
+          _sum: { qty: true },
+          where: { product_id: productId },
+        });
+
+        const totalStock = totalStockAcrossStores._sum.qty || 0;
         const stockAdjustment = quantity - cartItem.qty;
 
-        if (product.current_stock! < stockAdjustment) {
-          throw new Error('Current stock cannot fulfill current request');
+        if (stockAdjustment > totalStock) {
+          throw new Error(
+            'Current stock across all stores cannot fulfill the request',
+          );
         }
-
-        await prisma.product.update({
-          where: { id: productId },
-          data: { current_stock: { decrement: stockAdjustment } },
-        });
 
         const updatedCart = await prisma.cart.update({
           where: { id: cartItem.id },
@@ -317,24 +307,19 @@ export class CartController {
         });
 
         if (!cartItem) {
-          throw new Error('Item are not found in cart');
+          throw new Error('Item not found in cart');
         }
-
-        await prisma.product.update({
-          where: { id: productId },
-          data: { current_stock: { increment: cartItem.qty } },
-        });
 
         await prisma.cart.delete({
           where: { id: cartItem.id },
         });
       });
 
-      return res.json({ message: 'Suceed removing item from cart' });
+      return res.json({ message: 'Successfully removed item from cart' });
     } catch (error) {
       return res
         .status(500)
-        .json({ error: 'There is an error deleting item from cart' });
+        .json({ error: 'There was an error removing item from cart' });
     }
   };
 
@@ -345,12 +330,11 @@ export class CartController {
     }
 
     const validationResult = selectForCheckoutSchema.safeParse(req.body);
-
     if (!validationResult.success) {
       return res.status(400).json({ error: validationResult.error.errors });
     }
 
-    const { productIds } = validationResult.data;
+    const { productIds, quantities } = validationResult.data;
     const userId = user.id;
 
     try {
@@ -364,16 +348,29 @@ export class CartController {
       });
 
       if (cartItems.length === 0) {
-        return res
-          .status(404)
-          .json({ error: 'There are no choosen items for checkout' });
+        return res.status(404).json({ error: 'No chosen items for checkout' });
+      }
+
+      for (let i = 0; i < productIds.length; i++) {
+        const productId = productIds[i];
+        const quantity = quantities[i];
+
+        await prisma.cart.updateMany({
+          where: {
+            user_id: userId,
+            product_id: productId,
+          },
+          data: {
+            qty: quantity,
+          },
+        });
       }
 
       return res.json(cartItems);
     } catch (error) {
       return res
         .status(500)
-        .json({ error: 'Error occurs when choosing items for checkout' });
+        .json({ error: 'Error occurred when selecting items for checkout' });
     }
   };
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import MainButton from "./MainButton";
 import { useCart } from "@/context/CartContext";
-import convertToRupiah  from "@/utils/convertRupiah";
+import convertToRupiah from "@/utils/convertRupiah";
 
 interface Product {
   name: string;

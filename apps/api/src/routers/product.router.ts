@@ -29,10 +29,14 @@ export class ProductRouter {
       validateRequestVerbose(updateProductSchema),
       this.productController.updateProduct,
     );
-    this.router.get('/discounts', this.productController.getDiscountProduct);
+    // this.router.get('/discounts', this.productController.getDiscountProduct);
+    this.router.get(
+      '/info/:productId/total-stock',
+      this.productController.getTotalStockAcrossStores,
+    );
     this.router.get('/locations', this.productController.getProductByLocation);
     this.router.get('/:slug', this.productController.productSingle);
-    this.router.get('/:id', (req, res) =>
+    this.router.get('/details/:id', (req, res) =>
       this.productController.getProductById(req, res),
     );
   }

@@ -27,8 +27,6 @@ passport.use(
       profile: any,
       done: any,
     ) {
-      console.log('🚀 ~ profile:', profile);
-
       const user = await loginWithGoogle({
         first_name: profile.name.givenName,
         last_name: profile.name.familyName,

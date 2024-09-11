@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/actions/getCurrentUser";
-import CheckOutContent from "./_components/CheckoutContent";
+import CheckOutContent from "./_components/CheckoutContentUnused";
 
 export default async function CheckoutPage() {
   const user = await getCurrentUser();

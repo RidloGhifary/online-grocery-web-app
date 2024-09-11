@@ -32,7 +32,6 @@ export default function QuantityBox({
       />
       <button
         onClick={handleIncrement}
-        disabled={qty >= maxQty || maxQty === 0}
         className="flex h-8 w-8 items-center justify-center bg-gray-100 disabled:bg-gray-200 disabled:opacity-50"
       >
         +

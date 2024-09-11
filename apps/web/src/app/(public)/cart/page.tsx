@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
-import CartItem from "@/components/cartItems";
+import CartItem from "@/components/CartItems";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 import {
   getCartItems,
@@ -11,24 +12,27 @@ import {
   selectForCheckout,
 } from "@/api/cart/route";
 import { IoMenu } from "react-icons/io5";
-import CheckoutSummary from "@/components/checkoutSummary";
+import CheckoutSummary from "@/components/CheckoutSummary";
 import { Modal } from "@/components/features-2/ui/Modal";
 import MainButton from "@/components/MainButton";
 
 const CartPage: React.FC = () => {
+  const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState<React.ReactNode>("");
   const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {});
-  const [selectedForCheckout, setSelectedForCheckout] = useState<number[]>([]);
+  const [selectedForCheckout, setSelectedForCheckout] = useState<
+    { product_id: number; qty: number }[]
+  >([]);
   const [page, setPage] = useState<number>(1);
   const [sort, setSort] = useState<string>("name");
   const [order, setOrder] = useState<string>("asc");
   const [search, setSearch] = useState<string>("");
   const [hasMoreItems, setHasMoreItems] = useState<boolean>(true);
   const [isSortModal, setIsSortModal] = useState(false);
-  const { refreshCart } = useCart();
+  const { setCheckoutItems, refreshCart } = useCart();
 
   useEffect(() => {
     const fetchCartItems = async () => {
@@ -62,6 +66,27 @@ const CartPage: React.FC = () => {
         ? prevSelectedItems.filter((id) => id !== productId)
         : [...prevSelectedItems, productId],
     );
+
+    setSelectedForCheckout((prevSelectedForCheckout) => {
+      const isAlreadySelected = prevSelectedForCheckout.some(
+        (item) => item.product_id === productId,
+      );
+      if (isAlreadySelected) {
+        return prevSelectedForCheckout.filter(
+          (item) => item.product_id !== productId,
+        );
+      } else {
+        const selectedItem = items.find(
+          (item) => item.product_id === productId,
+        );
+        return selectedItem
+          ? [
+              ...prevSelectedForCheckout,
+              { product_id: selectedItem.product_id, qty: selectedItem.qty },
+            ]
+          : prevSelectedForCheckout;
+      }
+    });
   };
 
   const handleSelectAll = () => {
@@ -69,18 +94,37 @@ const CartPage: React.FC = () => {
       setSelectedItems([]);
       setSelectedForCheckout([]);
     } else {
-      const allProductIds = items.map((item) => item.product_id);
-      setSelectedItems(allProductIds);
-      setSelectedForCheckout(allProductIds);
+      const allSelectedItems = items.map((item) => ({
+        product_id: item.product_id,
+        qty: item.qty,
+      }));
+      setSelectedItems(allSelectedItems.map((item) => item.product_id));
+      setSelectedForCheckout(allSelectedItems);
     }
   };
 
   const handleProceedToCheckout = async () => {
     try {
-      const response = await selectForCheckout(selectedForCheckout);
-      const checkoutItems = response.data;
-      console.log("Items selected for checkout:", checkoutItems);
-      // Proceeding to checkout logic later should be added here...
+      if (selectedForCheckout.length === 0) {
+        console.error("No items selected for checkout");
+        return;
+      }
+
+      setCheckoutItems(
+        selectedForCheckout.map((item) => ({
+          ...item,
+          product:
+            items.find((cartItem) => cartItem.product_id === item.product_id)
+              ?.product || {},
+        })),
+      );
+
+      await selectForCheckout(
+        selectedForCheckout.map((item) => item.product_id),
+        selectedForCheckout.map((item) => item.qty),
+      );
+
+      router.push("/cart/checkout");
     } catch (error) {
       console.error("Error selecting items for checkout:", error);
     }
@@ -271,13 +315,13 @@ const CartPage: React.FC = () => {
               buttonText={`Proceed to Checkout (${selectedItems.reduce(
                 (total, productId) =>
                   total +
-                    items.find((item) => item.product_id === productId)?.qty ||
-                  0,
+                  (items.find((item) => item.product_id === productId)?.qty ||
+                    0),
                 0,
               )})`}
-              items={items.filter((item) =>
-                selectedItems.includes(item.product_id),
-              )}
+              items={selectedItems
+                .map((id) => items.find((item) => item.product_id === id))
+                .filter((item): item is CartItem => item !== undefined)}
               disableButton={selectedItems.length === 0}
               onCheckout={handleProceedToCheckout}
               showDeliveryPrice={false}

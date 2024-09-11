@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import Cookies from "js-cookie";
+import { useCart } from "@/context/CartContext";
 
 interface CartItem {
   id: number;
@@ -120,23 +121,28 @@ export async function updateCartItemQuantity(
 
 export const selectForCheckout = async (
   productIds: number[],
-): Promise<AxiosResponse<SelectForCheckoutResponse>> => {
+  quantities: number[],
+) => {
   const token = getToken();
   if (!token) {
     throw new Error("User is not authenticated");
   }
 
-  const response = await api.post<SelectForCheckoutResponse>(
-    "/cart/select-for-checkout",
-    { productIds },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
+  try {
+    const response = await api.post<SelectForCheckoutResponse>(
+      "/cart/select-for-checkout",
+      { productIds, quantities },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    },
-  );
+    );
 
-  return response;
+    return response;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export async function removeItemFromCart(

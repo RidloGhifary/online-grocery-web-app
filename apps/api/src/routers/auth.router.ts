@@ -48,10 +48,8 @@ export class AuthRouter {
       function (req, res) {
         const { token } = req.user as any;
         console.log(`${ENV.NEXT_PUBLIC_APP_URL}/redirect?token=${token}`);
-        
-        res.redirect(
-          `${ENV.NEXT_PUBLIC_APP_URL}/redirect?token=${token}`,
-        );
+
+        res.redirect(`${ENV.NEXT_PUBLIC_APP_URL}/redirect?token=${token}`);
       },
     );
     this.router.get('/google/failure', (req, res) => {

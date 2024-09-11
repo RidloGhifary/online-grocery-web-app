@@ -1,5 +1,6 @@
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import { UpdateProductInputInterface } from '@/interfaces/ProductInterface';
+import searchFriendlyForLikeQuery from '@/utils/searchFriendlyForLikeQuery';
 import prisma from '@/prisma';
 import { productRepository } from '@/repositories/product.repository';
 import getCityFromCoordinates from '@/utils/getCityFromCoordinates';
@@ -22,32 +23,26 @@ export class ProductController {
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber,
         where: {
-          StoreHasProduct :{
-            some : {
-              qty : {
+          StoreHasProduct: {
+            some: {
+              qty: {
                 gt: 0,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         include: {
           product_discounts: true,
-          // store: {
-          //   include: {
-          //     city: true,
-          //     province: true,
-          //   },
-          // },
-          StoreHasProduct :{
-            include :{
-              store :{
-                include :{
-                  city : true ,
-                  // province : true
-                }
-              }
-            }
-          }
+          StoreHasProduct: {
+            include: {
+              store: {
+                include: {
+                  city: true,
+                  province: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -73,63 +68,99 @@ export class ProductController {
     }
   }
 
-  async getDiscountProduct(req: Request, res: Response) {
-    try {
-      const now = new Date();
+  // async getDiscountProduct(req: Request, res: Response) {
+  //   try {
+  //     const now = new Date();
 
-      const products = await prisma.product.findMany({
-        where: {
-          product_discounts: {
-            some: {
-              started_at: {
-                lte: now,
-              },
-              end_at: {
-                gte: now,
-              },
-            },
-          },
-          StoreHasProduct :{
-            some :{
-              qty :{
-                gt: 0,
-              }
-            }
-          }
-        },
-        include: {
-          product_discounts: {
-            where: {
-              started_at: {
-                lte: now,
-              },
-              end_at: {
-                gte: now,
-              },
-            },
-          },
-          StoreHasProduct :{
-            include :{
-              store: {
-                include: {
-                  city: true,
-                  // province: true,
-                },
-              },
-            }
-          }
-        },
-      });
+  //     const products = await prisma.product.findMany({
+  //       where: {
+  //         product_discounts: {
+  //           some: {
+  //             started_at: {
+  //               lte: now,
+  //             },
+  //             end_at: {
+  //               gte: now,
+  //             },
+  //           },
+  //         },
+  //         StoreHasProduct: {
+  //           some: {
+  //             qty: {
+  //               gt: 0,
+  //             },
+  //           },
+  //         StoreHasProduct: {
+  //           some: {
+  //             qty: {
+  //               gt: 0,
+  //             },
+  //           },
+  //         },
+  //       },
+  //       include: {
+  //         product_discounts: {
+  //           where: {
+  //             started_at: {
+  //               lte: now,
+  //             },
+  //             end_at: {
+  //               gte: now,
+  //             },
+  //           },
+  //         },
+  //         StoreHasProduct: {
+  //           include: {
+  //             store: {
+  //               include: {
+  //                 city: true,
+  //                 province: true,
+  //               },
+  //             },
+  //         StoreHasProduct: {
+  //           include: {
+  //             store: {
+  //               include: {
+  //                 city: true,
+  //                 province: true,
+  //               },
+  //             },
+  //           },
+  //         },
+  //       },
+  //     })
 
-      res.status(200).json({
-        ok: true,
-        message: 'Success get discount product',
-        data: products,
-      });
-    } catch {
-      res.status(500).json({ ok: false, message: 'Internal server error' });
+  //     res.status(200).json({
+  //       ok: true,
+  //       message: 'Success get discount product',
+  //       data: products,
+  //     });
+  //   } catch {
+  //     res.status(500).json({ ok: false, message: 'Internal server error' });
+  //   }
+  // }
+
+  getTotalStockAcrossStores = async (req: Request, res: Response) => {
+    const productId = parseInt(req.params.productId, 10);
+    if (isNaN(productId) || productId < 1) {
+      return res.status(400).json({ error: 'Invalid productId in URL' });
     }
-  }
+
+    try {
+      // Fetch total stock across all stores for the given product
+      const totalStockAcrossStores = await prisma.storeHasProduct.aggregate({
+        _sum: { qty: true },
+        where: { product_id: productId },
+      });
+
+      // Return the total stock
+      const totalStock = totalStockAcrossStores._sum.qty || 0;
+      return res.json({ totalStock });
+    } catch (error) {
+      console.error('Error fetching total stock:', error);
+      return res.status(500).json({ error: 'Error fetching total stock' });
+    }
+  };
 
   async getProductByLocation(req: Request, res: Response) {
     try {
@@ -173,8 +204,27 @@ export class ProductController {
           });
         }
 
-        products = await prisma.product.findMany({
+        const getProducts = await prisma.product.findMany({
           where: {
+            // current_stock: { gt: 0 },
+
+            // store: {
+            //   city: {
+            //     city_name: userCity,
+            //   },
+            // },
+            StoreHasProduct: {
+              some: {
+                qty: {
+                  gt: 0,
+                },
+                store: {
+                  city: {
+                    city_name: userCity,
+                  },
+                },
+              },
+            },
             // current_stock: { gt: 0 },
             
             // store: {
@@ -182,18 +232,18 @@ export class ProductController {
             //     city_name: userCity,
             //   },
             // },
-            StoreHasProduct :{
-              some :{
-                qty : {
-                  gt : 0
-                },
-                store :{
-                  city :{
-                    city_name : userCity
-                  }
-                }
-              }
-            }
+            // StoreHasProduct :{
+            //   some :{
+            //     qty : {
+            //       gt : 0
+            //     },
+            //     store :{
+            //       city :{
+            //         city_name : userCity
+            //       }
+            //     }
+            //   }
+            // }
           },
           include: {
             product_discounts: true,
@@ -212,6 +262,15 @@ export class ProductController {
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
+        });
+
+        products = getProducts.map((product) => {
+          return {
+            ...product,
+            StoreHasProduct: product.StoreHasProduct.filter(
+              (store) => store.store?.city.city_name === userCity,
+            ),
+          };
         });
       } else {
         // No coordinates provided, get products from the central store
@@ -233,18 +292,22 @@ export class ProductController {
               }
             }
             
+            // current_stock: { gt: 0 },
+            // store: {
+            //   store_type: 'central',
+            // },
           },
           include: {
             product_discounts: true,
             // store: {
             //   include: { city: true, province: true },
             // },
-            StoreHasProduct :{
-              select :{
-                qty : true,
-                // store : 
-              }
-            }
+            StoreHasProduct: {
+              select: {
+                qty: true,
+                // store :
+              },
+            },
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
@@ -352,6 +415,12 @@ export class ProductController {
         // StoreHasProduct : {
         
       // }
+        //
+      }
+      {
+        // field product,
+        // StoreHasProduct : {
+        // }
         //
       }
       const product = await prisma.product.findUnique({

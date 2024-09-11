@@ -19,12 +19,12 @@ export default function ProfileNavigation() {
       isActive: path === "/user/address",
       isDisabled: false,
     },
-    // {
-    //   name: "Stores",
-    //   href: "/user/stores",
-    //   isActive: path === "/user/stores",
-    //   isDisabled: userRole !== "super_admin",
-    // },
+    {
+      name: "Orders",
+      href: "/user/orders",
+      isActive: path === "/user/orders",
+      isDisabled: false,
+    },
   ];
 
   return (

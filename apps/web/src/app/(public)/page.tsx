@@ -11,9 +11,9 @@ export default function Home() {
     <div className="">
       <Container>
         <Hero />
-        {/* <ProductBasedDiscount api_url={API_URL as string} />
+        {/* <ProductBasedDiscount api_url={API_URL as string} /> */}
         <hr />
-        <ProductsList api_url={API_URL as string} /> */}
+        {/* <ProductsList api_url={API_URL as string} /> */}
       </Container>
     </div>
   );

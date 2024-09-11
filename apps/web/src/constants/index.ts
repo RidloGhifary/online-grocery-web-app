@@ -1,8 +1,11 @@
-import {FaCheckCircle,
-  FaCog,
+import {
+  FaCheckCircle,
   FaTruck,
   FaHandHoldingHeart,
-  FaHandshake, } from "react-icons/fa";
+  FaMoneyBillWave,
+  FaHandshake,
+  FaBoxOpen,
+} from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 
 export interface mockCartItem {
@@ -15,13 +18,12 @@ export interface mockCartItem {
 }
 
 export const paymentStages = [
-  { label: "Menunggu Pembayaran", icon: FaCheckCircle },
-  { label: "Menunggu Konfirmasi Pembayaran", icon: FaCheckCircle },
-  { label: "Diproses", icon: FaCog },
-  { label: "Dikirim", icon: FaTruck },
-  { label: "Diterima", icon: FaHandHoldingHeart },
-  { label: "Pesanan Selesai", icon: FaHandshake },
-  { label: "Dibatalkan", icon: MdCancel },
+  { id: 1, label: "waiting for payment", icon: FaMoneyBillWave },
+  { id: 2, label: "waiting payment confirmation", icon: FaCheckCircle },
+  { id: 3, label: "processing", icon: FaTruck },
+  { id: 4, label: "delivered", icon: FaBoxOpen },
+  { id: 5, label: "completed", icon: FaHandshake },
+  // { label: "Pesanan Selesai", icon: FaHandHoldingHeart },
 ];
 
 export const mockCartItems: mockCartItem[] = [
@@ -70,9 +72,9 @@ export const mockTransactionDetails = {
 };
 
 export const deliveryOptions = [
-  { id: "JNE", name: "JNE", price: 10000 },
-  { id: "POS Indonesia", name: "POS Indonesia", price: 12000 },
-  { id: "TIKI", name: "TIKI", price: 9000 },
+  { id: "jne", name: "Jalur Nugraha Ekakurir (JNE)" },
+  { id: "pos", name: "POS Indonesia (POS)" },
+  { id: "tiki", name: "Citra Van Titipan Kilat (TIKI)" },
 ];
 
 export const Provinces = [

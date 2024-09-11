@@ -6,7 +6,6 @@ import prisma from '@/prisma';
 import getUserByEmail from '@/utils/getUserByEmail';
 import { sendMailChangeEmail } from '@/utils/send-mail/sendMailChangeEmail';
 import {
-  changeEmailSchema,
   forgotPasswordSendMailSchema,
   forgotPasswordVerifySchema,
 } from '@/validations/credential';
@@ -70,6 +69,10 @@ export class CredentialController {
         process.env.JWT_SECRET!,
       ) as JwtPayload;
 
+      if (decodedKey.exp && decodedKey.exp < Date.now() / 1000) {
+        return res.status(400).json({ ok: false, message: 'Expired token' });
+      }
+
       const { currentEmail, newEmail } = decodedKey;
 
       const user = await prisma.user.update({
@@ -112,6 +115,10 @@ export class CredentialController {
           decodeURIComponent(key as string),
           process.env.JWT_SECRET!,
         ) as JwtPayload;
+
+        if (decodedKey.exp && decodedKey.exp < Date.now() / 1000) {
+          return res.status(400).json({ ok: false, message: 'Expired token' });
+        }
 
         const user = await getUserByEmail(decodedKey.email);
 
@@ -167,7 +174,7 @@ export class CredentialController {
           { email: validatedRequest.data.email },
           process.env.JWT_SECRET!,
           {
-            expiresIn: '1d',
+            expiresIn: '1h',
           },
         );
 

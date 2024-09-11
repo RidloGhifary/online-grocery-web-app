@@ -86,7 +86,7 @@ export class CheckoutController {
           store_type: closestStore.store_type,
           city_id: closestStore.city_id,
           city_name: closestStore.city.city_name,
-          province_name: closestStore.province.province,
+          province_name: closestStore.province?.province,
           address: closestStore.address,
           kecamatan: closestStore.kecamatan,
           kelurahan: closestStore.kelurahan,

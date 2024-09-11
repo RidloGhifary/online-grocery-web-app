@@ -311,7 +311,7 @@ model StoreHasProduct {
   deletedAt DateTime?
 
   @@index([id])
-  @@map("store_has_products")
+  @@map("stores_has_products")
 }
 
 model StocksAdjustment {

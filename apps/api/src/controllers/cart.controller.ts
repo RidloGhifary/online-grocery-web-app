@@ -126,6 +126,9 @@ export class CartController {
     try {
       const result = await prisma.$transaction(async (prisma) => {
         const currentUserAddress = await prisma.user.findFirst({
+          where:{
+            id: userId
+          },
           include: {
             addresses: {
               where: {
@@ -134,6 +137,8 @@ export class CartController {
             },
           },
         });
+        console.log(currentUserAddress);
+        
         const product = await prisma.product.findUnique({
           where: { id: productId },
           include: {
@@ -149,7 +154,8 @@ export class CartController {
             },
           },
         });
-
+        console.log(product);
+        
         if (!product) {
           throw new Error('Product not found');
         }

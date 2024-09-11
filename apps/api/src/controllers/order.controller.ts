@@ -311,6 +311,133 @@ export class OrderController {
     }
   };
 
+  ensureNumber(value: number | null): number {
+    return value ?? 0;
+  }
+
+  // createOrder = async (req: CustomRequest, res: Response) => {
+  //   try {
+  //     const validation = createOrderSchema.safeParse(req.body);
+  //     if (!validation.success) {
+  //       return res.status(400).json({ error: validation.error.errors });
+  //     }
+
+  //     const {
+  //       userId,
+  //       checkoutItems,
+  //       selectedAddressId,
+  //       storeId,
+  //       selectedCourier,
+  //       selectedCourierPrice,
+  //     } = validation.data;
+
+  //     const currentUser = req.currentUser;
+  //     if (!currentUser) {
+  //       return res.status(401).json({ error: 'User not authenticated' });
+  //     }
+
+  //     // Check stock availability
+  //     const productIds = checkoutItems.map((item) => item.product_id);
+
+  //     // Get the total stock for each product across all stores
+  //     const stockAvailability = await prisma.storeHasProduct.groupBy({
+  //       by: ['product_id'],
+  //       where: {
+  //         product_id: { in: productIds },
+  //         qty: { not: null, gt: 0 }, // Ensure qty is not null and greater than zero
+  //       },
+  //       _sum: {
+  //         qty: true,
+  //       },
+  //     });
+
+  //     // Create a map to easily check available stock by product_id
+  //     const availableStockMap = new Map<number, number>();
+
+  //     stockAvailability.forEach((stock) => {
+  //       // Ensure qty is always treated as a number
+  //       const productStock = this.ensureNumber(stock._sum.qty);
+  //       availableStockMap.set(stock.product_id, productStock);
+  //     });
+  //     // Validate if there are enough stocks for each product
+  //     for (const item of checkoutItems) {
+  //       const availableStock = availableStockMap.get(item.product_id) || 0;
+  //       if (availableStock < item.quantity) {
+  //         return res.status(400).json({
+  //           error: `Insufficient stock for product ID ${item.product_id}. Available: ${availableStock}, Required: ${item.quantity}`,
+  //         });
+  //       }
+  //     }
+
+  //     const storeAdmin = await prisma.storeHasAdmin.findFirst({
+  //       where: { store_id: storeId },
+  //       select: { assignee_id: true },
+  //     });
+  //     if (!storeAdmin) {
+  //       return res.status(400).json({ error: 'No admin found for this store' });
+  //     }
+
+  //     const expedition = await prisma.expedition.findFirst({
+  //       where: { name: selectedCourier },
+  //       select: { id: true },
+  //     });
+  //     if (!expedition) {
+  //       return res.status(400).json({ message: 'Expedition not found' });
+  //     }
+
+  //     // Proceed with creating the order
+  //     const newOrder = await prisma.order.create({
+  //       data: {
+  //         invoice: 'INV-TEMPDATA',
+  //         customer_id: userId,
+  //         managed_by_id: storeAdmin.assignee_id,
+  //         store_id: storeId,
+  //         expedition_id: expedition.id,
+  //         order_status_id: 1,
+  //         address_id: selectedAddressId,
+  //         order_details: {
+  //           create: checkoutItems.map((item) => ({
+  //             product_id: item.product_id,
+  //             qty: item.quantity,
+  //             store_id: storeId,
+  //             price: item.price,
+  //             sub_total: item.price * item.quantity + selectedCourierPrice,
+  //           })),
+  //         },
+  //       },
+  //     });
+
+  //     const invoice = `INV-${newOrder.id.toString().padStart(7, '0')}`;
+
+  //     await prisma.order.update({
+  //       where: { id: newOrder.id },
+  //       data: { invoice },
+  //     });
+
+  //     // Schedule a job for auto-cancellation if payment proof is not provided
+  //     const cancelJob = nodeSchedule.scheduleJob(
+  //       newOrder.id.toString(),
+  //       new Date(Date.now() + 1 * 60 * 1000),
+  //       async () => {
+  //         const order = await prisma.order.findUnique({
+  //           where: { id: newOrder.id },
+  //         });
+
+  //         if (!order?.payment_proof) {
+  //           await prisma.order.update({
+  //             where: { id: newOrder.id },
+  //             data: { order_status_id: 6 },
+  //           });
+  //         }
+  //       },
+  //     );
+
+  //     return res.status(200).json(newOrder);
+  //   } catch (error) {
+  //     return res.status(500).json({ error: 'Internal server error' });
+  //   }
+  // };
+
   cancelOrder = async (req: CustomRequest, res: Response) => {
     console.log('Received params:', req.params);
     const { id } = req.params;

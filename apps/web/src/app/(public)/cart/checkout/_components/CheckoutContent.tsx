@@ -39,12 +39,24 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     useState<UserAddressProps | null>(
       selectedAddressActive as UserAddressProps,
     );
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [totalWeight, setTotalWeight] = useState<number>(0);
   const router = useRouter();
 
   useEffect(() => {
     refreshCart();
   }, []);
+
+  useEffect(() => {
+    if (checkoutItems.length > 0) {
+      const weight = checkoutItems.reduce(
+        (acc, item) => acc + item.qty * item.product.unit_in_gram,
+        0,
+      );
+      setTotalWeight(weight);
+      console.log("Total weight calculated:", weight);
+    }
+  }, [checkoutItems]);
 
   const { data: nearestStoreData, error: nearestStoreError } = useQuery({
     queryKey: ["nearestStore", selectedAddress?.id],
@@ -70,7 +82,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
       getDeliveryOptions({
         origin: storeCityId ? storeCityId.toString() : "154",
         destination: selectedAddress?.city_id!!,
-        weight: 1000,
+        weight: totalWeight,
         courier: selectedCourier,
       }),
     enabled: !!selectedCourier && !!selectedAddress?.city_id,

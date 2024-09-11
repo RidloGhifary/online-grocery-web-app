@@ -56,6 +56,7 @@ export class CartController {
               price: true,
               image: true,
               description: true,
+              unit_in_gram: true,
             },
           },
         },
@@ -126,8 +127,8 @@ export class CartController {
     try {
       const result = await prisma.$transaction(async (prisma) => {
         const currentUserAddress = await prisma.user.findFirst({
-          where:{
-            id: userId
+          where: {
+            id: userId,
           },
           include: {
             addresses: {
@@ -138,7 +139,7 @@ export class CartController {
           },
         });
         console.log(currentUserAddress);
-        
+
         const product = await prisma.product.findUnique({
           where: { id: productId },
           include: {
@@ -155,7 +156,7 @@ export class CartController {
           },
         });
         console.log(product);
-        
+
         if (!product) {
           throw new Error('Product not found');
         }
@@ -351,12 +352,16 @@ export class CartController {
             in: productIds,
           },
         },
+        include: {
+          product: true,
+        },
       });
 
       if (cartItems.length === 0) {
         return res.status(404).json({ error: 'No chosen items for checkout' });
       }
 
+      const updatedCartItems = [];
       for (let i = 0; i < productIds.length; i++) {
         const productId = productIds[i];
         const quantity = quantities[i];
@@ -370,13 +375,77 @@ export class CartController {
             qty: quantity,
           },
         });
+
+        const product = cartItems.find(
+          (item) => item.product_id === productId,
+        )?.product;
+        if (product) {
+          const totalWeight = (product.unit_in_gram || 0) * quantity;
+          updatedCartItems.push({
+            product_id: productId,
+            qty: quantity,
+            totalWeight,
+            ...product,
+          });
+        }
       }
 
-      return res.json(cartItems);
+      return res.json(updatedCartItems);
     } catch (error) {
       return res
         .status(500)
         .json({ error: 'Error occurred when selecting items for checkout' });
     }
   };
+
+  // selectForCheckout = async (req: CustomRequest, res: Response) => {
+  //   const user = req.currentUser;
+  //   if (!user) {
+  //     return res.status(401).json({ error: 'User not authenticated' });
+  //   }
+
+  //   const validationResult = selectForCheckoutSchema.safeParse(req.body);
+  //   if (!validationResult.success) {
+  //     return res.status(400).json({ error: validationResult.error.errors });
+  //   }
+
+  //   const { productIds, quantities } = validationResult.data;
+  //   const userId = user.id;
+
+  //   try {
+  //     const cartItems = await prisma.cart.findMany({
+  //       where: {
+  //         user_id: userId,
+  //         product_id: {
+  //           in: productIds,
+  //         },
+  //       },
+  //     });
+
+  //     if (cartItems.length === 0) {
+  //       return res.status(404).json({ error: 'No chosen items for checkout' });
+  //     }
+
+  //     for (let i = 0; i < productIds.length; i++) {
+  //       const productId = productIds[i];
+  //       const quantity = quantities[i];
+
+  //       await prisma.cart.updateMany({
+  //         where: {
+  //           user_id: userId,
+  //           product_id: productId,
+  //         },
+  //         data: {
+  //           qty: quantity,
+  //         },
+  //       });
+  //     }
+
+  //     return res.json(cartItems);
+  //   } catch (error) {
+  //     return res
+  //       .status(500)
+  //       .json({ error: 'Error occurred when selecting items for checkout' });
+  //   }
+  // };
 }

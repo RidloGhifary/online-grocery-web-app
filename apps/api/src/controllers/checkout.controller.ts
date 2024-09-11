@@ -27,7 +27,6 @@ export class CheckoutController {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      // Find the user and their addresses
       const user = await prisma.user.findUnique({
         where: { id: currentUser.id },
         include: { addresses: true },
@@ -37,7 +36,6 @@ export class CheckoutController {
         return res.status(404).json({ error: 'User not found' });
       }
 
-      // Get all stores
       const stores = await prisma.store.findMany({
         include: {
           city: true,

@@ -41,41 +41,45 @@ export async function getAdmin(): Promise<
 > {
   const token = await getCookies("token");
   // console.log(token);
-  
+
   let result: CommonResultInterface<UserInterface> = {
     ok: false,
   };
   try {
     if (!token) throw new Error("404");
 
-    const response = await fetch(`${process.env.BACKEND_URL}/users/admin/info`, {
-      headers: {
-        'Authorization':`Bearer ${token}`
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/users/admin/info`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
-    
-    if (!response.ok) throw new Error("500");
-    const data = await response.json()
-    
-    // console.log(response);
-    result.data = data.data as UserInterface 
-    result.ok = true
+    );
 
+    console.log("🚀 ~ response:", response);
+
+    if (!response.ok) throw new Error("500");
+    const data = await response.json();
+
+    // console.log(response);
+    result.data = data.data as UserInterface;
+    result.ok = true;
   } catch (error) {
-    const errorCode = (error as Error).message
+    const errorCode = (error as Error).message;
     switch (errorCode) {
-      case '400':
-        result.error = '404'
-        result.message = 'Token not found or not provided'
+      case "400":
+        result.error = "404";
+        result.message = "Token not found or not provided";
         break;
-      case '500' :
-        result.error = '500'
+      case "500":
+        result.error = "500";
         console.log(error);
-        result.message = 'Something wrong'
+        result.message = "Something wrong";
         break;
       default:
-        result.error = '500'
-        result.message = 'Unknown'
+        result.error = "500";
+        result.message = "Unknown";
         break;
     }
   }

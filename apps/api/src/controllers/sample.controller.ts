@@ -1,37 +1,17 @@
-import { Request, Response } from 'express';
 import prisma from '@/prisma';
-
+import { Request, Response } from 'express';
 
 export class SampleController {
   async getSampleData(req: Request, res: Response) {
-    const sampleData = await prisma.sample.findMany();
-
-    return res.status(200).send(sampleData);
+    return res.status(200);
   }
-
+ 
   async getSampleDataById(req: Request, res: Response) {
-    const { id } = req.params;
-
-    const sample = await prisma.sample.findUnique({
-      where: { id: Number(id) },
-    });
-
-    if (!sample) {
-      return res.send(404);
-    }
-
-    return res.status(200).send(sample);
+    const ress = await prisma.storeHasAdmin.findFirst()
+    return res.status(200);
   }
 
   async createSampleData(req: Request, res: Response) {
-    const { name, code } = req.body;
-
-    const newSampleData = await prisma.sample.create({
-      data: { name, code },
-    });
-
-    return res.status(201).send(newSampleData);
+    return res.status(201);
   }
 }
-
-console.log('Hello')

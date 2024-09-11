@@ -1,18 +1,36 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+const { withUt } = require("uploadthing/tw");
+
+module.exports = withUt({
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+
+    // Or if using `src` directory:
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    container: {
+      center: true,
+    },
+    extend: {
+      colors: {
+        primary: "#16a34a",
+        secondary: "#15803d",
+        third: "#116031",
+      },
+    },
   },
-  plugins: [
-    require('daisyui'),
-  ],
+  plugins: [require("daisyui")],
   daisyui: {
-    themes: [],
+    themes: [
+      {
+        mytheme: {
+          primary: "#16a34a",
+          "base-100": "#ffffff",
+        },
+      },
+    ],
   },
-};
+});

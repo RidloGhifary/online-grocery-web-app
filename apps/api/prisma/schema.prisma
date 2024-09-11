@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
@@ -7,96 +8,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id          Int     @id @default(autoincrement())
-  username    String  @unique
-  first_name  String
-  last_name   String
-  email       String  @unique
-  password    String?
-  middle_name String?
-  image       String?
-  referral    String? @unique
-  verified    Boolean @default(false)
+enum GENDER {
+  male
+  female
+}
 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+model User {
+  id               Int      @id @default(autoincrement())
+  username         String   @unique
+  first_name       String
+  last_name        String
+  email            String   @unique
+  phone_number     String?
+  gender           GENDER   @default(male)
+  password         String?
+  middle_name      String?
+  image            String?
+  referral         String?  @unique
+  is_google_linked Boolean?
+
+  validated_at       DateTime?
+  validation_sent_at DateTime?
+
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
   deleted_at DateTime?
 
-  verifications Verifications[] @relation("user_verification")
-
   role             UserHasRole[]
-  auth_provider    UsersAuthProvider[]
   addresses        UsersAddress[]
   store_admins     StoreHasAdmin[]
   carts            Cart[]
-  orders           Order[]             @relation("OrderCustomer")
-  managed_orders   Order[]             @relation("OrderManager")
+  orders           Order[]            @relation("OrderCustomer")
+  managed_orders   Order[]            @relation("OrderManager")
   inventory        StocksAdjustment[]
-  vouchers_created Voucher[]           @relation("VoucherCreator")
+  vouchers_created Voucher[]          @relation("VoucherCreator")
   vouchers_used    UsersVoucher[]
+  Store            Store[]
 
   @@index([id])
   @@index([username])
   @@index([email])
   @@index([referral])
   @@map("users")
-}
-
-model Verifications {
-  id                 Int                @id @default(autoincrement())
-  user_id            Int?
-  validated_at       DateTime?
-  validation_sent_at DateTime?
-  expired_at         DateTime?
-  email              String
-  unique_identifier  String             @unique
-  status             VerificationStatus
-  user               User?              @relation("user_verification", fields: [user_id], references: [id])
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
-
-  @@index([id])
-  @@index([unique_identifier])
-  @@map("verifications")
-}
-
-enum VerificationStatus {
-  activated
-  on_progress
-  deactivated
-  expired
-}
-
-model UsersAuthProvider {
-  id               Int           @id @default(autoincrement())
-  user             User?         @relation(fields: [user_id], references: [id])
-  user_id          Int?
-  auth_provider    AuthProvider? @relation(fields: [auth_provider_id], references: [id])
-  auth_provider_id Int?
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
-
-  @@index([id])
-  @@map("users_auth_providers")
-}
-
-model AuthProvider {
-  id       Int    @id @default(autoincrement())
-  provider String
-
-  users_auth_provider UsersAuthProvider[]
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
-
-  @@index([id])
-  @@map("auth_providers")
 }
 
 model Permission {
@@ -168,18 +121,19 @@ model UsersAddress {
   user_id     Int
   city        City     @relation(fields: [city_id], references: [id])
   city_id     Int
-  province    Province @relation(fields: [province_id], references: [id])
-  province_id Int
+  label       String   @default("home")
   is_primary  Boolean
   address     String
   kecamatan   String
   kelurahan   String
-  latitude    Decimal? @db.Decimal(9, 6)
+  postal_code String
+  latitude    Decimal? @db.Decimal(8, 6)
   longtitude  Decimal? @db.Decimal(9, 6)
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
   deletedAt DateTime?
+  orders    Order[]   @relation("OrderAddress")
 
   @@index([id])
   @@map("users_addresses")
@@ -193,9 +147,9 @@ model Province {
   updatedAt DateTime? @updatedAt
   deletedAt DateTime?
 
-  cities          City[]
-  stores          Store[]
-  users_addresses UsersAddress[]
+  cities City[]
+  stores Store[]
+  // Store Store[]
 
   @@index([id])
   @@map("provinces")
@@ -242,12 +196,14 @@ model Expedition {
 
 model Store {
   id          Int       @id @default(autoincrement())
+  created_by  Int
+  creator     User      @relation(fields: [created_by], references: [id])
   name        String
   store_type  StoreType
   city        City      @relation(fields: [city_id], references: [id])
   city_id     Int
-  province    Province  @relation(fields: [province_id], references: [id])
-  province_id Int
+  province    Province? @relation(fields: [province_id], references: [id])
+  province_id Int?
   address     String
   kecamatan   String
   kelurahan   String
@@ -256,16 +212,17 @@ model Store {
   longtitude  Decimal   @db.Decimal(9, 6)
 
   store_admins        StoreHasAdmin[]
-  products            Product[]
+  // products            Product[]
   inventory_from      StocksAdjustment[] @relation("FromStore")
   inventory_destinied StocksAdjustment[] @relation("DestiniedStore")
   carts               Cart[]
   orders              Order[]
   order_detail        OrderDetail[]
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  createdAt       DateTime?         @default(now())
+  updatedAt       DateTime?         @updatedAt
+  deletedAt       DateTime?
+  StoreHasProduct StoreHasProduct[] @relation("ProductHasStore")
 
   @@index([id])
   @@map("stores")
@@ -312,13 +269,14 @@ model Product {
   id                  Int             @id @default(autoincrement())
   sku                 String          @unique
   name                String          @unique
+  slug                String?         @unique
   product_category    ProductCategory @relation(fields: [product_category_id], references: [id])
   product_category_id Int
   description         String?
-  current_stock       Int
   unit                String
   price               Float
-  image               String?
+  image               String?         @db.LongText
+  unit_in_gram        Float? //newly added
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -328,12 +286,32 @@ model Product {
   carts             Cart[]
   vouchers          Voucher[]
   product_discounts ProductDiscount[]
-  store             Store?             @relation(fields: [store_id], references: [id])
-  store_id          Int?
+  // store             Store?             @relation(fields: [store_id], references: [id])
+  // store_id          Int?
   order_detail      OrderDetail[]
+  StoreHasProduct   StoreHasProduct[]  @relation("StoreHasProduct")
 
   @@index([id])
+  @@index([sku])
+  @@index([name])
+  @@index([slug])
   @@map("products")
+}
+
+model StoreHasProduct {
+  id         Int      @id @default(autoincrement())
+  qty        Int?
+  product_id Int?
+  product    Product? @relation("StoreHasProduct", fields: [product_id], references: [id])
+  store_id   Int?
+  store      Store?   @relation("ProductHasStore", fields: [store_id], references: [id])
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@map("stores_has_products")
 }
 
 model StocksAdjustment {
@@ -349,6 +327,8 @@ model StocksAdjustment {
   from_store_id      Int
   destinied_store    Store           @relation("DestiniedStore", fields: [destinied_store_id], references: [id])
   destinied_store_id Int
+  order_detail_id    Int?
+  order_detail       OrderDetail?    @relation("OrderDetailInStock", fields: [order_detail_id], references: [id])
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -370,8 +350,8 @@ model Cart {
   qty        Int
   user       User    @relation(fields: [user_id], references: [id])
   user_id    Int
-  store      Store   @relation(fields: [store_id], references: [id])
-  store_id   Int
+  store      Store?  @relation(fields: [store_id], references: [id])
+  store_id   Int?
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -395,6 +375,8 @@ model Order {
   payment_proof     String?
   order_status      OrderStatus               @relation(fields: [order_status_id], references: [id])
   order_status_id   Int
+  address_id        Int //newly added
+  address           UsersAddress              @relation("OrderAddress", fields: [address_id], references: [id]) //newly added
   order_details     OrderDetail[]
   vouchers          OrderHasVoucher[]
   product_discounts OrderHasProductDiscount[]
@@ -434,9 +416,10 @@ model OrderDetail {
   price      Float
   sub_total  Float
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  createdAt        DateTime?          @default(now())
+  updatedAt        DateTime?          @updatedAt
+  deletedAt        DateTime?
+  StocksAdjustment StocksAdjustment[] @relation("OrderDetailInStock")
 
   @@index([id])
   @@map("order_details")
@@ -494,7 +477,6 @@ model UsersVoucher {
   deletedAt DateTime?
 
   @@index([id])
-
   @@map("users_vouchers")
 }
 
@@ -511,7 +493,6 @@ model OrderHasVoucher {
   deletedAt DateTime?
 
   @@index([id])
-
   @@map("order_has_vouchers")
 }
 
@@ -532,7 +513,6 @@ model ProductDiscount {
   discount_type DiscountType
 
   @@index([id])
-
   @@map("product_discounts")
 }
 
@@ -554,6 +534,5 @@ model OrderHasProductDiscount {
   deletedAt DateTime?
 
   @@index([id])
-  
   @@map("order_has_product_discounts")
 }

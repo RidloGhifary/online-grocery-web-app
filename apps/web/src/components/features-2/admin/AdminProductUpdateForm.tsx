@@ -115,6 +115,8 @@ export default function AdminProductUpdateForm() {
         progress: undefined,
         theme: "colored",
         transition: Bounce,
+        // toastId:1,
+        // containerId:10913
       });
       // setCurrentOperation('idle')
       const params = {
@@ -151,6 +153,8 @@ export default function AdminProductUpdateForm() {
         progress: undefined,
         theme: "colored",
         transition: Bounce,
+        // toastId:2,
+        // containerId:10913
       });
     },
   });
@@ -180,6 +184,7 @@ export default function AdminProductUpdateForm() {
       mutation.mutate(modifiedData as UpdateProductInputInterface);
     } else {
       // No changes, notify the user or handle accordingly
+      // setCurrentOperation("idle");
       toast.info("No changes to update", {
         position: "top-right",
         autoClose: 2000,
@@ -190,6 +195,8 @@ export default function AdminProductUpdateForm() {
         progress: undefined,
         theme: "colored",
         transition: Bounce,
+        toastId:3,
+        containerId:10913
       });
     }
   };

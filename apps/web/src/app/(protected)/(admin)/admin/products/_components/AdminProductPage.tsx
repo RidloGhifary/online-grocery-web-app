@@ -149,9 +149,17 @@ export default function AdminProductPage() {
         show={currentOperation === "edit" ?? false}
         onClose={handleClose}
         closeButton={false}
+        toasterContainer={
+          <ToastContainer
+            containerId={10913}
+            position="top-center"
+            draggable={true}
+          />
+        }
       >
         <AdminProductUpdateForm />
       </Modal>
+        
 
       <Modal
         show={operation === "add" ?? false}

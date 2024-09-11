@@ -57,8 +57,6 @@ export async function getAdmin(): Promise<
       },
     );
 
-    console.log("🚀 ~ response:", response);
-
     if (!response.ok) throw new Error("500");
     const data = await response.json();
 

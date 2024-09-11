@@ -1,7 +1,10 @@
 import { ProductController } from '@/controllers/product.controller';
 import validateRequestVerbose from '@/middlewares/validateRequestVerbose';
 import { verifyToken } from '@/middlewares/verifyToken';
-import { createProductSchema, updateProductSchema } from '@/validations/product';
+import {
+  createProductSchema,
+  updateProductSchema,
+} from '@/validations/product';
 import { Router } from 'express';
 
 export class ProductRouter {
@@ -29,7 +32,7 @@ export class ProductRouter {
       validateRequestVerbose(updateProductSchema),
       this.productController.updateProduct,
     );
-    // this.router.get('/discounts', this.productController.getDiscountProduct);
+    this.router.get('/discounts', this.productController.getDiscountProduct);
     this.router.get(
       '/info/:productId/total-stock',
       this.productController.getTotalStockAcrossStores,

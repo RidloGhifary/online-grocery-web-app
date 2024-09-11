@@ -42,7 +42,7 @@ export default function AddressContent({
             {userAddresses?.map((userAddress: any, i: number) => (
               <div
                 key={i}
-                className="w-full space-y-2 rounded-md border border-primary bg-primary/10 p-4 shadow"
+                className={`w-full space-y-2 rounded-md border border-primary ${userAddress?.is_primary && "bg-primary/10"} p-4 shadow`}
               >
                 <div className="flex items-center gap-2">
                   <p className="badge badge-primary badge-sm capitalize text-white">

@@ -15,7 +15,7 @@ const authRoutes = ["/login", "/register", "/verify-account"];
 export default function middleware(req: NextRequest) {
   const token = cookies().get("token")?.value;
 
-  let decoded: (JwtPayload & { email?: string }) | null = null;
+  let decoded: (JwtPayload & { role?: string }) | null = null;
   let isAdmin = false;
   let isLoggedIn = false;
 
@@ -23,10 +23,7 @@ export default function middleware(req: NextRequest) {
     if (token) {
       decoded = jwtDecode<JwtPayload & { email: string }>(token);
       isLoggedIn = true;
-      isAdmin =
-        decoded.email?.includes("super.admin") ||
-        decoded.email?.includes("store.admin") ||
-        false;
+      isAdmin = decoded.role?.includes("admin") || false;
     }
   } catch (error) {
     console.error("JWT decoding error:", error);

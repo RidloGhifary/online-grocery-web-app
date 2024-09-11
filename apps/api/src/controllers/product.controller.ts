@@ -68,77 +68,63 @@ export class ProductController {
     }
   }
 
-  // async getDiscountProduct(req: Request, res: Response) {
-  //   try {
-  //     const now = new Date();
+  async getDiscountProduct(req: Request, res: Response) {
+    try {
+      const now = new Date();
 
-  //     const products = await prisma.product.findMany({
-  //       where: {
-  //         product_discounts: {
-  //           some: {
-  //             started_at: {
-  //               lte: now,
-  //             },
-  //             end_at: {
-  //               gte: now,
-  //             },
-  //           },
-  //         },
-  //         StoreHasProduct: {
-  //           some: {
-  //             qty: {
-  //               gt: 0,
-  //             },
-  //           },
-  //         StoreHasProduct: {
-  //           some: {
-  //             qty: {
-  //               gt: 0,
-  //             },
-  //           },
-  //         },
-  //       },
-  //       include: {
-  //         product_discounts: {
-  //           where: {
-  //             started_at: {
-  //               lte: now,
-  //             },
-  //             end_at: {
-  //               gte: now,
-  //             },
-  //           },
-  //         },
-  //         StoreHasProduct: {
-  //           include: {
-  //             store: {
-  //               include: {
-  //                 city: true,
-  //                 province: true,
-  //               },
-  //             },
-  //         StoreHasProduct: {
-  //           include: {
-  //             store: {
-  //               include: {
-  //                 city: true,
-  //                 province: true,
-  //               },
-  //             },
-  //           },
-  //         },
-  //       },
-  //     })
+      const products = await prisma.product.findMany({
+        where: {
+          product_discounts: {
+            some: {
+              started_at: {
+                lte: now,
+              },
+              end_at: {
+                gte: now,
+              },
+            },
+          },
+          StoreHasProduct: {
+            some: {
+              qty: {
+                gt: 0,
+              },
+            },
+          },
+        },
+        include: {
+          product_discounts: {
+            where: {
+              started_at: {
+                lte: now,
+              },
+              end_at: {
+                gte: now,
+              },
+            },
+          },
+          StoreHasProduct: {
+            include: {
+              store: {
+                include: {
+                  city: true,
+                  province: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-  //     res.status(200).json({
-  //       ok: true,
-  //       message: 'Success get discount product',
-  //       data: products,
-  //     });
-  //   } catch {
-  //     res.status(500).json({ ok: false, message: 'Internal server error' });
-  //   }
-  // }
+      res.status(200).json({
+        ok: true,
+        message: 'Success get discount product',
+        data: products,
+      });
+    } catch {
+      res.status(500).json({ ok: false, message: 'Internal server error' });
+    }
+  }
 
   getTotalStockAcrossStores = async (req: Request, res: Response) => {
     const productId = parseInt(req.params.productId, 10);
@@ -180,7 +166,7 @@ export class ProductController {
           .json({ ok: false, message: 'Invalid page or limit' });
       }
 
-      let products : Product[];
+      let products: Product[];
 
       if (latitude && longitude) {
         const userLatitude = parseFloat(latitude as string);
@@ -206,13 +192,6 @@ export class ProductController {
 
         const getProducts = await prisma.product.findMany({
           where: {
-            // current_stock: { gt: 0 },
-
-            // store: {
-            //   city: {
-            //     city_name: userCity,
-            //   },
-            // },
             StoreHasProduct: {
               some: {
                 qty: {
@@ -225,40 +204,20 @@ export class ProductController {
                 },
               },
             },
-            // current_stock: { gt: 0 },
-            
-            // store: {
-            //   city: {
-            //     city_name: userCity,
-            //   },
-            // },
-            // StoreHasProduct :{
-            //   some :{
-            //     qty : {
-            //       gt : 0
-            //     },
-            //     store :{
-            //       city :{
-            //         city_name : userCity
-            //       }
-            //     }
-            //   }
-            // }
           },
           include: {
             product_discounts: true,
-            // store: {
-            //   include: { city: true, province: true },
-            // },
-            StoreHasProduct :{
-              include :{
-                store :{
-                  include :{
-                    city :true
-                  }
-                }
-              }
-            }
+            product_category: true,
+            StoreHasProduct: {
+              include: {
+                store: {
+                  include: {
+                    city: true,
+                    province: true,
+                  },
+                },
+              },
+            },
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
@@ -269,48 +228,49 @@ export class ProductController {
             ...product,
             StoreHasProduct: product.StoreHasProduct.filter(
               (store) => store.store?.city.city_name === userCity,
-            ),
+            )[0],
           };
         });
       } else {
         // No coordinates provided, get products from the central store
-        products = await prisma.product.findMany({
-          
+        const getProducts = await prisma.product.findMany({
           where: {
-            // current_stock: { gt: 0 },
-            // store: {
-            //   store_type: 'central',
-            // },
-            StoreHasProduct :{
-              some :{
-                qty :{
-                  gt : 0
+            StoreHasProduct: {
+              some: {
+                qty: {
+                  gt: 0,
                 },
-                store :{
-                  store_type : 'central'
-                }
-              }
-            }
-            
-            // current_stock: { gt: 0 },
-            // store: {
-            //   store_type: 'central',
-            // },
+                store: {
+                  store_type: 'central',
+                },
+              },
+            },
           },
           include: {
             product_discounts: true,
-            // store: {
-            //   include: { city: true, province: true },
-            // },
+            product_category: true,
             StoreHasProduct: {
-              select: {
-                qty: true,
-                // store :
+              include: {
+                store: {
+                  include: {
+                    city: true,
+                    province: true,
+                  },
+                },
               },
             },
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
+        });
+
+        products = getProducts.map((product) => {
+          return {
+            ...product,
+            StoreHasProduct: product.StoreHasProduct.filter(
+              (store) => store.store?.store_type === 'central',
+            )[0],
+          };
         });
       }
 
@@ -326,7 +286,6 @@ export class ProductController {
         data: products,
       });
     } catch (error) {
-      console.error('Error retrieving products:', error);
       res.status(500).json({ ok: false, message: 'Internal server error' });
     }
   }
@@ -339,8 +298,8 @@ export class ProductController {
       search: search as string,
       order: order as 'asc' | 'desc',
       orderField: order_field as 'product_name' | 'category',
-      pageNumber : page as number,
-      limitNumber : limit as number
+      pageNumber: page as number,
+      limitNumber: limit as number,
     });
     if (!result.ok) {
       return res.status(400).send(result);
@@ -353,8 +312,8 @@ export class ProductController {
     res: Response,
   ): Promise<void | Response> {
     const { slug } = req.params;
-    
-    const token = req.headers['authorization']
+
+    const token = req.headers['authorization'];
     if (!slug || slug === '') {
       const response: CommonResultInterface<null> = {
         ok: false,
@@ -381,21 +340,21 @@ export class ProductController {
   ): Promise<void | Response> {
     const product: Product = req.body;
     console.log(product);
-    
+
     const newData = await productRepository.createProduct(product);
     if (!newData.ok) {
       return res.status(400).send(newData);
     }
     return res.status(201).send(newData);
   }
-  
+
   public async updateProduct(
     req: Request,
     res: Response,
   ): Promise<void | Response> {
     const product: UpdateProductInputInterface = req.body;
     console.log(product);
-    
+
     const updatedData = await productRepository.updateProduct(product);
     if (!updatedData.ok) {
       return res.status(400).send(updatedData);
@@ -413,8 +372,7 @@ export class ProductController {
       {
         // field product,
         // StoreHasProduct : {
-        
-      // }
+        // }
         //
       }
       {
@@ -435,9 +393,9 @@ export class ProductController {
         //   price: true,
         //   image: true,
         // },
-        include :{
-          StoreHasProduct : true
-        }
+        include: {
+          StoreHasProduct: true,
+        },
       });
 
       if (!product) {

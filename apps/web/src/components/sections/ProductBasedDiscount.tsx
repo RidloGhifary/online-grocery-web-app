@@ -33,7 +33,7 @@ export default function ProductBasedDiscount({
   if (isError) return <ErrorInfo />;
 
   if (products?.data?.length === 0)
-    return <ErrorInfo error="Ups, No products found" />;
+    return <ErrorInfo error="Ups, There is no product discount for now" />;
 
   return (
     <div className="my-8 w-full">

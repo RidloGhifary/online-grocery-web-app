@@ -1,5 +1,6 @@
 import Container from "@/components/Container";
 import Hero from "@/components/Hero";
+import Marquee from "@/components/Marquee";
 import ProductsList from "@/components/ProductsList";
 import ProductBasedDiscount from "@/components/sections/ProductBasedDiscount";
 
@@ -9,11 +10,12 @@ const API_URL =
 export default function Home() {
   return (
     <div className="">
+      <Marquee />
       <Container>
         <Hero />
-        {/* <ProductBasedDiscount api_url={API_URL as string} /> */}
+        <ProductBasedDiscount api_url={API_URL as string} />
         <hr />
-        {/* <ProductsList api_url={API_URL as string} /> */}
+        <ProductsList api_url={API_URL as string} />
       </Container>
     </div>
   );

@@ -13,16 +13,17 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  console.log("🚀 ~ ProductCard ~ product:", product);
   return (
     <Link
-      href={`/products/${product?.id}?name=${product?.name}`}
+      href={`/products/${product?.slug}`}
       className="card h-[300px] w-44 bg-white shadow md:h-[340px] md:w-56"
     >
       <figure>
         <Image
           width={300}
           height={300}
-          src={product?.image || "/default-image.jpeg"}
+          src={"/default-image.jpeg"}
           alt="Placeholder"
           className="aspect-square max-h-[140px] w-full object-cover md:max-h-[180px]"
           loading="lazy"

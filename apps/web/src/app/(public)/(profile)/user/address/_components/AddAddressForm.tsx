@@ -88,6 +88,7 @@ export default function AddAddressForm({ api_url }: { api_url: string }) {
           return;
         }
         router.push("/user/address");
+        router.refresh();
       } else {
         toast.error(res.message || "Something went wrong!");
       }

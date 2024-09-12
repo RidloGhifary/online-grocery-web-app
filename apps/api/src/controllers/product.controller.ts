@@ -190,7 +190,7 @@ export class ProductController {
           });
         }
 
-        const getProducts = await prisma.product.findMany({
+        products = await prisma.product.findMany({
           where: {
             StoreHasProduct: {
               some: {
@@ -223,17 +223,17 @@ export class ProductController {
           take: limitNumber,
         });
 
-        products = getProducts.map((product) => {
-          return {
-            ...product,
-            StoreHasProduct: product.StoreHasProduct.filter(
-              (store) => store.store?.city.city_name === userCity,
-            )[0],
-          };
-        });
+        // products = getProducts.map((product) => {
+        //   return {
+        //     ...product,
+        //     StoreHasProduct: product.StoreHasProduct.filter(
+        //       (store) => store.store?.city.city_name === userCity,
+        //     )[0],
+        //   };
+        // });
       } else {
         // No coordinates provided, get products from the central store
-        const getProducts = await prisma.product.findMany({
+        products = await prisma.product.findMany({
           where: {
             StoreHasProduct: {
               some: {
@@ -264,14 +264,14 @@ export class ProductController {
           take: limitNumber,
         });
 
-        products = getProducts.map((product) => {
-          return {
-            ...product,
-            StoreHasProduct: product.StoreHasProduct.filter(
-              (store) => store.store?.store_type === 'central',
-            )[0],
-          };
-        });
+        // products = getProducts.map((product) => {
+        //   return {
+        //     ...product,
+        //     StoreHasProduct: product.StoreHasProduct.filter(
+        //       (store) => store.store?.store_type === 'central',
+        //     )[0],
+        //   };
+        // });
       }
 
       if (products.length === 0) {

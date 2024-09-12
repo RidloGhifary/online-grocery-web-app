@@ -110,6 +110,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
         storeId: nearestStoreData?.data?.closestStore.id as number,
         selectedCourier,
         selectedCourierPrice,
+        note: deliveryNotes,
       };
 
       const response = await createOrder(orderData);

@@ -34,6 +34,7 @@ export const createOrderSchema = z.object({
   storeId: z.number(),
   selectedCourier: z.string(),
   selectedCourierPrice: z.number(),
+  note: z.string().optional(),
 });
 
 export const getOrdersByUserSchema = z.object({

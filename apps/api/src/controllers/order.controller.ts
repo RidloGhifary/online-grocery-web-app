@@ -237,6 +237,7 @@ export class OrderController {
         storeId,
         selectedCourier,
         selectedCourierPrice,
+        note,
       } = validation.data;
 
       const currentUser = req.currentUser;
@@ -269,6 +270,7 @@ export class OrderController {
           expedition_id: expedition.id,
           order_status_id: 1,
           address_id: selectedAddressId,
+          note,
           order_details: {
             create: checkoutItems.map((item) => ({
               product_id: item.product_id,

@@ -373,6 +373,7 @@ model Order {
   expedition        Expedition                @relation(fields: [expedition_id], references: [id])
   expedition_id     Int
   payment_proof     String?
+  note String?
   order_status      OrderStatus               @relation(fields: [order_status_id], references: [id])
   order_status_id   Int
   address_id        Int //newly added

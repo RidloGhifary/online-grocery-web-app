@@ -40,11 +40,29 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
       selectedAddressActive as UserAddressProps,
     );
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const totalWeight =
+    checkoutItems.length > 0
+      ? checkoutItems.reduce(
+          (acc, item) => acc + item.qty * (item?.product?.unit_in_gram || 10),
+          0,
+        )
+      : 10;
   const router = useRouter();
 
   useEffect(() => {
     refreshCart();
   }, []);
+
+  // useEffect(() => {
+  //   if (checkoutItems.length > 0) {
+  //     const weight = checkoutItems.reduce(
+  //       (acc, item) => acc + item.qty * item?.product?.unit_in_gram,
+  //       0,
+  //     );
+  //     // setTotalWeight(weight);
+  //     console.log("Total weight calculated:", weight);
+  //   }
+  // }, [checkoutItems]);
 
   const { data: nearestStoreData, error: nearestStoreError } = useQuery({
     queryKey: ["nearestStore", selectedAddress?.id],
@@ -65,15 +83,26 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["deliveryData", selectedCourier, selectedAddress?.city_id],
+    queryKey: [
+      "deliveryData",
+      selectedCourier,
+      selectedAddress?.city_id,
+      storeCityId,
+      checkoutItems,
+      totalWeight,
+    ],
     queryFn: () =>
       getDeliveryOptions({
         origin: storeCityId ? storeCityId.toString() : "154",
         destination: selectedAddress?.city_id!!,
-        weight: 1000,
+        weight: totalWeight,
         courier: selectedCourier,
       }),
-    enabled: !!selectedCourier && !!selectedAddress?.city_id,
+    enabled:
+      !!checkoutItems &&
+      !!selectedCourier &&
+      !!selectedAddress?.city_id &&
+      !!totalWeight,
   });
 
   useEffect(() => {

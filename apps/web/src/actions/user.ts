@@ -84,3 +84,58 @@ export async function getAdmin(): Promise<
 
   return result;
 }
+
+export async function updateProfile({
+  gender,
+  username,
+  phone_number,
+}: {
+  gender?: string;
+  username?: string;
+  phone_number?: string;
+}) {
+  let result: CommonResultInterface<UserInterface> = {
+    ok: false,
+  };
+  const token = await getCookies("token");
+  if (!token) throw new Error("404");
+
+  let field = "";
+  let data_content_changed = "";
+
+  if (gender) {
+    field = "gender";
+    data_content_changed = gender;
+  } else if (username) {
+    field = "username";
+    data_content_changed = username;
+  } else if (phone_number) {
+    field = "phone_number";
+    data_content_changed = phone_number;
+  }
+
+  if (!field) return result;
+
+  try {
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/users/biodata?field=${field}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ [field]: data_content_changed }),
+      },
+    );
+
+    const dataResponse = await response.json();
+    result.ok = true;
+    result.message = dataResponse?.message || "Updated profile successfully";
+  } catch (error) {
+    let errorMessage = (error as Error).message;
+    result.error = errorMessage;
+  }
+
+  return result;
+}

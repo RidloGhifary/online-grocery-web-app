@@ -4,10 +4,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
-import { getCookies } from "@/actions/cookies";
 import { toast } from "react-toastify";
+import { updateProfile } from "@/actions/user";
 
 const schema = z.object({
   phone_number: z
@@ -23,6 +22,10 @@ interface ChangeNameProps {
 export default function ChangePhoneNumber({ phone_number }: ChangeNameProps) {
   const router = useRouter();
 
+  const defaultValuePhoneNumber = (phone_number || "").includes("+62")
+    ? phone_number
+    : "+62 " + (phone_number ? phone_number : "");
+
   const {
     register,
     handleSubmit,
@@ -30,25 +33,15 @@ export default function ChangePhoneNumber({ phone_number }: ChangeNameProps) {
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      phone_number: "+62 " + (phone_number ? phone_number : ""),
+      phone_number: defaultValuePhoneNumber,
     },
   });
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async (data: { phone_number: string }) => {
-      const cookie = await getCookies("token");
-      const response = await axios.patch(
-        "http://localhost:8000/api/users/biodata?field=phone_number",
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${cookie}`,
-          },
-        },
-      );
-
-      return response.data;
-    },
+    mutationFn: async (data: { phone_number: string }) =>
+      updateProfile({
+        phone_number: data.phone_number,
+      }),
     onSuccess: (res) => {
       if (res.ok) {
         toast.success(res.message || "Phone Number updated!");

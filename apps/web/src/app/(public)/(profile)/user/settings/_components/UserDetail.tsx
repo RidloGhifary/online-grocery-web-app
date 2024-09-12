@@ -86,7 +86,11 @@ export default function UserDetail({ user }: UserDetailProps) {
           <UserProfileDetail label="Referral" value={user?.referral} />
         </div>
         <div className="space-y-2">
-          <UserProfileDetail label="Email" value={user?.email} />
+          <UserProfileDetail
+            label="Email"
+            value={user?.email}
+            is_goggle_linked={user?.is_google_linked}
+          />
         </div>
       </div>
       {!user?.is_google_linked && (

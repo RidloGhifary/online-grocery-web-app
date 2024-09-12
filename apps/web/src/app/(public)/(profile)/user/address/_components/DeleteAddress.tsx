@@ -1,5 +1,6 @@
 "use client";
 
+import { deleteAddress } from "@/actions/address";
 import { getCookies } from "@/actions/cookies";
 import { Modal } from "@/components/Modal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,18 +20,7 @@ export default function DeleteAddress({ id }: DeleteAddressProps) {
   const router = useRouter();
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async () => {
-      const token = await getCookies("token");
-      const { data } = await axios.delete(
-        `http://localhost:8000/api/users/addresses/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      return data;
-    },
+    mutationFn: async () => deleteAddress({ id }),
     onSuccess: (res) => {
       if (res.ok) {
         toast.success("Address deleted successfully");

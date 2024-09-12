@@ -13,11 +13,9 @@ import UsePrimaryAddressButton from "./UsePrimaryAddressButton";
 export default function AddressContent({
   userAddresses,
   username,
-  api_url,
 }: {
   userAddresses: UserAddressProps[];
   username: string;
-  api_url: string;
 }) {
   const searchParams = useSearchParams();
   const action = searchParams.get("action");
@@ -25,7 +23,7 @@ export default function AddressContent({
   return (
     <>
       {action === "add-address" ? (
-        <AddAddressForm api_url={api_url} />
+        <AddAddressForm />
       ) : (
         <div className="space-y-4">
           <Link
@@ -56,7 +54,8 @@ export default function AddressContent({
                 </div>
                 <p className="font-semibold">{username}</p>
                 <p className="max-w-[70%] text-sm font-light">
-                  {userAddress?.address}
+                  {userAddress?.address}, {userAddress?.kelurahan},{" "}
+                  {userAddress?.kecamatan}
                   <br />
                   {userAddress?.city.city_name},{" "}
                   {userAddress?.city.province.province}

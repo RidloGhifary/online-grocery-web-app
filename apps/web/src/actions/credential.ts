@@ -96,3 +96,30 @@ export async function changePassword({
 
   return result;
 }
+
+export async function sendEmailChangePassword({ email }: { email: string }) {
+  const result = {
+    ok: false,
+  } as CommonResultInterface<any>;
+
+  try {
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/credentials/reset-password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      },
+    );
+
+    const responseData = await response.json();
+    result.ok = true;
+    result.message = responseData.message;
+  } catch (error) {
+    result.error = (error as Error).message;
+  }
+
+  return result;
+}

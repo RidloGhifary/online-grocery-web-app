@@ -5,8 +5,6 @@ import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "react-toastify";
-import axios from "axios";
-
 import { Cities } from "@/constants";
 import RegisterForm from "./_components/RegisterForm";
 import AuthHeader from "../_components/AuthHeader";
@@ -14,6 +12,7 @@ import AuthWrapper from "../_components/AuthWrapper";
 import { useMutation } from "@tanstack/react-query";
 import { GetCaptchaToken } from "@/utils/captcha";
 import VerifyCaptchaToken from "@/actions/verifyCaptcha";
+import { registerAuth } from "@/actions/auth";
 
 const schema = z.object({
   first_name: z.string().max(25, { message: "First name too long!" }),
@@ -72,13 +71,7 @@ export default function RegisterPage() {
   });
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async (data: RegisterFormData) => {
-      const response = await axios.post(
-        "http://localhost:8000/api/auth/register",
-        data,
-      );
-      return response.data;
-    },
+    mutationFn: async (data: RegisterFormData) => registerAuth(data),
     onSuccess: (res) => {
       if (!res.ok) {
         toast.error(res.message || "Something went wrong!");

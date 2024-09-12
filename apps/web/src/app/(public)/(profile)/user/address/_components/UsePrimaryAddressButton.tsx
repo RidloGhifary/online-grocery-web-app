@@ -1,8 +1,7 @@
 "use client";
 
-import { getCookies } from "@/actions/cookies";
+import { usePrimaryAddress } from "@/actions/address";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
@@ -17,19 +16,7 @@ export default function UsePrimaryAddressButton({
   const router = useRouter();
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async () => {
-      const token = await getCookies("token");
-      const { data } = await axios.patch(
-        `http://localhost:8000/api/users/addresses/${id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      return data;
-    },
+    mutationFn: () => usePrimaryAddress({ id }),
     onSuccess: (res) => {
       if (res.ok) {
         toast.success("Address set as primary");
@@ -46,6 +33,7 @@ export default function UsePrimaryAddressButton({
 
   return (
     <button
+      disabled={isLoading}
       onClick={() => mutate()}
       className="btn btn-primary btn-xs text-white"
     >

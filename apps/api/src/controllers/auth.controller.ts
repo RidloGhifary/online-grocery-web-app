@@ -64,9 +64,12 @@ export class AuthController {
         expiresIn: '1d',
       });
 
-      res
-        .status(200)
-        .json({ ok: true, message: 'Login success', token, data: user });
+      res.status(200).json({
+        ok: true,
+        message: 'Login success',
+        token,
+        data: formattedUser,
+      });
     } catch {
       res.status(500).json({ ok: false, message: 'Something went wrong' });
     }

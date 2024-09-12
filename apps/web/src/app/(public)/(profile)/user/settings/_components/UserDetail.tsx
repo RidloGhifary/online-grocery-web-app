@@ -11,7 +11,7 @@ import { Modal } from "@/components/Modal";
 import ChangeEmail from "./form/ChangeEmail";
 import { toast } from "react-toastify";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import { sendEmailChangePassword } from "@/actions/credential";
 
 interface UserDetailProps {
   user: UserProps | null;
@@ -24,16 +24,7 @@ export default function UserDetail({ user }: UserDetailProps) {
   const action = searchParams.get("action");
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async () => {
-      const { data } = await axios.post(
-        "http://localhost:8000/api/credentials/reset-password",
-        {
-          email: user?.email,
-        },
-      );
-
-      return data;
-    },
+    mutationFn: () => sendEmailChangePassword({ email: user?.email as string }),
     onSuccess: (res) => {
       setModalActive(false);
       if (res.ok) {

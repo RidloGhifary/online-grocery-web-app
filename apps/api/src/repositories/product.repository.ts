@@ -122,14 +122,17 @@ class ProductRepository {
     if (!tokenRes) {
       citiId = 152; //Jakarta Pusat
     }
-    const isSuper = userLoggedIn.data?.role[0].role.roles_permissions.filter(
-      (e) => e.permission.name == 'super' || userLoggedIn.data?.role[0].role.name == 'super_admin',
-    )[0].permission.name  == 'super';
+    const isSuper =
+      userLoggedIn.data?.role[0].role.roles_permissions.filter(
+        (e) =>
+          e.permission.name == 'super' ||
+          userLoggedIn.data?.role[0].role.name == 'super_admin',
+      )[0].permission.name == 'super';
 
-    const isAdmin = userLoggedIn.data?.role[0].role.roles_permissions.filter(
-      (e) => e.permission.name == 'admin_access',
-    )[0].permission.name == 'admin_access';
-
+    const isAdmin =
+      userLoggedIn.data?.role[0].role.roles_permissions.filter(
+        (e) => e.permission.name == 'admin_access',
+      )[0].permission.name == 'admin_access';
 
     try {
       const res = await prisma.product.findFirst({
@@ -140,14 +143,16 @@ class ProductRepository {
           product_category: true,
           StoreHasProduct: {
             include: {
-              store: isSuper? true : {
-                where: {
-                  city_id: citiId,
-                },
-                include: {
-                  city: true,
-                },
-              },
+              store: isSuper
+                ? true
+                : {
+                    where: {
+                      city_id: citiId,
+                    },
+                    include: {
+                      city: true,
+                    },
+                  },
             },
           },
         },
@@ -190,14 +195,17 @@ class ProductRepository {
     // if (!tokenRes) {
     //   citiId = 152; //Jakarta Pusat
     // }
-    const isSuper = userLoggedIn.data?.role[0].role.roles_permissions.filter(
-      (e) => e.permission.name == 'super' || userLoggedIn.data?.role[0].role.name == 'super_admin',
-    )[0].permission.name  == 'super';
+    const isSuper =
+      userLoggedIn.data?.role[0].role.roles_permissions.filter(
+        (e) =>
+          e.permission.name == 'super' ||
+          userLoggedIn.data?.role[0].role.name == 'super_admin',
+      )[0].permission.name == 'super';
 
-    const isAdmin = userLoggedIn.data?.role[0].role.roles_permissions.filter(
-      (e) => e.permission.name == 'admin_access',
-    )[0].permission.name == 'admin_access';
-
+    const isAdmin =
+      userLoggedIn.data?.role[0].role.roles_permissions.filter(
+        (e) => e.permission.name == 'admin_access',
+      )[0].permission.name == 'admin_access';
 
     try {
       const res = await prisma.product.findFirst({
@@ -208,19 +216,21 @@ class ProductRepository {
           product_category: true,
           StoreHasProduct: {
             include: {
-              store: isSuper? true : {
-                where :{
-                  store_admins : {
-                    some :{
-                      user_id : userLoggedIn.data?.id
-                    }
-                  }
-                },
-                include: {
-                  city: true,
-                  store_admins : true
-                },
-              },
+              store: isSuper
+                ? true
+                : {
+                    where: {
+                      store_admins: {
+                        some: {
+                          user_id: userLoggedIn.data?.id,
+                        },
+                      },
+                    },
+                    include: {
+                      city: true,
+                      store_admins: true,
+                    },
+                  },
             },
           },
         },
@@ -249,7 +259,7 @@ class ProductRepository {
       product.slug = slugify(product.name);
       // product.image
       if (Array.isArray(product.image)) {
-        product.image =  JSON.stringify(product.image)
+        product.image = JSON.stringify(product.image);
       }
       const newData = await prisma.product.create({
         data: {
@@ -268,6 +278,7 @@ class ProductRepository {
     }
     return result;
   }
+
   async updateProduct(
     product: UpdateProductInputInterface,
   ): Promise<CommonResultInterface<UpdateProductInputInterface>> {
@@ -279,17 +290,17 @@ class ProductRepository {
         product.slug = slugify(product.name!);
       }
       if (Array.isArray(product.image)) {
-        product.image =  JSON.stringify(product.image)
+        product.image = JSON.stringify(product.image);
       }
-      const product_id = product.id
-      delete product.id
+      const product_id = product.id;
+      delete product.id;
       const updatedData = await prisma.product.update({
-       data:{
-        ...product
-       },
-       where:{
-        id: product_id
-       }
+        data: {
+          ...product,
+        },
+        where: {
+          id: product_id,
+        },
       });
       result.data = updatedData;
       result.ok = true;
@@ -301,18 +312,64 @@ class ProductRepository {
     return result;
   }
 
-  async isProductNameExist(name?: string, excludeId?: number): Promise<boolean> {
-    return !!(await prisma.product.findFirst({
-      where: { name, id: { not: excludeId } }
+  async deleteProduct(
+    productId?: number,
+  ): Promise<CommonResultInterface<boolean>> {
+    let result: CommonResultInterface<boolean> = {
+      ok: false,
+    };
+    try {
+      const deleted = await prisma.product.delete({ where: { id: productId } });
+      if (!deleted) {
+        throw new Error(JSON.stringify(deleted));
+      }
+      result.ok = true;
+      result.message = 'Success delete data';
+    } catch (error) {
+      result.error = (error as Error).message;
+    }
+    return result;
+  }
+
+  async isProductIdExist(productId?: number): Promise<number> {
+    return await prisma.product.count({
+      where: { AND: { id: productId, deletedAt: null } },
+    });
+  }
+
+  async isUserHasProductPermission(
+    userId?: number,
+    permission?: string,
+  ): Promise<boolean> {
+    if (!userId || !permission) {
+      return false;
+    }
+    return !!(await prisma.userHasRole.findFirst({
+      where: {
+        AND: {
+          id: userId,
+          role: {
+            roles_permissions: { some: { permission: { name: permission } } },
+          },
+        },
+      },
     }));
   }
-  
+
+  async isProductNameExist(
+    name?: string,
+    excludeId?: number,
+  ): Promise<boolean> {
+    return !!(await prisma.product.findFirst({
+      where: { name, id: { not: excludeId } },
+    }));
+  }
+
   async isSKUExist(sku?: string, excludeId?: number): Promise<boolean> {
     return !!(await prisma.product.findFirst({
-      where: { sku, id: { not: excludeId } }
+      where: { sku, id: { not: excludeId } },
     }));
   }
-  
 }
 
 export const productRepository = new ProductRepository();

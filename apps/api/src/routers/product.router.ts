@@ -1,7 +1,8 @@
 import { ProductController } from '@/controllers/product.controller';
 import validateRequestVerbose from '@/middlewares/validateRequestVerbose';
+import verifyPermission from '@/middlewares/verifyPermission';
 import { verifyToken } from '@/middlewares/verifyToken';
-import { createProductSchema, updateProductSchema } from '@/validations/product';
+import { createProductSchema, deleteProductSchema, updateProductSchema } from '@/validations/product';
 import { Router } from 'express';
 
 export class ProductRouter {
@@ -28,6 +29,13 @@ export class ProductRouter {
       verifyToken,
       validateRequestVerbose(updateProductSchema),
       this.productController.updateProduct,
+    );
+    this.router.delete(
+      '/delete/:id',
+      verifyToken,
+      (req,res,next) => verifyPermission(req,res,next,'admin_product_delete'),
+      validateRequestVerbose(deleteProductSchema,'params'),
+      this.productController.deleteProduct,
     );
     // this.router.get('/discounts', this.productController.getDiscountProduct);
     this.router.get(

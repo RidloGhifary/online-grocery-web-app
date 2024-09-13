@@ -159,3 +159,36 @@ export async function updateProduct(product:UpdateProductInputInterface) : Promi
   }
   return result
 }
+
+export async function deleteProduct(id:number) : Promise<CommonResultInterface<boolean>> {
+  let result : CommonResultInterface<boolean> = {
+    ok: false
+  }
+  console.log(`${process.env.BACKEND_URL}/products/delete/${id}`);
+
+  try {
+    const token = await getCookies("token");
+    if (!token) throw new Error("403");
+    console.log(`${process.env.BACKEND_URL}/products/delete/${id}`);
+    
+    const prep = await fetch( `${process.env.BACKEND_URL}/products/delete/${id}`,
+      {
+        method : "DELETE",
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization':`Bearer ${token}`
+      },
+      }
+    );
+    const res = await prep.json() as CommonResultInterface<boolean>
+    if (!res.ok) {
+      result = res
+      throw new Error(JSON.stringify(result));
+    }
+    result = res
+    res.ok = true
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+  return result
+}

@@ -20,7 +20,9 @@ import { Reorder, useDragControls } from "framer-motion";
 import { IoReorderFour } from "react-icons/io5";
 import { createProduct } from "@/actions/products";
 import { Bounce, toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAtom } from "jotai";
+import { currentProductOperation } from "@/stores/productStores";
 
 // Define the Zod schema for validation
 const productSchema = z.object({
@@ -40,6 +42,12 @@ type ProductFormValues = z.infer<typeof productSchema>;
 export default function ProductForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const queryParams = useSearchParams();
+
+  const [, setCurrentOperation] = useAtom(
+    currentProductOperation,
+  );
+
   const categoriesData = queryClient.getQueryData<
     CommonResultInterface<ProductCategoryInterface[]>
   >([queryKeys.productCategories]);
@@ -87,7 +95,21 @@ export default function ProductForm() {
         transition: Bounce,
         // containerId:10912
       });
-      setTimeout(()=>{router.refresh();},2000)
+      const params = {
+        search: queryParams.get("search") || "",
+        orderField: queryParams.get("orderField") || "product_name",
+        order: (queryParams.get("order") as "asc" | "desc") || "asc",
+        category: queryParams.get("category") || "",
+        page: Number(queryParams.get("page")) || 1,
+        limit: Number(queryParams.get("limit")) || 20,
+      };
+      setTimeout(() => {
+        mutation.reset();
+      }, 500);
+      return queryClient.invalidateQueries({
+        queryKey: [queryKeys.products, { ...params }],
+      });
+      // setTimeout(()=>{router.refresh();},2000)
       // router.refresh();
     },
     onError : (e)=>{
@@ -114,8 +136,8 @@ export default function ProductForm() {
               progress: undefined,
               theme: "colored",
               transition: Bounce,
-              // containerId:10912,
-              toastId:i
+              containerId:10912,
+              // toastId:i
             });
           })
         }
@@ -161,6 +183,12 @@ export default function ProductForm() {
     setUploadedImages(updatedImages);
     setValue("image", JSON.stringify(updatedImages));
   };
+  useEffect(() => {
+    if (mutation.isSuccess) {
+      console.log("success");
+      setCurrentOperation("idle");
+    }
+  }, [mutation.isSuccess]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

@@ -27,7 +27,9 @@ export function Modal({
   hideCloseButton = false,
 }: ModalPropsInterface) {
   const localRef = useRef<HTMLDialogElement | null>(null);
-  const modalRef = theRef ? (theRef as MutableRefObject<HTMLDialogElement | null>) : localRef;
+  const modalRef = theRef
+    ? (theRef as MutableRefObject<HTMLDialogElement | null>)
+    : localRef;
   const modalContentRef = useRef<HTMLDivElement | null>(null);
 
   const handleClose = useCallback(
@@ -36,7 +38,7 @@ export function Modal({
         onClose(event);
       }
     },
-    [onClose]
+    [onClose],
   );
 
   const handleOutsideClick = useCallback(
@@ -58,8 +60,8 @@ export function Modal({
       document.addEventListener("mousedown", handleOutsideClick);
       currentRef?.showModal();
     } else {
-      currentRef?.close();
       document.removeEventListener("mousedown", handleOutsideClick);
+      currentRef?.close();
     }
 
     return () => {
@@ -74,43 +76,50 @@ export function Modal({
   }, [modalRef]);
 
   return (
-    <dialog className={`modal ${scrollable ? "overflow-y-auto" : ""}`} ref={modalRef}>
-      <div
-        className={`modal-box ${useTCustomContentWidthClass || ''} relative ${scrollable ? "max-h-[90%]" : ""}`}
-        ref={modalContentRef}
+    <>
+      <dialog
+        className={`modal ${scrollable ? "overflow-y-auto" : ""}`}
+        ref={modalRef}
       >
-        <button
+        <div
+          className={`modal-box ${useTCustomContentWidthClass || ""} relative ${scrollable ? "max-h-[90%]" : ""}`}
+          ref={modalContentRef}
+        >
+          <button
             type="button"
             className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
             onClick={handleClose}
           >
             ✕
           </button>
-        <div className="pt-2">{children}</div>
-        <div className="flex flex-wrap gap-2 justify-end ">
-          {actions && actions.map((action, index) => (
-            <div key={index} className="modal-action">{action}</div>
-          ))}
-          {closeButton && (
-            <div className="modal-action">
-              <button type="button" className="btn btn-error" onClick={handleClose}>
-                Close
-              </button>
-            </div>
-          )}
+          <div className="pt-2">{children}</div>
+          <div className="flex flex-wrap justify-end gap-2">
+            {actions &&
+              actions.map((action, index) => (
+                <div key={index} className="modal-action">
+                  {action}
+                </div>
+              ))}
+            {closeButton && (
+              <div className="modal-action">
+                <button
+                  type="button"
+                  className="btn btn-error"
+                  onClick={handleClose}
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button type="button" onClick={handleClose}>
-          close
-        </button>
-      </form>
-      {toasterContainer}
-      {/* <ToastContainer
-            // containerId={10913}
-            position="top-center"
-            draggable={true}
-          /> */}
-    </dialog>
+        <form method="dialog" className="modal-backdrop">
+          <button type="button" onClick={handleClose}>
+            close
+          </button>
+        </form>
+        {toasterContainer}
+      </dialog>
+    </>
   );
 }

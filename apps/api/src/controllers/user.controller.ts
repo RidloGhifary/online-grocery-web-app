@@ -372,7 +372,6 @@ export class UserController {
     if (!userData.ok) {
       console.log(userData);
       
-      
       return res.status(500).send(userData)
     }
     return res.status(200).send(userData)

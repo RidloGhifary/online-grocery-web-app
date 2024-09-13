@@ -60,3 +60,20 @@ export const updateProductSchema = z.object({
     }
   }
 });
+
+export const deleteProductSchema = z.object({
+  id: z.string().refine((val) => !isNaN(Number(val)), {
+    message: 'id must be a valid number',
+  }).transform((val) => Number(val)),
+}).superRefine(async (data, ctx) => {
+  const { id } = data;
+  const isProductExist = await productRepository.isProductIdExist(id)
+  // const hasPermission =  await productRepository.isUserHasProductPermission()
+  if (isProductExist<=0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['id'],
+      message: "Product did not exist or already deleted",
+    });
+  }
+});

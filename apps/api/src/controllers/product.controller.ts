@@ -402,6 +402,17 @@ export class ProductController {
     }
     return res.status(201).send(updatedData);
   }
+  public async deleteProduct(
+    req: Request,
+    res: Response,
+  ): Promise<void | Response> {
+    const {id}  = req.params
+    const deletedProduct = await productRepository.deleteProduct(Number(id))
+    if (!deletedProduct.ok) {
+      return res.status(500).send(deletedProduct);
+    }
+    return res.status(201).send(deletedProduct);
+  }
 
   getProductById = async (req: Request, res: Response) => {
     const productId = parseInt(req.params.id, 10);

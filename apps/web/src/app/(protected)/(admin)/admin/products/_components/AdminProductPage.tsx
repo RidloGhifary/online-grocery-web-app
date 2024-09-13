@@ -27,8 +27,10 @@ export default function AdminProductPage() {
   const [currentOperation, setCurrentOperation] = useAtom(
     currentProductOperation,
   );
+  const [, setCurrenctProduct] = useAtom(currentDetailProductsAtom)
   function handleClose() {
     setOperation(undefined);
+    setCurrenctProduct(undefined)
     setCurrentOperation("idle");
   }
   const [isDebouncing, setIsDebouncing] = useState<boolean>(false);
@@ -104,7 +106,7 @@ export default function AdminProductPage() {
                 Filter
               </button>
               <button
-                onClick={() => setOperation("add")}
+                onClick={() => setCurrentOperation("add")}
                 className="btn btn-primary flex w-full items-center justify-center md:w-[40%]"
               >
                 <FaPlus size={"1.5rem"} />
@@ -162,7 +164,8 @@ export default function AdminProductPage() {
         
 
       <Modal
-        show={operation === "add" ?? false}
+        show={currentOperation === "add" ?? false}
+        
         onClose={handleClose}
         closeButton={false}
         toasterContainer={
@@ -179,6 +182,13 @@ export default function AdminProductPage() {
         show={currentOperation === "delete" ?? false}
         onClose={handleClose}
         closeButton={false}
+        toasterContainer={
+          <ToastContainer
+            containerId={10914}
+            position="top-center"
+            draggable={true}
+          />
+        }
       >
         <AdminProductDelete />
       </Modal>

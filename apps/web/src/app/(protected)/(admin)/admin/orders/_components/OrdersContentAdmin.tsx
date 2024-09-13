@@ -1,16 +1,21 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { getOrdersByUser } from "@/api/order/route";
+import { getOrdersForAdmin } from "@/api/warehouse/route";
 import MainButton from "@/components/MainButton";
 import debounce from "lodash.debounce";
-import OrderItems from "./OrderItems";
-import { OrderResponse } from "@/api/order/route";
+import AdminOrderItems from "./OrderItemsAdmin";
+import { OrderResponse } from "@/api/warehouse/route";
 
-const OrdersContent = () => {
+const OrdersContentAdmin = () => {
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const [filter, setFilter] = useState<
-    "all" | "ongoing" | "completed" | "cancelled"
+    | "all"
+    | "waiting_for_payment"
+    | "processing"
+    | "delivered"
+    | "completed"
+    | "cancelled"
   >("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("invoice");
@@ -22,7 +27,7 @@ const OrdersContent = () => {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await getOrdersByUser(
+      const response = await getOrdersForAdmin(
         filter,
         search,
         sortBy,
@@ -66,29 +71,44 @@ const OrdersContent = () => {
 
   return (
     <div className="p-4">
-      <div className="border-silver-400 mb-6 flex flex-wrap justify-around space-x-2 rounded-lg border p-2 shadow-lg lg:justify-start lg:p-4">
-        {["all", "ongoing", "completed", "cancelled"].map((category) => (
+      <div className="border-silver-400 mb-6 flex flex-wrap justify-around space-x-2 rounded-lg border p-2 shadow-lg lg:justify-center lg:p-4">
+        {[
+          "all",
+          "waiting_for_payment",
+          "processing",
+          "delivered",
+          "completed",
+          "cancelled",
+        ].map((category) => (
           <MainButton
-            className="w-[85px] first:w-[55px]"
+            className="mb-2 w-[120px]"
             key={category}
-            text={category.charAt(0).toUpperCase() + category.slice(1)}
+            text={category
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())}
             onClick={() =>
               setFilter(
-                category as "all" | "ongoing" | "completed" | "cancelled",
+                category as
+                  | "all"
+                  | "waiting_for_payment"
+                  | "processing"
+                  | "delivered"
+                  | "completed"
+                  | "cancelled",
               )
             }
             variant={filter === category ? "secondary" : "static"}
           />
         ))}
       </div>
-      {/* <div className="mb-4 flex justify-center">
+      <div className="mb-4 flex justify-center">
         <input
           type="text"
           placeholder="Search orders"
           onChange={(e) => handleSearchChange(e.target.value)}
           className="w-full rounded-md border p-2 lg:w-1/3"
         />
-      </div> */}
+      </div>
       <div className="mb-4 flex justify-center">
         <input
           type="date"
@@ -108,14 +128,14 @@ const OrdersContent = () => {
           variant="static"
         />
         <MainButton
-          text={"Sort by Name"}
+          text="Sort by Name"
           onClick={() => toggleSort("invoice")}
           variant="static"
         />
       </div>
       <div className="grid grid-cols-1 gap-4">
         {orders.map((order) => (
-          <OrderItems key={order.id} order={order} />
+          <AdminOrderItems key={order.id} order={order} />
         ))}
       </div>
       {hasMore && orders.length >= limit && (
@@ -130,12 +150,4 @@ const OrdersContent = () => {
   );
 };
 
-export default OrdersContent;
-
-{
-  /* <MainButton
-          text={FaCalendarCheck}
-          onClick={() => fetchOrders()}
-          variant="primary"
-        /> */
-}
+export default OrdersContentAdmin;

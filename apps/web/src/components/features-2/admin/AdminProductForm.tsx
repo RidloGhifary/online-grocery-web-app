@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import ButtonWithAction from "../ui/ButtonWithAction";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/constants/queryKeys";
 import Select from "react-select";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
@@ -23,6 +23,7 @@ import { Bounce, toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAtom } from "jotai";
 import { currentProductOperation } from "@/stores/productStores";
+import { getProductCategoryList } from "@/actions/categories";
 
 // Define the Zod schema for validation
 const productSchema = z.object({
@@ -47,10 +48,10 @@ export default function ProductForm() {
   const [, setCurrentOperation] = useAtom(
     currentProductOperation,
   );
-
-  const categoriesData = queryClient.getQueryData<
-    CommonResultInterface<ProductCategoryInterface[]>
-  >([queryKeys.productCategories]);
+  const { data:categoriesData } = useQuery({
+    queryKey: [queryKeys.productCategories],
+    queryFn: async () => await getProductCategoryList(),
+  })
 
   // Check if categoriesData is valid and contains data
   const categories = Array.isArray(categoriesData?.data)
@@ -152,7 +153,7 @@ export default function ProductForm() {
           progress: undefined,
           theme: "colored",
           transition: Bounce,
-          // containerId:10912
+          containerId:10912
         });
       }
     }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,9 +14,9 @@ import {
   UpdateProductInputInterface,
 } from "@/interfaces/ProductInterface";
 import { UploadDropzone } from "@/utils/uploadthing";
-import { FaCheck, FaTrash } from "react-icons/fa";
+import { FaCheck, FaInfo, FaRegSave, FaTrash } from "react-icons/fa";
 import Image from "next/image";
-import ButtonWithAction from "../ui/ButtonWithAction";
+import Button from "../ui/ButtonWithAction";
 import { Reorder, useDragControls } from "framer-motion";
 import { IoReorderFour } from "react-icons/io5";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
@@ -65,6 +65,15 @@ export default function AdminProductUpdateForm() {
   >([queryKeys.productCategories]);
 
   const controls = useDragControls();
+  const [, setProductOperation] = useAtom(currentProductOperation);
+  function handleDetail(e: MouseEvent) {
+    e.preventDefault();
+    setProductOperation("detail");
+  }
+  function handleDelete(e: MouseEvent) {
+    e.preventDefault();
+    setProductOperation("delete");
+  }
 
   const {
     register,
@@ -79,9 +88,7 @@ export default function AdminProductUpdateForm() {
   });
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [, setCurrentOperation] = useAtom(
-    currentProductOperation,
-  );
+  const [, setCurrentOperation] = useAtom(currentProductOperation);
 
   useEffect(() => {
     if (initialData) {
@@ -116,7 +123,7 @@ export default function AdminProductUpdateForm() {
         theme: "colored",
         transition: Bounce,
         // toastId:1,
-        // containerId:10913
+        containerId:10912
       });
       // setCurrentOperation('idle')
       const params = {
@@ -133,7 +140,6 @@ export default function AdminProductUpdateForm() {
       return queryClient.invalidateQueries({
         queryKey: [queryKeys.products, { ...params }],
       });
-
     },
     onError: (error) => {
       let errorMessage = "";
@@ -154,7 +160,7 @@ export default function AdminProductUpdateForm() {
         theme: "colored",
         transition: Bounce,
         // toastId:2,
-        // containerId:10913
+        containerId:10912
       });
     },
   });
@@ -195,8 +201,8 @@ export default function AdminProductUpdateForm() {
         progress: undefined,
         theme: "colored",
         transition: Bounce,
-        toastId:3,
-        containerId:10913
+        toastId: 3,
+        containerId: 10912,
       });
     }
   };
@@ -220,7 +226,7 @@ export default function AdminProductUpdateForm() {
   useEffect(() => {
     if (mutation.isSuccess) {
       console.log("success");
-      setCurrentOperation("idle");
+      setCurrentOperation("detail");
     }
   }, [mutation.isSuccess]);
 
@@ -382,14 +388,14 @@ export default function AdminProductUpdateForm() {
                     {url.slice(0, 30).concat(" . . .")}
                   </span>
                   <div className="flex flex-row items-center gap-2">
-                    <ButtonWithAction
+                    <Button
                       replaceTWClass="btn btn-error btn-sm"
                       action={() => removeImage(url)}
                       type="button"
                       eventType="onClick"
                     >
                       <FaTrash />
-                    </ButtonWithAction>
+                    </Button>
                     <div
                       className="reorder-handle"
                       onPointerDown={(e) => controls.start(e)}
@@ -417,18 +423,41 @@ export default function AdminProductUpdateForm() {
 
       {/* Submit button */}
       <div className="flex max-w-full justify-end py-5">
-        <ButtonWithAction type="submit" replaceTWClass="btn btn-primary">
-          Save{" "}
-          {mutation.isPending ? (
-            <span className="loading loading-spinner loading-xs"></span>
-          ) : mutation.isSuccess ? (
-            <>
-              <FaCheck />
-            </>
-          ) : (
-            ""
-          )}
-        </ButtonWithAction>
+        <div className="flex flex-row justify-end gap-3">
+          <Button
+            replaceTWClass="btn btn-error btn-sm"
+            id={initialData.id}
+            action={handleDelete}
+            eventType="onClick"
+            type="button"
+          >
+            Delete
+            <FaTrash />
+          </Button>
+          <Button
+            replaceTWClass="btn btn-accent btn-sm"
+            action={handleDetail}
+            eventType="onClick"
+            type="button"
+            id={initialData.id}
+          >
+            Detail
+            <FaInfo />
+          </Button>
+
+          <Button type="submit" replaceTWClass="btn btn-primary btn-sm">
+            Save <FaRegSave />
+            {mutation.isPending ? (
+              <span className="loading loading-spinner loading-xs"></span>
+            ) : mutation.isSuccess ? (
+              <>
+                <FaCheck />
+              </>
+            ) : (
+              ""
+            )}
+          </Button>
+        </div>
       </div>
     </form>
   );

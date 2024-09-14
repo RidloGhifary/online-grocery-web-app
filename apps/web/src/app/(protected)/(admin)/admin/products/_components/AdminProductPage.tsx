@@ -19,7 +19,6 @@ import {
 import AdminProductUpdateForm from "@/components/features-2/admin/AdminProductUpdateForm";
 import AdminProductDelete from "@/components/features-2/admin/AdminProductDelete";
 import { ToastContainer } from "react-toastify";
-import AdminProductDetail from "@/components/features-2/admin/AdminProductDetail";
 import AdminProductDetailWithImage from "@/components/features-2/admin/AdminProductDetailWithImage";
 
 export default function AdminProductPage() {
@@ -150,7 +149,7 @@ export default function AdminProductPage() {
         <AdminFilter />
       </Modal>
 
-      <Modal
+      {/* <Modal
         show={currentOperation === "edit" ?? false}
         onClose={handleClose}
         closeButton={false}
@@ -163,12 +162,12 @@ export default function AdminProductPage() {
         }
       >
         <AdminProductUpdateForm />
-      </Modal>
+      </Modal> */}
         
 
       <Modal
-        show={currentOperation === "add" ?? false}
-        
+        show={currentOperation !== "idle" ?? false}
+        useTCustomContentWidthClass={`${currentOperation === "detail"  ? 'sm:w-full sm:max-w-3xl':''}`}
         onClose={handleClose}
         closeButton={false}
         toasterContainer={
@@ -179,9 +178,12 @@ export default function AdminProductPage() {
           />
         }
       >
-        <AdminProductForm />
+        {currentOperation === "add" ?<AdminProductForm />:''}
+        {currentOperation === "edit" ?<AdminProductUpdateForm />:''}
+        {currentOperation === "detail" ?<AdminProductDetailWithImage/>:''}
+        {currentOperation === "delete" ?<AdminProductDelete />:''}
       </Modal>
-      <Modal
+      {/* <Modal
         show={currentOperation === "delete" ?? false}
         onClose={handleClose}
         closeButton={false}
@@ -199,7 +201,7 @@ export default function AdminProductPage() {
         show={currentOperation === "detail" ?? false}
         onClose={handleClose}
         closeButton={false}
-        useTCustomContentWidthClass="sm:w-full sm:max-w-4xl"
+        useTCustomContentWidthClass="sm:w-full sm:max-w-3xl"
         toasterContainer={
           <ToastContainer
             containerId={10915}
@@ -209,7 +211,7 @@ export default function AdminProductPage() {
         }
       >
         <AdminProductDetailWithImage/>
-      </Modal>
+      </Modal> */}
     </>
   );
 }

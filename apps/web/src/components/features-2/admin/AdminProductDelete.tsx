@@ -116,6 +116,17 @@ export default function AdminProductDelete() {
       </h2>
       <p className="mb-5 text-lg font-medium">Are you sure?</p>
       <div className="flex w-full flex-row justify-end gap-3">
+       
+        <Button
+          btnSizeTWClass="btn-md"
+          colorTWClass="btn-neutral"
+          extraTWClass="self-end"
+          action={handleCancel}
+          type="button"
+          eventType="onClick"
+        >
+          No
+        </Button>
         <Button
           btnSizeTWClass="btn-md"
           colorTWClass="btn-error"
@@ -126,16 +137,6 @@ export default function AdminProductDelete() {
           id={currentProduct.id}
         >
           Yes
-        </Button>
-        <Button
-          btnSizeTWClass="btn-md"
-          colorTWClass="btn-neutral"
-          extraTWClass="self-end"
-          action={handleCancel}
-          type="button"
-          eventType="onClick"
-        >
-          No
         </Button>
       </div>
       <input type="hidden" name="id" />

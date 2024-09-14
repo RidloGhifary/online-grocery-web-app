@@ -17,6 +17,13 @@ export default function ({
 }) {
   const [, setCurrenctProduct] = useAtom(currentDetailProductsAtom)
   const [, setProductOperation] = useAtom(currentProductOperation)
+  function handleDetail(e:MouseEvent) {
+    e.preventDefault()
+    const currentId = Number(e.currentTarget.id)
+    const currentData = products.filter(product=>product.id == currentId )[0]
+    setCurrenctProduct(currentData)
+    setProductOperation('detail')
+  }
   function handleEdit(e:MouseEvent) {
     e.preventDefault()
     const currentId = Number(e.currentTarget.id)
@@ -83,7 +90,7 @@ export default function ({
               </td>
               <td>
                 <div className="flex flex-wrap gap-2 ">
-                  <ButtonWithAction replaceTWClass="btn btn-info btn-sm" id={product.id}>
+                  <ButtonWithAction action={handleDetail} replaceTWClass="btn btn-info btn-sm" eventType="onClick" type="button" id={product.id}>
                     <FaInfoCircle />
                   </ButtonWithAction>
                   <ButtonWithAction replaceTWClass="btn btn-accent btn-sm" action={handleEdit} eventType="onClick" type="button" id={product.id}>

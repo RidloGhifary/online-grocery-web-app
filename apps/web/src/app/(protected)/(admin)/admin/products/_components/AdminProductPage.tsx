@@ -19,6 +19,8 @@ import {
 import AdminProductUpdateForm from "@/components/features-2/admin/AdminProductUpdateForm";
 import AdminProductDelete from "@/components/features-2/admin/AdminProductDelete";
 import { ToastContainer } from "react-toastify";
+import AdminProductDetail from "@/components/features-2/admin/AdminProductDetail";
+import AdminProductDetailWithImage from "@/components/features-2/admin/AdminProductDetailWithImage";
 
 export default function AdminProductPage() {
   const [operation, setOperation] = useState<
@@ -57,6 +59,7 @@ export default function AdminProductPage() {
     (value) => {
       const params = new URLSearchParams(window.location.search);
       params.set("search", value);
+      params.set("page", '1');
 
       if (value === "" || !value) {
         params.delete("search");
@@ -191,6 +194,21 @@ export default function AdminProductPage() {
         }
       >
         <AdminProductDelete />
+      </Modal>
+      <Modal
+        show={currentOperation === "detail" ?? false}
+        onClose={handleClose}
+        closeButton={false}
+        useTCustomContentWidthClass="sm:w-full sm:max-w-4xl"
+        toasterContainer={
+          <ToastContainer
+            containerId={10915}
+            position="top-center"
+            draggable={true}
+          />
+        }
+      >
+        <AdminProductDetailWithImage/>
       </Modal>
     </>
   );

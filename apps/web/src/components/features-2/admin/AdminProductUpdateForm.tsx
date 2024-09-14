@@ -6,7 +6,7 @@ import { z } from "zod";
 import Select from "react-select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast, Bounce } from "react-toastify";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { updateProduct } from "@/actions/products";
 import {
   ProductCategoryInterface,

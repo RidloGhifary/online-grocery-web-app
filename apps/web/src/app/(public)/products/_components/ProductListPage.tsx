@@ -37,6 +37,7 @@ export default function () {
     (value) => {
       const params = new URLSearchParams(window.location.search);
       params.set("search", value);
+      params.set("page", '1');
 
       if (value === "" || !value) {
         params.delete("search");

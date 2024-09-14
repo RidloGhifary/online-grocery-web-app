@@ -6,12 +6,32 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { ToastContainer } from "react-toastify";
+
+// Function to calculate full width considering scrollbar
+const getScrollbarWidth = () => {
+  // Create a temporary element to measure scrollbar width
+  const outer = document.createElement('div');
+  outer.style.visibility = 'hidden';
+  outer.style.overflow = 'scroll'; // forcing scrollbars
+  outer.style.width = '50px';
+  outer.style.height = '50px';
+  document.body.appendChild(outer);
+
+  const inner = document.createElement('div');
+  outer.appendChild(inner);
+
+  const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+
+  document.body.removeChild(outer);
+
+  return scrollbarWidth;
+};
 
 const getFullWidthRespectingScrollbarInVw = () => {
-  const viewportWidth = window.innerWidth;
-  const scrollbarWidth = viewportWidth - document.documentElement.clientWidth;
-  return `calc(100% - ${scrollbarWidth <= 1 ? 0 : scrollbarWidth}px)`;
+  const scrollbarWidth = getScrollbarWidth();
+  return scrollbarWidth > 0
+    ? `calc(100% - ${scrollbarWidth}px)`
+    : '100%'; // Use 100% if no scrollbar detected
 };
 
 export function Modal({
@@ -26,6 +46,8 @@ export function Modal({
   toasterContainer,
   hideCloseButton = false,
 }: ModalPropsInterface) {
+  const hasWindow = typeof window !== 'undefined';
+  const hasDocs = typeof document !== 'undefined';
   const localRef = useRef<HTMLDialogElement | null>(null);
   const modalRef = theRef
     ? (theRef as MutableRefObject<HTMLDialogElement | null>)
@@ -70,10 +92,37 @@ export function Modal({
   }, [show, handleOutsideClick]);
 
   useEffect(() => {
-    if (modalRef.current) {
-      modalRef.current.style.width = getFullWidthRespectingScrollbarInVw();
+    const setModalWidth = () => {
+      if (modalRef.current && hasWindow && hasDocs) {
+        const width = getFullWidthRespectingScrollbarInVw();
+        modalRef.current!.style.width = width;
+        console.log('Modal width set to:', width);
+      }
+    };
+
+    // Set the width when component mounts
+    setModalWidth();
+
+    // Set the width on window resize
+    window.addEventListener('resize', setModalWidth);
+
+    // Clean up resize event listener
+    return () => {
+      window.removeEventListener('resize', setModalWidth);
+    };
+  }, [modalRef, hasWindow, hasDocs]);
+
+  // Recalculate width on window load
+  useEffect(() => {
+    if (hasWindow && hasDocs) {
+      window.addEventListener('load', () => {
+        if (modalRef.current) {
+          modalRef.current.style.width = getFullWidthRespectingScrollbarInVw();
+          console.log('Modal width recalculated on load:', getFullWidthRespectingScrollbarInVw());
+        }
+      });
     }
-  }, [modalRef]);
+  }, [hasWindow, hasDocs]);
 
   return (
     <>

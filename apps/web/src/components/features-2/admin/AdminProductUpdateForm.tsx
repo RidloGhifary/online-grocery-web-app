@@ -26,6 +26,7 @@ import {
   currentDetailProductsAtom,
   currentProductOperation,
 } from "@/stores/productStores";
+import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 
 // Define the Zod schema for validation
 const updateProductSchema = z.object({
@@ -55,7 +56,7 @@ type UpdateProductFormValues = z.infer<typeof updateProductSchema>;
 // }
 
 export default function AdminProductUpdateForm() {
-  const [initialData] = useAtom(currentDetailProductsAtom);
+  const [initialData, setInitialData] = useAtom(currentDetailProductsAtom);
   const queryParams = useSearchParams();
 
   // const router = useRouter();
@@ -65,14 +66,14 @@ export default function AdminProductUpdateForm() {
   >([queryKeys.productCategories]);
 
   const controls = useDragControls();
-  const [, setProductOperation] = useAtom(currentProductOperation);
+  const [, setCurrentOperation] = useAtom(currentProductOperation);
   function handleDetail(e: MouseEvent) {
     e.preventDefault();
-    setProductOperation("detail");
+    setCurrentOperation("detail");
   }
   function handleDelete(e: MouseEvent) {
     e.preventDefault();
-    setProductOperation("delete");
+    setCurrentOperation("delete");
   }
 
   const {
@@ -88,7 +89,7 @@ export default function AdminProductUpdateForm() {
   });
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [, setCurrentOperation] = useAtom(currentProductOperation);
+  // const [, setCurrentOperation] = useAtom(currentProductOperation);
 
   useEffect(() => {
     if (initialData) {
@@ -125,7 +126,6 @@ export default function AdminProductUpdateForm() {
         // toastId:1,
         containerId:10912
       });
-      // setCurrentOperation('idle')
       const params = {
         search: queryParams.get("search") || "",
         orderField: queryParams.get("orderField") || "product_name",
@@ -190,7 +190,6 @@ export default function AdminProductUpdateForm() {
       mutation.mutate(modifiedData as UpdateProductInputInterface);
     } else {
       // No changes, notify the user or handle accordingly
-      // setCurrentOperation("idle");
       toast.info("No changes to update", {
         position: "top-right",
         autoClose: 2000,
@@ -226,6 +225,18 @@ export default function AdminProductUpdateForm() {
   useEffect(() => {
     if (mutation.isSuccess) {
       console.log("success");
+      const params = {
+        search: queryParams.get("search") || "",
+        orderField: queryParams.get("orderField") || "product_name",
+        order: (queryParams.get("order") as "asc" | "desc") || "asc",
+        category: queryParams.get("category") || "",
+        page: Number(queryParams.get("page")) || 1,
+        limit: Number(queryParams.get("limit")) || 20,
+      };
+      const updatedData = (queryClient.getQueryData([queryKeys.products,{...params}]) as CommonPaginatedResultInterface<ProductCompleteInterface[]>).data?.data?.filter(product=>product.id == initialData?.id )[0]
+      if (updatedData) {
+        setInitialData(updatedData)
+      }
       setCurrentOperation("detail");
     }
   }, [mutation.isSuccess]);

@@ -1,16 +1,14 @@
 "use client";
-import { getProductCategoryList } from "@/actions/categories";
+import AdminCategoryDelete from "@/components/features-2/admin/AdminCategoryDelete";
 import CategoryForm from "@/components/features-2/admin/AdminCategoryForm";
 import AdminCategoryTable from "@/components/features-2/admin/AdminCategoryTable";
-import AdminProductForm from "@/components/features-2/admin/AdminProductForm";
+import AdminCategoryUpdateForm from "@/components/features-2/admin/AdminCategoryUpdateForm";
 import { Modal } from "@/components/features-2/ui/Modal";
 import PaginationPushRoute from "@/components/features-2/ui/PaginationPushRoute";
 import SearchBar from "@/components/features-2/ui/SearchBar";
-import { queryKeys } from "@/constants/queryKeys";
 import { useProductCategoryWithFilter } from "@/hooks/publicProductCategoriesHooks";
-import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
+import { CategoryInterface } from "@/interfaces/CategoryInterface";
 import { currentDetailCategorysAtom, currentProductCategoryOperation } from "@/stores/productCategoryStores";
-import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChangeEventHandler, useState } from "react";
@@ -71,15 +69,6 @@ export default function () {
     debounced(e.currentTarget.value);
   };
 
-  // Handle loading state
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex h-full min-h-96 items-center justify-center">
-  //       <span className="loading loading-spinner loading-lg text-primary"></span>
-  //     </div>
-  //   );
-  // }
-
   // Handle error state
   if (isError) {
     return (
@@ -132,7 +121,7 @@ export default function () {
           data.data.data.length > 0 ? (
           <>
             <div className="p-5">
-              <AdminCategoryTable categories={data?.data.data!} />
+              <AdminCategoryTable categories={data?.data.data! as unknown as CategoryInterface[]} />
             </div>
             <div className="flex w-full max-w-full justify-center">
               <div className="flex w-full max-w-xl justify-center px-3 py-5">
@@ -151,7 +140,7 @@ export default function () {
         'Filter'
       </Modal>
       <Modal
-        show={currentOperation === "add" ?? false}
+        show={currentOperation !== "idle" ?? false}
         onClose={handleClose}
         closeButton={false}
         toasterContainer={
@@ -162,7 +151,9 @@ export default function () {
           />
         }
       >
-        <CategoryForm />
+        {currentOperation==='add'? <CategoryForm />:''}
+        {currentOperation==='edit'? <AdminCategoryUpdateForm />:''}
+        {currentOperation==='delete'? <AdminCategoryDelete />:''}
       </Modal>
     </>
   );

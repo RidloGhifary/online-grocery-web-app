@@ -1,4 +1,4 @@
-import { CategoryInterface } from "@/interfaces/CategoryInterface";
+import { CategoryCompleteInterface, CategoryInterface } from "@/interfaces/CategoryInterface";
 import { atom } from "jotai";
 
 

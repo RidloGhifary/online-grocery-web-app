@@ -31,10 +31,10 @@ export const updateProductCategorySchema = z
         async (id) => await categoryRepository.isProductCategoryIdExist(id),
         { message: 'Product category not exist' },
       ),
-    name: z.string().min(1, 'Product category name is required'),
+    name: z.string().min(1, 'Product category name is required').optional(),
     display_name: z
       .string()
-      .min(1, 'Product category display name is required'),
+      .min(1, 'Product category display name is required').optional(),
   })
   .superRefine(async (data, ctx) => {
     const { id, display_name, name } = data;
@@ -72,9 +72,13 @@ export const deleteProductCategorySchema = z.object({
   }).transform((val) => Number(val)),
 }).superRefine(async (data, ctx) => {
   const { id } = data;
+  console.log('from zod');
+  
+  console.log(id);
+  
   const isProductExist = await categoryRepository.isProductCategoryIdExist(id)
   // const hasPermission =  await productRepository.isUserHasProductPermission()
-  if (isProductExist) {
+  if (!isProductExist) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['id'],

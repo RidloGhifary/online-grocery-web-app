@@ -18,7 +18,6 @@ import Image from "next/image";
 import Button from "../ui/ButtonWithAction";
 import { Reorder, useDragControls } from "framer-motion";
 import { IoReorderFour } from "react-icons/io5";
-import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import { queryKeys } from "@/constants/queryKeys";
 import { useAtom } from "jotai";
 import {
@@ -233,6 +232,9 @@ export default function AdminProductUpdateForm() {
         page: Number(queryParams.get("page")) || 1,
         limit: Number(queryParams.get("limit")) || 20,
       };
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products, { ...params }],
+      })
       const updatedData = (queryClient.getQueryData([queryKeys.products,{...params}]) as CommonPaginatedResultInterface<ProductCompleteInterface[]>).data?.data?.filter(product=>product.id == initialData?.id )[0]
       if (updatedData) {
         setInitialData(updatedData)

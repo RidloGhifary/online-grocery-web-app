@@ -151,9 +151,11 @@ class CategoryRepository {
   }
 
   async isProductCategoryIdExist(id?: number): Promise<boolean> {
+    console.log('from category repo');
+    
     return !!(
       (await prisma.productCategory.findFirst({
-        select: { id: true },
+        select: { id: true, deletedAt: true },
         where: { id: id, deletedAt: null },
       })) && id
     );

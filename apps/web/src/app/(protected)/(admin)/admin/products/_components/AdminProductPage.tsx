@@ -39,7 +39,6 @@ export default function AdminProductPage() {
   const queryParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const [currentProduct] = useAtom(currentDetailProductsAtom);
 
   const {
     isLoading,

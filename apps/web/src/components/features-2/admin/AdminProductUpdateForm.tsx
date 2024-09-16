@@ -9,7 +9,6 @@ import { toast, Bounce } from "react-toastify";
 import { useSearchParams } from "next/navigation";
 import { updateProduct } from "@/actions/products";
 import {
-  ProductCategoryInterface,
   ProductCompleteInterface,
   UpdateProductInputInterface,
 } from "@/interfaces/ProductInterface";
@@ -27,6 +26,7 @@ import {
   currentProductOperation,
 } from "@/stores/productStores";
 import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
+import { CategoryCompleteInterface } from "@/interfaces/CategoryInterface";
 
 // Define the Zod schema for validation
 const updateProductSchema = z.object({
@@ -62,7 +62,7 @@ export default function AdminProductUpdateForm() {
   // const router = useRouter();
   const queryClient = useQueryClient();
   const categories = queryClient.getQueryData<
-    CommonResultInterface<ProductCategoryInterface[]>
+    CommonPaginatedResultInterface<CategoryCompleteInterface[]>
   >([queryKeys.productCategories]);
 
   const controls = useDragControls();
@@ -206,7 +206,7 @@ export default function AdminProductUpdateForm() {
     }
   };
 
-  const categoryOptions = categories?.data?.map((category) => ({
+  const categoryOptions = categories?.data?.data?.map((category) => ({
     value: category.id,
     label: category.display_name || category.name,
   }));

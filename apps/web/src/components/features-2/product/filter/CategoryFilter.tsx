@@ -33,7 +33,7 @@ export default function CategoryFilter() {
       >
         All
       </Radio>
-      {data?.data?.map((category, index) => (
+      {data?.data?.data?.map((category, index) => (
         <Radio
           defaultChecked={searchParams.get("category") === category.name}
           key={index}

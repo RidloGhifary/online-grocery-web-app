@@ -1,9 +1,8 @@
-import { getProductCategoryList } from "@/actions/categories";
-import { queryKeys } from "@/constants/queryKeys";
-import { atomWithQuery } from "jotai-tanstack-query";
+import { CategoryInterface } from "@/interfaces/CategoryInterface";
+import { atom } from "jotai";
 
-export const productCategoriesAtom = atomWithQuery(() => ({
-  queryKey:[queryKeys.productCategories],
-  queryFn : async () => await getProductCategoryList()
-}));
 
+
+export const currentDetailCategorysAtom = atom<CategoryInterface>();
+
+export const currentProductCategoryOperation = atom<"edit" | "detail" | "delete" | "add" | "filter"|'idle'>('idle')

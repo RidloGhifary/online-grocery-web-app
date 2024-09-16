@@ -16,7 +16,7 @@ export default async function Page() {
   });
   await queryClient.prefetchQuery({
     queryKey: [queryKeys.productCategories],
-    queryFn: async () => await getProductCategoryList(),
+    queryFn: async () => await getProductCategoryList({}),
   });
   return (
     <>

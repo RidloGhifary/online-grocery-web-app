@@ -380,7 +380,7 @@ export class ProductController {
     res: Response,
   ): Promise<void | Response> {
     const product: Product = req.body;
-    console.log(product);
+    // console.log(product);
     
     const newData = await productRepository.createProduct(product);
     if (!newData.ok) {

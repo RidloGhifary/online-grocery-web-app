@@ -6,15 +6,16 @@ import { ProductCategoryInterface } from "@/interfaces/ProductInterface";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/constants/queryKeys";
 import { getProductCategoryList } from "@/actions/categories";
+import SortingFilter from "../product/filter/SortingFilter";
 
 export default function () {
-  const { data }  = useQuery({
-    queryKey: [queryKeys.productCategories],
-    queryFn: getProductCategoryList,
-  })
+  // const { data }  = useQuery({
+  //   queryKey: [queryKeys.productCategories],
+  //   queryFn: getProductCategoryList,
+  // })
   return (
     <>
-      <Radio defaultChecked={true} value={"all"} >
+      {/* <Radio defaultChecked={true} value={"all"} >
         All
       </Radio>
       {(data as CommonResultInterface<ProductCategoryInterface[]>)?.data?.map((e, i) => {
@@ -23,7 +24,8 @@ export default function () {
             {e.display_name}
           </Radio>
         );
-      })}
+      })} */}
+      <SortingFilter/>
     </>
   );
 }

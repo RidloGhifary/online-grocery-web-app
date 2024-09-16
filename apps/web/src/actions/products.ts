@@ -30,7 +30,7 @@ export async function getProductListWithFilter({
     const response = await fetch(
       createQueryParams({
         url: `${process.env.BACKEND_URL}/products`,
-        params: { category, search, order, orderField, page, limit },
+        params: { category, search, order, order_field:orderField, page, limit },
       })
     );
 
@@ -40,7 +40,6 @@ export async function getProductListWithFilter({
     }
     
     const data = await response.json() as unknown as CommonPaginatedResultInterface<ProductCompleteInterface[]>;
-    // console.log(data);
     result = data
     // result.data.data = data.data.data;
     // result.ok = true;

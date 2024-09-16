@@ -1,14 +1,12 @@
 "use client";
 import {
   currentDetailProductsAtom,
-  currentProductOperation,
 } from "@/stores/productStores";
 import { useAtom } from "jotai";
 
 export default function () {
   const [currentProduct] = useAtom(currentDetailProductsAtom);
 
-  const [, setCurrentOperation] = useAtom(currentProductOperation);
   const product = currentProduct;
   
 

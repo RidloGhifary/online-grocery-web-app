@@ -61,7 +61,7 @@ export default function () {
         {tab === "Detail" ? <AdminProductDetail /> : ""}
         {tab === "Images" ? (
           <>
-            <div className="md:max-w-sm">
+            <div className="md:max-w-sm max-w-full">
               <CarouselWithThumb images={JSON.parse(currentProduct?.image!)} />
             </div>
           </>

@@ -1,4 +1,4 @@
-import React, { CSSProperties, useState } from "react";
+import React, { CSSProperties, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode, Navigation, Thumbs } from "swiper/modules";
 import "swiper/css";
@@ -25,7 +25,19 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
     ];
     usedImg = images;
   }
-
+  useEffect(() => {
+    const handleResize = () => {
+      if (thumbsSwiper) {
+        thumbsSwiper.update(); // Update Swiper on resize
+      }
+    };
+  
+    window.addEventListener('resize', handleResize);
+  
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [thumbsSwiper]);
   return (
     <div className="w-full">
       <Swiper
@@ -66,7 +78,7 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
           freeMode={true}
           watchSlidesProgress={true}
           modules={[FreeMode, Navigation, Thumbs]}
-          className="mySwiper mt-3 h-20"
+          className="mySwiper mt-3 h-20 w-auto"
           navigation={true}
           style={
             {

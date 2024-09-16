@@ -300,6 +300,7 @@ class ProductRepository {
         },
         where: {
           id: product_id,
+          deletedAt:null
         },
       });
       result.data = updatedData;
@@ -319,7 +320,7 @@ class ProductRepository {
       ok: false,
     };
     try {
-      const deleted = await prisma.product.delete({ where: { id: productId } });
+      const deleted = await prisma.product.delete({ where: { id: productId, deletedAt:null } });
       if (!deleted) {
         throw new Error(JSON.stringify(deleted));
       }
@@ -352,6 +353,7 @@ class ProductRepository {
             roles_permissions: { some: { permission: { name: permission } } },
           },
         },
+        deletedAt:null
       },
     }));
   }
@@ -361,13 +363,13 @@ class ProductRepository {
     excludeId?: number,
   ): Promise<boolean> {
     return !!(await prisma.product.findFirst({
-      where: { name, id: { not: excludeId } },
+      where: { name, id: { not: excludeId },deletedAt:null },
     }));
   }
 
   async isSKUExist(sku?: string, excludeId?: number): Promise<boolean> {
     return !!(await prisma.product.findFirst({
-      where: { sku, id: { not: excludeId } },
+      where: { sku, id: { not: excludeId },deletedAt:null },
     }));
   }
 }

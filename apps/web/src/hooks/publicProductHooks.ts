@@ -31,8 +31,8 @@ export function useProductWithFilter({
   }
   return useQuery({
     queryKey: [queryKeys.products, keys || undefined],
-    queryFn: async () => {
-      const data = await getProductListWithFilter({
+    queryFn: () => {
+      const data = getProductListWithFilter({
         search: search,
         orderField: orderField,
         order: order,

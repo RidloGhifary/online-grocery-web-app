@@ -1,13 +1,15 @@
 import React from "react";
-import { ProductCategoryInterface } from "@/interfaces/ProductInterface";
 import ButtonWithAction from "../ui/ButtonWithAction";
 import { FaEdit, FaInfoCircle, FaTrash } from "react-icons/fa";
+import { CategoryCompleteInterface } from "@/interfaces/CategoryInterface";
 
 interface ProductCategoryTableProps {
-  categories?: ProductCategoryInterface[]; // Made categories optional
+  categories?: CategoryCompleteInterface[]; // Made categories optional
 }
 
 export default function ({ categories = [] }: ProductCategoryTableProps) { // Default to empty array
+  // console.log(categories);
+  
   return (
     <div className="overflow-x-auto">
       <table className="table w-full text-base">

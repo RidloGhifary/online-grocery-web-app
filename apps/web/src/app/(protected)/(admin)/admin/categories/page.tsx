@@ -11,8 +11,12 @@ export default async function Page() {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
     queryKey: [queryKeys.productCategories],
-    queryFn: async () => await getProductCategoryList(),
+    queryFn: () => getProductCategoryList({}),
   });
+
+//   console.log("Server-side categories data:", await getProductCategoryList({}));
+// console.log("Dehydrated state:", dehydrate(queryClient));
+
   return (
     <>
       <HydrationBoundary state={dehydrate(queryClient)}>

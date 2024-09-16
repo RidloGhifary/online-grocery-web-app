@@ -20,6 +20,7 @@ import AdminProductUpdateForm from "@/components/features-2/admin/AdminProductUp
 import AdminProductDelete from "@/components/features-2/admin/AdminProductDelete";
 import { ToastContainer } from "react-toastify";
 import AdminProductDetailWithImage from "@/components/features-2/admin/AdminProductDetailWithImage";
+import { VscSettings } from "react-icons/vsc";
 
 export default function AdminProductPage() {
   const [operation, setOperation] = useState<
@@ -54,6 +55,9 @@ export default function AdminProductPage() {
     limit: Number(queryParams.get("limit")) || 20,
   });
 
+  // console.log(data?.data.data);
+  
+
   const debounced = useDebouncedCallback(
     (value) => {
       const params = new URLSearchParams(window.location.search);
@@ -75,7 +79,7 @@ export default function AdminProductPage() {
     setIsDebouncing(true);
     debounced(e.currentTarget.value);
   };
-
+  
   // Handle error state
   if (isError) {
     return (
@@ -105,7 +109,7 @@ export default function AdminProductPage() {
                 onClick={() => setOperation("filter")}
                 className="btn w-full md:w-[40%]"
               >
-                Filter
+                <VscSettings size={"1.5rem"} />
               </button>
               <button
                 onClick={() => setCurrentOperation("add")}
@@ -146,24 +150,11 @@ export default function AdminProductPage() {
       </div>
 
       <Modal show={operation === "filter" ?? false} onClose={handleClose}>
-        <AdminFilter />
-      </Modal>
+        <div className="w-full flex sm:flex-row flex-col justify-center items-center">
 
-      {/* <Modal
-        show={currentOperation === "edit" ?? false}
-        onClose={handleClose}
-        closeButton={false}
-        toasterContainer={
-          <ToastContainer
-            containerId={10913}
-            position="top-center"
-            draggable={true}
-          />
-        }
-      >
-        <AdminProductUpdateForm />
-      </Modal> */}
-        
+        <AdminFilter />
+        </div>
+      </Modal>
 
       <Modal
         show={currentOperation !== "idle" ?? false}
@@ -183,35 +174,6 @@ export default function AdminProductPage() {
         {currentOperation === "detail" ?<AdminProductDetailWithImage/>:''}
         {currentOperation === "delete" ?<AdminProductDelete />:''}
       </Modal>
-      {/* <Modal
-        show={currentOperation === "delete" ?? false}
-        onClose={handleClose}
-        closeButton={false}
-        toasterContainer={
-          <ToastContainer
-            containerId={10914}
-            position="top-center"
-            draggable={true}
-          />
-        }
-      >
-        <AdminProductDelete />
-      </Modal>
-      <Modal
-        show={currentOperation === "detail" ?? false}
-        onClose={handleClose}
-        closeButton={false}
-        useTCustomContentWidthClass="sm:w-full sm:max-w-3xl"
-        toasterContainer={
-          <ToastContainer
-            containerId={10915}
-            position="top-center"
-            draggable={true}
-          />
-        }
-      >
-        <AdminProductDetailWithImage/>
-      </Modal> */}
     </>
   );
 }

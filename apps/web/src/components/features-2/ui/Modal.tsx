@@ -96,7 +96,7 @@ export function Modal({
       if (modalRef.current && hasWindow && hasDocs) {
         const width = getFullWidthRespectingScrollbarInVw();
         modalRef.current!.style.width = width;
-        console.log('Modal width set to:', width);
+        // console.log('Modal width set to:', width);
       }
     };
 
@@ -118,7 +118,7 @@ export function Modal({
       window.addEventListener('load', () => {
         if (modalRef.current) {
           modalRef.current.style.width = getFullWidthRespectingScrollbarInVw();
-          console.log('Modal width recalculated on load:', getFullWidthRespectingScrollbarInVw());
+          // console.log('Modal width recalculated on load:', getFullWidthRespectingScrollbarInVw());
         }
       });
     }

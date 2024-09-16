@@ -1,4 +1,5 @@
-import { Store } from "./product";
+import { CategoryCompleteInterface } from "./CategoryInterface";
+import { StoreInterface } from "./store";
 
 export interface ProductCompleteInterface {
   id: number;
@@ -15,18 +16,10 @@ export interface ProductCompleteInterface {
   updatedAt: Date | string | null;
   deletedAt: Date | string | null;
   store_id: number | null;
-  product_category?: ProductCategoryInterface;
+  product_category?: CategoryCompleteInterface;
   StoreHasProduct?: StoreHasProductInterface[]
 }
 
-export interface ProductCategoryInterface {
-  id: number;
-  name: string;
-  display_name: string | null;
-  createdAt: Date | string | null;
-  updatedAt: Date | string | null;
-  deletedAt: Date | string | null;
-}
 
 export interface ProductCardListInterface {
   name: string;
@@ -55,7 +48,7 @@ export interface StoreHasProductInterface {
   createdAt?: string | Date | null;
   updatedAt?: string | Date | null;
   deletedAt?: string | Date | null;
-  store?: Store
+  store?: StoreInterface
 }
 
 export interface UpdateProductInputInterface {

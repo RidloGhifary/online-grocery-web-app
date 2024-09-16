@@ -9,12 +9,11 @@ import { queryKeys } from "@/constants/queryKeys";
 import Select from "react-select";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import {
-  ProductCategoryInterface,
   ProductCompleteInterface,
   ProductRecordInterface,
 } from "@/interfaces/ProductInterface";
 import { UploadDropzone } from "@/utils/uploadthing";
-import { FaCheck, FaTrash } from "react-icons/fa";
+import { FaCheck, FaRegSave, FaTrash } from "react-icons/fa";
 import Image from "next/image";
 import { Reorder, useDragControls } from "framer-motion";
 import { IoReorderFour } from "react-icons/io5";
@@ -50,12 +49,12 @@ export default function ProductForm() {
   );
   const { data:categoriesData } = useQuery({
     queryKey: [queryKeys.productCategories],
-    queryFn: async () => await getProductCategoryList(),
+    queryFn: async () => await getProductCategoryList({}),
   })
 
   // Check if categoriesData is valid and contains data
-  const categories = Array.isArray(categoriesData?.data)
-    ? categoriesData.data
+  const categories = Array.isArray(categoriesData?.data.data)
+    ? categoriesData.data.data
     : [];
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -165,7 +164,7 @@ export default function ProductForm() {
   
 
   // Transform categories data for React Select
-  const categoryOptions = categories.map((category) => ({
+  const categoryOptions = categories?.map((category) => ({
     value: category.id,
     label: category.display_name || category.name,
   }));
@@ -237,7 +236,7 @@ export default function ProductForm() {
             setValue("product_category_id", option?.value || 0)
           }
           placeholder="Select a category"
-          value={categoryOptions.find(
+          value={categoryOptions?.find(
             (option) => option.value === watch("product_category_id"),
           )}
           isDisabled={mutation.isSuccess}
@@ -390,8 +389,8 @@ export default function ProductForm() {
       </div>
 
       <div className="flex max-w-full justify-end py-5">
-        <ButtonWithAction type="submit" replaceTWClass="btn btn-primary">
-          Save{" "}
+        <ButtonWithAction type="submit" replaceTWClass="btn btn-primary btn-sm">
+          Save <FaRegSave />
           {mutation.isPending ? (
             <span className="loading loading-spinner loading-xs"></span>
           ) : mutation.isSuccess ? (

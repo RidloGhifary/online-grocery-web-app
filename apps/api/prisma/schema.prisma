@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://root:justin123456@localhost:3306/finpro"
 }
 
 enum GENDER {
@@ -286,8 +286,6 @@ model Product {
   carts             Cart[]
   vouchers          Voucher[]
   product_discounts ProductDiscount[]
-  // store             Store?             @relation(fields: [store_id], references: [id])
-  // store_id          Int?
   order_detail      OrderDetail[]
   StoreHasProduct   StoreHasProduct[]  @relation("StoreHasProduct")
 
@@ -385,6 +383,8 @@ model Order {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
   deletedAt DateTime?
+    cancelAt        DateTime?
+    completeAt DateTime?
 
   @@index([id])
   @@index([invoice])

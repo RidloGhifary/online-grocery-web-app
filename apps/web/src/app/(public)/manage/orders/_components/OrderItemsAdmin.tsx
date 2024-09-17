@@ -95,7 +95,7 @@ const OrderItemsAdmin: React.FC<OrderItemsAdminProps> = ({ order }) => {
   return (
     <div className="space-y-2 rounded-lg border p-4 shadow-md">
       <a
-        href={`/transactions/${order.id}`}
+        href={`/manage/orders/${order.id}`}
         className="text-lg font-semibold text-blue-500 hover:underline"
       >
         {order.invoice}

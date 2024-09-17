@@ -325,7 +325,7 @@ model StocksAdjustment {
   detail             String
   from_store         Store           @relation("FromStore", fields: [from_store_id], references: [id])
   from_store_id      Int
-  destinied_store    Store           @relation("DestiniedStore", fields: [destinied_store_id], references: [id])
+  destinied_store    Store?           @relation("DestiniedStore", fields: [destinied_store_id], references: [id])
   destinied_store_id Int
   order_detail_id    Int?
   order_detail       OrderDetail?    @relation("OrderDetailInStock", fields: [order_detail_id], references: [id])

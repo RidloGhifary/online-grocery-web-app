@@ -101,6 +101,7 @@ export default function () {
               Filter
             </button>
           </div>
+          
           <div className="mx-4 flex w-full max-w-full flex-row pb-4 min-[395px]:mx-0 min-[395px]:w-auto min-[395px]:py-4 min-[395px]:pb-0 min-[395px]:pr-4">
             <button
               onClick={() => setCurrentOperation("add")}

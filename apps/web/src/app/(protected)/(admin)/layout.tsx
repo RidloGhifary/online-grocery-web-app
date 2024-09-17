@@ -7,9 +7,11 @@ import {
 } from "@tanstack/react-query";
 import { queryKeys } from "@/constants/queryKeys";
 import { getAdmin } from "@/actions/user";
+import PermissionsProvider from "@/providers/PermissionProvider";
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const queryClient = new QueryClient();
+  
   await queryClient.prefetchQuery({
     queryKey: [queryKeys.adminInfo],
     queryFn: getAdmin,
@@ -18,7 +20,9 @@ export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <AdminLayout>{children}</AdminLayout>
+        <PermissionsProvider>
+          <AdminLayout>{children}</AdminLayout>
+        </PermissionsProvider>
       </HydrationBoundary>
     </>
   );

@@ -43,21 +43,26 @@ function generateProducts() {
   return products;
 }
 
-async function generateStoreHasProduct(products: Product[], store: Store[]) {
+async function generateStoreHasProduct(products: Product[], stores: Store[]) {
   // let data : StoreHasProduct[] = []
-  products.forEach((product, i) => {
-    store.forEach(async (store, i) => {
-      const data = await prisma.storeHasProduct.create({
-        data: {
+  let counter = 1
+  for (const product of products) {
+    for (const store of stores) {
+      const data = await prisma.storeHasProduct.upsert({
+        where :{
+          id : counter
+        },
+        update :{},
+        create :{
           product_id: product.id,
           qty: 10,
           store_id: store.id,
         },
       });
+      counter++
       console.log(data);
-      
-    });
-  });
+    };
+  };
   // return data
 }
 // Fetch provinces using axios
@@ -183,6 +188,61 @@ async function main() {
           id: 14,
           name: 'admin_product_category_delete',
           display_name: 'Admin Product Delete',
+        },
+        {
+          id: 15,
+          name: 'admin_user_access',
+          display_name: 'Admin User Access',
+        },
+        {
+          id: 16,
+          name: 'admin_user_list',
+          display_name: 'Admin User list',
+        },
+        {
+          id: 17,
+          name: 'admin_user_detail',
+          display_name: 'Admin User Detail',
+        },
+        {
+          id: 18,
+          name: 'admin_user_create',
+          display_name: 'Admin User Create',
+        },
+        {
+          id: 19,
+          name: 'admin_user_update',
+          display_name: 'Admin User Update',
+        },
+        {
+          id: 20,
+          name: 'admin_user_delete',
+          display_name: 'Admin User Delete',
+        },
+        {
+          id: 21,
+          name: 'admin_role_access',
+          display_name: 'Admin Role Access',
+        },
+        {
+          id: 21,
+          name: 'admin_role_create',
+          display_name: 'Admin Role Create',
+        },
+        {
+          id: 22,
+          name: 'admin_role_update',
+          display_name: 'Admin Role Update',
+        },
+        {
+          id: 23,
+          name: 'admin_role_delete',
+          display_name: 'Admin Role Delete',
+        },
+        {
+          id: 24,
+          name: 'admin_role_assign',
+          display_name: 'Admin Role Assign',
         },
       ],
     });

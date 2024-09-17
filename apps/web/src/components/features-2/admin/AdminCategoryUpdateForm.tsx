@@ -58,7 +58,7 @@ export default function AdminCategoryUpdateForm() {
   const mutation = useMutation({
     mutationFn: updateCategory,
     onSuccess: () => {
-      toast.success("Product updated successfully", {
+      toast.success("Category updated successfully", {
         position: "top-right",
         autoClose: 2000,
         hideProgressBar: false,
@@ -168,6 +168,9 @@ export default function AdminCategoryUpdateForm() {
       }
       queryClient.invalidateQueries({
         queryKey: [queryKeys.productCategories, { ...params }],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.productCategories],
       });
       setCurrentOperation("idle");
     }

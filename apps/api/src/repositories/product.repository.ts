@@ -2,7 +2,7 @@ import CommonPaginatedResultInterface from '@/interfaces/CommonPaginatedResultIn
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import prisma from '@/prisma';
 import paginate, { numberization } from '@/utils/paginate';
-import productWhereInput from '@/utils/products/productWhereInput';
+import productWhereInput, { productAdminWhereInput } from '@/utils/products/productWhereInput';
 import slugify from '@/utils/slugify';
 import { Product } from '@prisma/client';
 import tokenValidation from '@/utils/tokenValidation';
@@ -371,6 +371,94 @@ class ProductRepository {
     return !!(await prisma.product.findFirst({
       where: { sku, id: { not: excludeId },deletedAt:null },
     }));
+  }
+
+  async getAdminProductList({
+    search,
+    order = 'asc',
+    orderField = 'product_name',
+    limitNumber = 20,
+    pageNumber = 1,
+    adminId
+  }: {
+    search?: string;
+    order?: 'asc' | 'desc';
+    orderField?: 'product_name' | 'category';
+    pageNumber?: number;
+    limitNumber?: number;
+    adminId?:number|null
+  }): Promise<CommonPaginatedResultInterface<Product[]>> {
+    let result = {
+      ok: false,
+      data: {
+        data: null,
+        pagination: null,
+      },
+    } as unknown as CommonPaginatedResultInterface<Product[]>;
+    try {
+      const count = await prisma.product.count({
+        where: {
+          ...(await productAdminWhereInput({ search: search })),
+        },
+      });
+
+      const safePageNumber = numberization(pageNumber);
+      const safeLimitNumber = numberization(limitNumber);
+      const res = await prisma.product.findMany({
+        where: {
+          ...(await productAdminWhereInput({ search: search })),
+        },
+        skip: (safePageNumber - 1) * safeLimitNumber,
+        take: safeLimitNumber,
+        include: {
+          product_category: true,
+          StoreHasProduct: true,
+        },
+        orderBy: !order
+          ? undefined
+          : [
+              {
+                name:
+                  orderField && orderField === 'product_name'
+                    ? order
+                    : undefined,
+              },
+              {
+                product_category: {
+                  name:
+                    orderField && orderField === 'category' ? order : undefined,
+                },
+              },
+              {
+                product_category: {
+                  display_name:
+                    orderField && orderField === 'category' ? order : undefined,
+                },
+              },
+            ],
+      });
+
+      if (count <= 0) {
+        throw new Error('Not found 404');
+      }
+
+      result.data.data = res;
+
+      result.data.pagination = paginate({
+        pageNumber: safePageNumber,
+        limitNumber: safeLimitNumber,
+        totalData: count,
+      });
+
+      result.ok = true;
+      result.message = 'Query Success';
+    } catch (error) {
+      if (error instanceof Error) {
+        result.error = error.message;
+      }
+      result.message = 'Error';
+    }
+    return result;
   }
 }
 

@@ -19,7 +19,7 @@ import { Reorder, useDragControls } from "framer-motion";
 import { IoReorderFour } from "react-icons/io5";
 import { createProduct } from "@/actions/products";
 import { Bounce, toast } from "react-toastify";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAtom } from "jotai";
 import { currentProductOperation } from "@/stores/productStores";
 import { getProductCategoryList } from "@/actions/categories";
@@ -40,7 +40,6 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 export default function ProductForm() {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const queryParams = useSearchParams();
 

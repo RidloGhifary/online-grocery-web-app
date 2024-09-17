@@ -1,5 +1,4 @@
 "use client";
-import { getProductListWithFilter } from "@/actions/products";
 import AdminFilter from "@/components/features-2/admin/AdminFilter";
 import AdminProductForm from "@/components/features-2/admin/AdminProductForm";
 import AdminProductTable from "@/components/features-2/admin/AdminProductTable";
@@ -21,6 +20,7 @@ import AdminProductDelete from "@/components/features-2/admin/AdminProductDelete
 import { ToastContainer } from "react-toastify";
 import AdminProductDetailWithImage from "@/components/features-2/admin/AdminProductDetailWithImage";
 import { VscSettings } from "react-icons/vsc";
+import PermissionWrapper from "@/components/features-2/auth/PermissionWrapper";
 
 export default function AdminProductPage() {
   const [operation, setOperation] = useState<
@@ -29,10 +29,10 @@ export default function AdminProductPage() {
   const [currentOperation, setCurrentOperation] = useAtom(
     currentProductOperation,
   );
-  const [, setCurrenctProduct] = useAtom(currentDetailProductsAtom)
+  const [, setCurrenctProduct] = useAtom(currentDetailProductsAtom);
   function handleClose() {
     setOperation(undefined);
-    setCurrenctProduct(undefined)
+    setCurrenctProduct(undefined);
     setCurrentOperation("idle");
   }
   const [isDebouncing, setIsDebouncing] = useState<boolean>(false);
@@ -54,14 +54,11 @@ export default function AdminProductPage() {
     limit: Number(queryParams.get("limit")) || 20,
   });
 
-  // console.log(data?.data.data);
-  
-
   const debounced = useDebouncedCallback(
     (value) => {
       const params = new URLSearchParams(window.location.search);
       params.set("search", value);
-      params.set("page", '1');
+      params.set("page", "1");
 
       if (value === "" || !value) {
         params.delete("search");
@@ -78,7 +75,7 @@ export default function AdminProductPage() {
     setIsDebouncing(true);
     debounced(e.currentTarget.value);
   };
-  
+
   // Handle error state
   if (isError) {
     return (
@@ -93,86 +90,94 @@ export default function AdminProductPage() {
 
   return (
     <>
-      <div className="rounded-lg bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
-        <div className="p-4">
-          {/* Search bar and buttons */}
-          <div className="flex max-w-full flex-wrap justify-center">
-            <div className="flex w-full flex-1">
-              <SearchBar
-                defaultValue={queryParams.get("search") || undefined}
-                onChangeSearch={onSearch}
-              />
-            </div>
-            <div className="flex w-full flex-wrap items-center justify-center gap-3 pt-3 md:max-w-48 md:pt-0">
-              <button
-                onClick={() => setOperation("filter")}
-                className="btn w-full md:w-[40%]"
-              >
-                <VscSettings size={"1.5rem"} />
-              </button>
-              <button
+      <PermissionWrapper permissionRequired={"admin_product_access"}>
+        <div className="rounded-lg bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
+          <div className="p-4">
+            {/* Search bar and buttons */}
+            <div className="flex max-w-full flex-wrap justify-center">
+              <div className="flex w-full flex-1">
+                <SearchBar
+                  defaultValue={queryParams.get("search") || undefined}
+                  onChangeSearch={onSearch}
+                />
+              </div>
+              <div className="flex w-full flex-wrap items-center justify-center gap-3 pt-3 md:max-w-48 md:pt-0">
+                <button
+                  onClick={() => setOperation("filter")}
+                  className="btn w-full md:w-[40%]"
+                >
+                  <VscSettings size={"1.5rem"} />
+                </button>
+                <PermissionWrapper permissionRequired={"admin_product_create"}>
+                  <button
+                    onClick={() => setCurrentOperation("add")}
+                    className="btn btn-primary flex w-full items-center justify-center md:w-[40%]"
+                  >
+                    <FaPlus size={"1.5rem"} />
+                  </button>
+                </PermissionWrapper>
+                {/* <button
                 onClick={() => setCurrentOperation("add")}
                 className="btn btn-primary flex w-full items-center justify-center md:w-[40%]"
               >
                 <FaPlus size={"1.5rem"} />
-                {/* <span className="ml-2 w-full">Add</span> */}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {isLoading || isDebouncing ? (
-          <div className="flex w-full justify-center py-5">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
-          </div>
-        ) : data &&
-          data?.data &&
-          data.data.data &&
-          data.data.data.length > 0 ? (
-          <>
-            <div className="p-5">
-              <AdminProductTable products={data?.data.data!} />
-            </div>
-            <div className="flex w-full max-w-full justify-center">
-              <div className="flex w-full max-w-xl justify-center px-3 py-5">
-                <PaginationPushRoute pagination={data?.data.pagination!} />
+              </button> */}
               </div>
             </div>
-          </>
-        ) : (
-          <div className="flex w-full justify-center py-5">
-            <p>No products found.</p>
           </div>
-        )}
 
-        {/* Pagination */}
-      </div>
+          {isLoading || isDebouncing ? (
+            <div className="flex w-full justify-center py-5">
+              <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+          ) : data &&
+            data?.data &&
+            data.data.data &&
+            data.data.data.length > 0 ? (
+            <>
+              <div className="p-5">
+                <AdminProductTable products={data?.data.data!} />
+              </div>
+              <div className="flex w-full max-w-full justify-center">
+                <div className="flex w-full max-w-xl justify-center px-3 py-5">
+                  <PaginationPushRoute pagination={data?.data.pagination!} />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex w-full justify-center py-5">
+              <p>No products found.</p>
+            </div>
+          )}
 
-      <Modal show={operation === "filter" ?? false} onClose={handleClose}>
-        <div className="w-full flex sm:flex-row flex-col justify-center items-center">
-
-        <AdminFilter />
+          {/* Pagination */}
         </div>
-      </Modal>
 
-      <Modal
-        show={currentOperation !== "idle" ?? false}
-        useTCustomContentWidthClass={`${currentOperation === "detail"  ? 'sm:w-full sm:max-w-3xl':''}`}
-        onClose={handleClose}
-        closeButton={false}
-        toasterContainer={
-          <ToastContainer
-            containerId={10912}
-            position="top-center"
-            draggable={true}
-          />
-        }
-      >
-        {currentOperation === "add" ?<AdminProductForm />:''}
-        {currentOperation === "edit" ?<AdminProductUpdateForm />:''}
-        {currentOperation === "detail" ?<AdminProductDetailWithImage/>:''}
-        {currentOperation === "delete" ?<AdminProductDelete />:''}
-      </Modal>
+        <Modal show={operation === "filter" ?? false} onClose={handleClose}>
+          <div className="flex w-full flex-col items-center justify-center sm:flex-row">
+            <AdminFilter />
+          </div>
+        </Modal>
+
+        <Modal
+          show={currentOperation !== "idle" ?? false}
+          useTCustomContentWidthClass={`${currentOperation === "detail" ? "sm:w-full sm:max-w-3xl" : ""}`}
+          onClose={handleClose}
+          closeButton={false}
+          toasterContainer={
+            <ToastContainer
+              containerId={10912}
+              position="top-center"
+              draggable={true}
+            />
+          }
+        >
+          {currentOperation === "add" ? <AdminProductForm /> : ""}
+          {currentOperation === "edit" ? <AdminProductUpdateForm /> : ""}
+          {currentOperation === "detail" ? <AdminProductDetailWithImage /> : ""}
+          {currentOperation === "delete" ? <AdminProductDelete /> : ""}
+        </Modal>
+      </PermissionWrapper>
     </>
   );
 }

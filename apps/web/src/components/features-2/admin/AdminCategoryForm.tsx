@@ -132,6 +132,9 @@ export default function CategoryForm() {
   useEffect(() => {
     if (mutation.isSuccess) {
       console.log("success");
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.productCategories],
+      });
       setCurrentOperation("idle");
     }
   }, [mutation.isSuccess]);

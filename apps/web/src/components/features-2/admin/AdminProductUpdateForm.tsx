@@ -26,6 +26,7 @@ import {
 } from "@/stores/productStores";
 import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 import { CategoryCompleteInterface } from "@/interfaces/CategoryInterface";
+import { useProductCategory, useProductCategoryWithFilter } from "@/hooks/publicProductCategoriesHooks";
 
 // Define the Zod schema for validation
 const updateProductSchema = z.object({
@@ -58,11 +59,10 @@ export default function AdminProductUpdateForm() {
   const [initialData, setInitialData] = useAtom(currentDetailProductsAtom);
   const queryParams = useSearchParams();
 
-  // const router = useRouter();
   const queryClient = useQueryClient();
-  const categories = queryClient.getQueryData<
-    CommonPaginatedResultInterface<CategoryCompleteInterface[]>
-  >([queryKeys.productCategories]);
+  const {
+    data:categories, 
+  } = useProductCategory();
 
   const controls = useDragControls();
   const [, setCurrentOperation] = useAtom(currentProductOperation);

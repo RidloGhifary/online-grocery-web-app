@@ -51,3 +51,38 @@ export default async function productWhereInput({
   } satisfies Prisma.ProductWhereInput;
   return whereQuery;
 }
+
+
+export async function productAdminWhereInput({
+  search,
+}: {
+  search: string | undefined;
+}): Promise<Prisma.ProductWhereInput> {
+  const searchable = await searchFriendlyForLikeQuery(search);
+  const whereQuery = {
+    OR: [
+      {
+        name: {
+          contains: searchable,
+        },
+      },
+      {
+        description: {
+          contains: searchable,
+        },
+      },
+      {
+        sku: {
+          contains: searchable,
+        },
+      },
+      {
+        slug: {
+          contains: searchable,
+        },
+      },
+    ],
+    deletedAt: null,
+  } satisfies Prisma.ProductWhereInput;
+  return whereQuery;
+}

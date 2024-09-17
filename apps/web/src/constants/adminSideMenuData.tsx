@@ -1,6 +1,10 @@
 import React from "react";
 import { IconType } from "react-icons";
-import { FaHome, FaShoppingBag, FaUserFriends } from "react-icons/fa";
+import { FaHome, FaShoppingBag, FaUser, FaUserFriends } from "react-icons/fa";
+import { FaShop } from "react-icons/fa6";
+import { IoIosSettings } from "react-icons/io";
+import { GiFruitBowl } from "react-icons/gi";
+import { MdCategory } from "react-icons/md";
 
 export interface AdminSideMenuInterface {
   name?: string;
@@ -20,19 +24,20 @@ const adminSideMenuDatas: {
     {
       name: "admin.dashboard.menu",
       displayName: "Dashboard",
-      icon: <FaHome size={"1.5em"} />,
+      icon: <FaHome />,
       href: "",
       permission: "admin_dashboard_access",
     },
     {
       name: "admin.users.menu",
-      displayName:'User',
-      icon: <FaUserFriends size={'1.5em'} />,
+      displayName:'Account',
+      icon: <FaUserFriends />,
       permission: "admin_users_access",
       subMenu: [
         {
           name: "admin.users.list",
           displayName: "User",
+          icon:<FaUser />,
           href: "/user",
           permission: "admin_users_list",
         },
@@ -40,13 +45,8 @@ const adminSideMenuDatas: {
           name: "admin.users.roles.list",
           displayName: "Roles",
           href: "/roles",
+          icon: <IoIosSettings /> ,
           permission: "admin_users_roles_list",
-        },
-        {
-          name: "admin.users.permissions.list",
-          displayName: "Permissions",
-          href: "/permissions",
-          permission: "admin_users_permissions_list",
         },
       ],
     },
@@ -54,18 +54,20 @@ const adminSideMenuDatas: {
       name: "admin.products.menu",
       displayName: "Products",
       permission: "admin_product_access",
-      icon: <FaShoppingBag size={"1.5em"} />,
+      icon: <FaShoppingBag />,
       subMenu: [
         {
           name: "admin.products.list",
           displayName: "Products",
           href: "/products",
+          icon:<GiFruitBowl />,
           permission: "admin_product_list",
         },
         {
           name: "admin.products.category",
           displayName: "Categories",
           href: "/categories",
+          icon:<MdCategory />,
           permission: "admin_product_category",
         },
       ],
@@ -74,7 +76,7 @@ const adminSideMenuDatas: {
       name: "admin.stores.menu",
       displayName: "Stores",
       permission: "super",
-      icon: <FaShoppingBag size={"1.5em"} />,
+      icon: <FaShop />,
       subMenu: [
         {
           name: "admin.stores.list",

@@ -1,47 +1,50 @@
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import prisma from '@/prisma';
-import { UserWithRoleAndPermissionEntity } from '@/types/UserType';
-import tokenValidation from '@/utils/tokenValidation';
+import {
+  AdminWithRoleAndPermissionEntity,
+  CustomerEntity,
+} from '@/types/UserType';
 
-class UserRepository {
-  async getUserWithRoleAndPermission(
-    token?: string,
-  ): Promise<CommonResultInterface<UserWithRoleAndPermissionEntity>> {
-    let result: CommonResultInterface<UserWithRoleAndPermissionEntity> = {
+class AdminRepository {
+  async getAllAdmin(): Promise<
+    CommonResultInterface<AdminWithRoleAndPermissionEntity[]>
+  > {
+    let result: CommonResultInterface<AdminWithRoleAndPermissionEntity[]> = {
       ok: false,
     };
     try {
-      // console.log(tokenValidation(token).data!);
-      const { id, email } = tokenValidation(token).data!;
-
-      const userDataWithRoleAndPermission = await prisma.user.findFirst({
-        where: {
-          AND: {
-            id: id,
-            email: email,
-            deleted_at: null,
-          },
-        },
+      const adminData = await prisma.user.findMany({
         omit: {
           password: true,
+        },
+        where: {
+          role: {
+            some: {
+              role: { isNot: null },
+            },
+          },
+          deleted_at: null,
         },
         include: {
           role: {
             include: {
               role: {
                 include: {
-                  roles_permissions: { include: { permission: true } },
+                  roles_permissions: {
+                    include: {
+                      permission: true,
+                    },
+                  },
                 },
               },
             },
           },
-          store_admins: true,
         },
       });
-      if (!userDataWithRoleAndPermission) throw new Error('404');
+      if (!adminData) throw new Error('404');
       result.ok = true;
-      result.data = userDataWithRoleAndPermission;
-      result.message = 'User data exist';
+      result.data = adminData;
+      result.message = 'Admin data exist';
     } catch (error) {
       let errorMessage = (error as Error).message;
       switch (errorMessage) {
@@ -50,6 +53,37 @@ class UserRepository {
           result.message = 'Data not found';
           break;
 
+        default:
+          result.error = error;
+          break;
+      }
+    }
+    return result;
+  }
+  async getAllCustomer(): Promise<CommonResultInterface<CustomerEntity[]>> {
+    let result: CommonResultInterface<CustomerEntity[]> = {
+      ok: false,
+    };
+    try {
+      const customerData = await prisma.user.findMany({
+        omit: { password: true },
+        where: {
+          role: {
+            none: {},
+          },
+        },
+      });
+      if (!customerData) throw new Error('404');
+      result.ok = true;
+      result.data = customerData;
+      result.message = 'Cuatomers data exist';
+    } catch (error) {
+      let errorMessage = (error as Error).message;
+      switch (errorMessage) {
+        case '404':
+          result.error = '404';
+          result.message = 'Data not found';
+          break;
         default:
           result.error = error;
           break;
@@ -97,8 +131,8 @@ class UserRepository {
         !ress.role?.roles_permissions.filter(
           (e) =>
             e.permission.name.includes('super') ||
-            e.permission.name.includes(permission)||
-            ress.role?.name.includes('super')
+            e.permission.name.includes(permission) ||
+            ress?.role?.name.includes('super'),
         )
       ) {
         result.message = "You don't have the related permission";
@@ -112,4 +146,4 @@ class UserRepository {
   }
 }
 
-export const userRepository = new UserRepository();
+export const adminRepository = new AdminRepository();

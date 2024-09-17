@@ -2,7 +2,7 @@
 import { AdminSideMenuInterface, adminSideMenuDatas } from "@/constants/adminSideMenuData";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
+import React, { ReactNode } from "react";
 import { IconType } from "react-icons";
 import { useQuery } from "@tanstack/react-query";
 import { getAdmin } from "@/actions/user";
@@ -66,8 +66,8 @@ export default function AdminSideMenu() {
         return (
           <li key={item.name}>
             <details open={shouldOpen}>
-              <summary>{renderDisplayName(item.displayName)}</summary>
-              <ul>{renderMenuItems(item.subMenu)}</ul>
+              <summary>{item.icon as ReactNode?item.icon as ReactNode:''} {renderDisplayName(item.displayName)}</summary>
+              <ul> {renderMenuItems(item.subMenu)}</ul>
             </details>
           </li>
         );
@@ -75,7 +75,7 @@ export default function AdminSideMenu() {
         return (
           <li key={item.name}>
             <Link className={` ${isActive ? "font-bold" : ""}`} href={`${baseUrlGroup}${item.href}`}>
-              {renderDisplayName(item.displayName)}
+            {item.icon as ReactNode?item.icon as ReactNode:''} {renderDisplayName(item.displayName)}
             </Link>
           </li>
         );

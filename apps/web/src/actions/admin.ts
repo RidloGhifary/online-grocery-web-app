@@ -35,8 +35,7 @@ export async function getAvailableAdmin(): Promise<
     result.message = data.message || "Got the available admin";
   } catch (error) {
     result.error =
-      error instanceof Error ? error.message : "Failed to unassign admin";
-    console.log(error);
+      error instanceof Error ? error.message : "Failed to get available admin";
   }
 
   return result;
@@ -79,7 +78,6 @@ export async function assignAdmin({
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to assign admin";
-    console.log(error);
   }
 
   return result;
@@ -122,7 +120,6 @@ export async function unAssignAdmin({
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to unassign admin";
-    console.log(error);
   }
 
   return result;

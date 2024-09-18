@@ -35,7 +35,6 @@ export default function ChangeEmailRedirect() {
 
     if (data) {
       if (data.ok && !isLoading && !cookiesSet) {
-        console.log("🚀 ~ ChangeEmailRedirect ~ data:", data);
         deleteCookie("token");
         setCookies("token", data.token as string);
         setCookiesSet(true); // Mark that cookies have been set

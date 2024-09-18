@@ -32,9 +32,7 @@ export async function getStores(): Promise<
     result.message = "Got the Stores";
     return result;
   } catch (error) {
-    result.error =
-      error instanceof Error ? error.message : "Failed to stores";
-    console.log(error);
+    result.error = error instanceof Error ? error.message : "Failed to stores";
   }
 
   return result;
@@ -75,7 +73,6 @@ export async function getDetailStores({
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to store detail";
-    console.log(error);
   }
 
   return result;
@@ -128,7 +125,6 @@ export async function createStore({
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to create store";
-    console.log(error);
   }
 
   return result;
@@ -174,7 +170,6 @@ export async function editStore({
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to update store";
-    console.log(error);
   }
 
   return result;
@@ -210,12 +205,11 @@ export async function deleteStore({
 
     const data = await response.json();
     result.ok = true;
-    result.message = data.message|| "Store deleted successfully";
+    result.message = data.message || "Store deleted successfully";
     return result;
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to delete store";
-    console.log(error);
   }
 
   return result;

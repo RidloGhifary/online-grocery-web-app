@@ -86,7 +86,6 @@ export async function verifyAccount({
     result.ok = responseData.ok;
     result.message = responseData.message;
   } catch (error) {
-    console.log("🚀 ~ loginAuth ~ error:", error);
     result.error = error instanceof Error ? error.message : "Failed to verify";
   }
 

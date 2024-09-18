@@ -13,7 +13,6 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  console.log("🚀 ~ ProductCard ~ product:", product);
   return (
     <Link
       href={`/products/${product?.slug}`}

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrimaryAddress } from "@/actions/address";
+import { asPrimaryAddress } from "@/actions/address";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
@@ -16,7 +16,7 @@ export default function UsePrimaryAddressButton({
   const router = useRouter();
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: () => usePrimaryAddress({ id }),
+    mutationFn: () => asPrimaryAddress({ id }),
     onSuccess: (res) => {
       if (res.ok) {
         toast.success("Address set as primary");

@@ -58,6 +58,7 @@ export default function DeleteAddress({ id }: DeleteAddressProps) {
         }}
         actions={[
           <button
+            key={"confirm-delete-user-address"}
             disabled={isLoading}
             type="button"
             className="btn btn-primary text-white"

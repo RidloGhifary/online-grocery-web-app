@@ -34,7 +34,7 @@ export async function addAddress(formData: CreateAddressFormData) {
   return result;
 }
 
-export async function usePrimaryAddress({ id }: { id: number }) {
+export async function asPrimaryAddress({ id }: { id: number }) {
   const result = {
     ok: false,
   } as CommonResultInterface<any>;

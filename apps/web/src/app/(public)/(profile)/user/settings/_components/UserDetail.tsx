@@ -100,6 +100,7 @@ export default function UserDetail({ user }: UserDetailProps) {
         }}
         actions={[
           <button
+            key="confirm-send-email-reset-password"
             disabled={isLoading}
             type="button"
             className="btn btn-primary text-white"

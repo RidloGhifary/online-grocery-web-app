@@ -7,12 +7,17 @@ import Link from "next/link";
 import { RiGitBranchFill } from "react-icons/ri";
 import { FaStore } from "react-icons/fa6";
 import calculatedDiscount from "@/utils/calculateDiscount";
+import parseImage from "@/utils/parseImage";
 
 interface ProductCardProps {
   product: ProductProps;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const imageSrc = product?.image
+    ? parseImage(product?.image as string)[0]
+    : "/default-image.jpeg";
+
   return (
     <Link
       href={`/products/${product?.slug}`}
@@ -22,7 +27,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <Image
           width={300}
           height={300}
-          src={"/default-image.jpeg"}
+          src={imageSrc}
           alt="Placeholder"
           className="aspect-square max-h-[140px] w-full object-cover md:max-h-[180px]"
           loading="lazy"

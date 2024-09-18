@@ -30,10 +30,15 @@ export default function ProductBasedDiscount({
 
   if (isLoading) return <SectionSkeleton />;
 
-  if (isError) return <ErrorInfo />;
+  if (isError) return <ErrorInfo className="mt-8" />;
 
   if (products?.data?.length === 0)
-    return <ErrorInfo error="Ups, There is no product discount for now" />;
+    return (
+      <ErrorInfo
+        error="Ups, There is no product discount for now"
+        className="mt-8"
+      />
+    );
 
   return (
     <div className="my-8 w-full">

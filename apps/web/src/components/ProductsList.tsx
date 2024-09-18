@@ -91,10 +91,11 @@ export default function ProductsList({ api_url }: Props) {
     );
   }
 
-  if (error) return <ErrorInfo error="Ups, no products found" />;
+  if (error)
+    return <ErrorInfo error="Ups, no products found" className="mt-8" />;
 
   if (products?.length === 0) {
-    return <ErrorInfo error="Ups, no products found" />;
+    return <ErrorInfo error="Ups, no products found" className="mt-8" />;
   }
 
   return (

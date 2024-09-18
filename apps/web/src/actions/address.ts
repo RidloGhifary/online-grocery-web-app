@@ -7,7 +7,7 @@ import { getCookies } from "./cookies";
 export async function addAddress(formData: CreateAddressFormData) {
   const result = {
     ok: false,
-  } as CommonResultInterface<any>;
+  } as CommonResultInterface<{}>;
 
   const token = await getCookies("token");
   if (!token) return result;
@@ -23,8 +23,8 @@ export async function addAddress(formData: CreateAddressFormData) {
     });
 
     const data = await response.json();
-    result.ok = data.ok;
-    result.message = data.message;
+    result.ok = data.ok || true;
+    result.message = data.message || "Address added successfully";
     result.data = data.data;
   } catch (error) {
     result.error =
@@ -54,12 +54,14 @@ export async function usePrimaryAddress({ id }: { id: number }) {
     );
 
     const data = await response.json();
-    result.ok = data.ok;
-    result.message = data.message;
+    result.ok = data.ok || true;
+    result.message = data.message || "Address set as primary";
     result.data = data.data;
   } catch (error) {
     result.error =
-      error instanceof Error ? error.message : "Failed to use address as primary";
+      error instanceof Error
+        ? error.message
+        : "Failed to use address as primary";
   }
 
   return result;
@@ -85,8 +87,8 @@ export async function deleteAddress({ id }: { id: number }) {
     );
 
     const data = await response.json();
-    result.ok = data.ok;
-    result.message = data.message;
+    result.ok = data.ok || true;
+    result.message = data.message || "Address deleted successfully";
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to delete address";

@@ -28,8 +28,8 @@ export async function getStores(): Promise<
 
     const data = await response.json();
     result.data = data.data as StoreProps[];
-    result.ok = true;
-    result.message = "Got the Stores";
+    result.ok = data.ok || true;
+    result.message = data.message || "Got the Stores";
     return result;
   } catch (error) {
     result.error = error instanceof Error ? error.message : "Failed to stores";
@@ -67,8 +67,8 @@ export async function getDetailStores({
 
     const data = await response.json();
     result.data = data.data as DetailStoreProps;
-    result.ok = true;
-    result.message = "Got the Detail Store";
+    result.ok = data.ok || true;
+    result.message = data.message || "Got the Detail Store";
     return result;
   } catch (error) {
     result.error =
@@ -119,8 +119,8 @@ export async function createStore({
 
     const data = await response.json();
     result.data = data.data;
-    result.ok = true;
-    result.message = "Store created successfully";
+    result.ok = data.ok || true;
+    result.message = data.message || "Store created successfully";
     return result;
   } catch (error) {
     result.error =
@@ -164,8 +164,8 @@ export async function editStore({
 
     const data = await response.json();
     result.data = data.data;
-    result.ok = true;
-    result.message = "Store updated successfully";
+    result.ok = data.ok || true;
+    result.message = data.message || "Store updated successfully";
     return result;
   } catch (error) {
     result.error =
@@ -179,10 +179,10 @@ export async function deleteStore({
   storeId,
 }: {
   storeId: number;
-}): Promise<CommonResultInterface<any>> {
+}): Promise<CommonResultInterface<{}>> {
   const result = {
     ok: false,
-  } as CommonResultInterface<any>;
+  } as CommonResultInterface<{}>;
 
   try {
     const token = await getCookies("token");
@@ -204,7 +204,7 @@ export async function deleteStore({
     }
 
     const data = await response.json();
-    result.ok = true;
+    result.ok = data.ok || true;
     result.message = data.message || "Store deleted successfully";
     return result;
   } catch (error) {

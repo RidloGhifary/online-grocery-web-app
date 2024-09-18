@@ -33,9 +33,9 @@ export async function changeEmail({
         },
       );
       const responseData = await response.json();
-      result.ok = true;
+      result.ok = responseData?.ok || true;
       result.token = responseData?.token;
-      result.message = responseData?.message;
+      result.message = responseData?.message || "Email changed successfully";
       result.token = responseData?.token;
     } else {
       if (!token) return result;
@@ -51,11 +51,10 @@ export async function changeEmail({
         },
       );
       const responseData = await response.json();
-      result.ok = true;
-      result.message = responseData?.message;
+      result.ok = responseData?.ok || true;
+      result.message = responseData?.message || "Email sent successfully";
     }
   } catch (error) {
-    console.log("🚀 ~ error:", error);
     result.error = (error as Error).message;
   }
 

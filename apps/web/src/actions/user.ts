@@ -130,7 +130,7 @@ export async function updateProfile({
     );
 
     const dataResponse = await response.json();
-    result.ok = true;
+    result.ok = dataResponse?.ok || true;
     result.message = dataResponse?.message || "Updated profile successfully";
   } catch (error) {
     let errorMessage = (error as Error).message;

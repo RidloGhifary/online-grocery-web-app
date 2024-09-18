@@ -173,7 +173,7 @@ export class UserController {
       // make that remaining address the new primary address
       if (isPrimary && userAddresses.length === 2) {
         const remainingAddress = userAddresses.find(
-          (address) => address.id !== Number(address_id),
+          (address: { id: number }) => address.id !== Number(address_id),
         );
 
         if (remainingAddress) {

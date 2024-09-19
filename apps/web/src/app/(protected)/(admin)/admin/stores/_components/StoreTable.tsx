@@ -14,6 +14,10 @@ import CreateStore from "./storeAction/createStore/CreateStore";
 import TableActions from "./StoreTableActions";
 import { useAtom } from "jotai";
 import { sortCriteriaAtom, sortDirectionAtom } from "./state/sortAtoms";
+import { MdNavigateNext, MdNavigateBefore } from "react-icons/md";
+import { useEffect, useState } from "react";
+import { searchQueryAtom } from "./state/searchAtoms";
+import { StoreProps } from "@/interfaces/store";
 
 export default function StoreTable() {
   const router = useRouter();
@@ -21,18 +25,70 @@ export default function StoreTable() {
   const actions = searchParams.get("actions");
   const storeId = Number(searchParams.get("id"));
 
+  function useDebounce(value: string, delay: number) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      return () => {
+        clearTimeout(handler); // Cleanup the timeout if value changes before the delay ends
+      };
+    }, [value, delay]);
+
+    return debouncedValue;
+  }
+
+  const [pageNumber, setPageNumber] = useState<number>(1);
+
   const {
     data: stores,
     isLoading,
     error,
     isError,
   } = useQuery({
-    queryKey: ["stores"],
-    queryFn: () => getStores(),
+    queryKey: ["stores", pageNumber],
+    queryFn: () => getStores({ page: pageNumber }),
   });
 
+  const [searchQuery] = useAtom(searchQueryAtom);
   const [sortCriteria] = useAtom(sortCriteriaAtom);
   const [sortDirection] = useAtom(sortDirectionAtom);
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 1500);
+
+  const filterStores = (stores: StoreProps[]) => {
+    if (!debouncedSearchQuery) return stores; // If no search query, return all stores
+
+    let key = "name"; // Default key is 'name'
+    let value = debouncedSearchQuery;
+
+    // Check if the searchQuery contains a valid key (name:, city:, or province:)
+    if (debouncedSearchQuery.includes(":")) {
+      const parsedQuery = debouncedSearchQuery.split(":");
+      if (parsedQuery.length === 2) {
+        key = parsedQuery[0];
+        value = parsedQuery[1];
+      }
+    }
+
+    // Apply the filter based on the key
+    return stores.filter((store) => {
+      if (key === "name")
+        return store.name.toLowerCase().includes(value.toLowerCase());
+      if (key === "city")
+        return store?.city?.city_name
+          .toLowerCase()
+          .includes(value.toLowerCase());
+      if (key === "province")
+        return store?.province?.province
+          .toLowerCase()
+          .includes(value.toLowerCase());
+      return false;
+    });
+  };
 
   // Sort stores based on selected criteria and direction
   const sortedStores = stores?.data?.slice().sort((a, b) => {
@@ -97,6 +153,8 @@ export default function StoreTable() {
     );
   }
 
+  const filteredStores = filterStores(stores?.data || []);
+
   return (
     <div className="max-h-[100vh] space-y-3 overflow-x-auto overflow-y-auto">
       <div className="flex items-center justify-between">
@@ -121,14 +179,14 @@ export default function StoreTable() {
           </tr>
         </thead>
         <tbody>
-          {sortedStores?.length === 0 ? (
+          {filteredStores?.length === 0 ? (
             <tr>
               <td colSpan={6} className="text-center">
                 No Store available
               </td>
             </tr>
           ) : (
-            sortedStores?.map((store) => (
+            filteredStores?.map((store) => (
               <tr key={store.id}>
                 <td>
                   <Image
@@ -176,6 +234,30 @@ export default function StoreTable() {
           )}
         </tbody>
       </table>
+      {stores?.pagination && (
+        <div className="flex items-center justify-items-end gap-1">
+          <button
+            disabled={!stores?.pagination?.back}
+            onClick={() => setPageNumber((prev) => prev - 1)}
+            className="btn btn-primary btn-sm text-white disabled:cursor-not-allowed"
+          >
+            <MdNavigateBefore />
+            {stores?.pagination?.back}
+          </button>
+          <button className="btn btn-primary btn-sm text-white">
+            {stores?.pagination?.current_page} -{" "}
+            {stores?.pagination?.total_page}
+          </button>
+          <button
+            disabled={!stores?.pagination?.next}
+            onClick={() => setPageNumber((prev) => prev + 1)}
+            className={`btn btn-primary btn-sm text-white disabled:cursor-not-allowed`}
+          >
+            <MdNavigateNext />
+            {stores?.pagination?.next}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

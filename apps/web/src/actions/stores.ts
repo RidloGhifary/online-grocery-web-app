@@ -4,22 +4,36 @@ import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import { getCookies } from "./cookies";
 import { DetailStoreProps, StoreProps } from "@/interfaces/store";
 
-export async function getStores(): Promise<
-  CommonResultInterface<StoreProps[]>
-> {
+export interface GetStoresResponse extends CommonResultInterface<StoreProps[]> {
+  pagination?: {
+    current_page: number;
+    next: number | null;
+    back: number | null;
+    total_page: number;
+  };
+}
+
+export async function getStores({
+  page = 1,
+}: {
+  page: number;
+}): Promise<GetStoresResponse> {
   const result = {
     ok: false,
-  } as CommonResultInterface<StoreProps[]>;
+  } as GetStoresResponse;
 
   try {
     const token = await getCookies("token");
     if (!token) return result;
 
-    const response = await fetch(`${process.env.BACKEND_URL}/stores`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/stores?page=${page}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       result.error = `Failed to stores: ${response.statusText}`;
@@ -30,6 +44,7 @@ export async function getStores(): Promise<
     result.data = data.data as StoreProps[];
     result.ok = data.ok || true;
     result.message = data.message || "Got the Stores";
+    result.pagination = data.pagination || null;
     return result;
   } catch (error) {
     result.error = error instanceof Error ? error.message : "Failed to stores";

@@ -2,10 +2,28 @@ import prisma from '@/prisma';
 import { Request, Response } from 'express';
 import getCoordinates from '@/utils/getUserCoordinates';
 import getUserPermission from '@/utils/getUserPermission';
+import paginate from '@/utils/paginate';
 
 export class StoreController {
   async getStores(req: Request, res: Response) {
+    const { page = 1 } = req.query;
+
+    if (Number(page) < 0)
+      return res
+        .status(400)
+        .json({ ok: false, message: 'Invalid page number' });
+
     try {
+      const { ok, message } = await getUserPermission({
+        user_id: req.currentUser?.id,
+        role: 'super_admin',
+        permission: 'super',
+      });
+
+      if (!ok) {
+        return res.status(400).json({ ok, message });
+      }
+
       const stores = await prisma.store.findMany({
         where: {
           created_by: Number(req.currentUser?.id),
@@ -17,9 +35,16 @@ export class StoreController {
         orderBy: {
           createdAt: 'asc',
         },
+        take: 20,
+        skip: (Number(page) - 1) * 20,
       });
 
-      res.status(200).json({ ok: true, data: stores });
+      const pagination = paginate({
+        pageNumber: Number(page),
+        totalData: stores.length,
+      });
+
+      res.status(200).json({ ok: true, data: stores, pagination });
     } catch {
       res.status(500).json({ ok: false, message: 'Internal server error' });
     }

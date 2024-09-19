@@ -90,25 +90,6 @@ export default function StoreTable() {
     });
   };
 
-  // Sort stores based on selected criteria and direction
-  const sortedStores = stores?.data?.slice().sort((a, b) => {
-    if (!a || !b || !sortCriteria) {
-      return 0; // Return 0 if any of the objects or sortCriteria is undefined
-    }
-
-    // Ensure the properties exist on the objects before comparison
-    const aValue = a[sortCriteria];
-    const bValue = b[sortCriteria];
-
-    // Handle potential undefined values in the comparison fields
-    if (aValue === undefined || bValue === undefined) {
-      return 0;
-    }
-
-    const compareValue = aValue > bValue ? 1 : -1;
-    return sortDirection === "asc" ? compareValue : -compareValue;
-  });
-
   // Handle loading state
   if (isLoading) {
     return (
@@ -135,6 +116,33 @@ export default function StoreTable() {
     storeId !== null &&
     stores?.data?.filter((store) => store?.id === storeId);
 
+  // Sort stores based on selected criteria and direction
+  const filterAndSortStores = (stores: StoreProps[]) => {
+    // First, filter the stores
+    const filteredStores = filterStores(stores || []);
+
+    // Then, sort the filtered stores based on the selected criteria and direction
+    return filteredStores?.slice().sort((a, b) => {
+      if (!a || !b || !sortCriteria) {
+        return 0; // Return 0 if any of the objects or sortCriteria is undefined
+      }
+
+      // Ensure the properties exist on the objects before comparison
+      const aValue = a[sortCriteria];
+      const bValue = b[sortCriteria];
+
+      // Handle potential undefined values in the comparison fields
+      if (aValue === undefined || bValue === undefined) {
+        return 0;
+      }
+
+      const compareValue = aValue > bValue ? 1 : -1;
+      return sortDirection === "asc" ? compareValue : -compareValue;
+    });
+  };
+
+  const processedStores = filterAndSortStores(stores?.data || []);
+
   if (actions === "edit" && storeId && storeWithStoreId) {
     return (
       <EditStore id={storeId} store={storeWithStoreId && storeWithStoreId[0]} />
@@ -153,11 +161,9 @@ export default function StoreTable() {
     );
   }
 
-  const filteredStores = filterStores(stores?.data || []);
-
   return (
     <div className="max-h-[100vh] space-y-3 overflow-x-auto overflow-y-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 overflow-x-auto overflow-y-hidden p-2">
         <Link
           href="/admin/stores?actions=create-store"
           className="btn btn-primary btn-sm text-white"
@@ -179,14 +185,14 @@ export default function StoreTable() {
           </tr>
         </thead>
         <tbody>
-          {filteredStores?.length === 0 ? (
+          {processedStores?.length === 0 ? (
             <tr>
               <td colSpan={6} className="text-center">
                 No Store available
               </td>
             </tr>
           ) : (
-            filteredStores?.map((store) => (
+            processedStores?.map((store) => (
               <tr key={store.id}>
                 <td>
                   <Image

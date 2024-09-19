@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { IoMdRefresh } from "react-icons/io";
 import { sortCriteriaAtom, sortDirectionAtom } from "./state/sortAtoms";
-import { CiCircleInfo } from "react-icons/ci";
+// import { CiCircleInfo } from "react-icons/ci";
 import { searchQueryAtom } from "./state/searchAtoms";
 
 export default function TableActions() {
@@ -28,14 +28,14 @@ export default function TableActions() {
   return (
     <div className="flex gap-2">
       <div
-        className="tooltip tooltip-bottom tooltip-info flex items-center gap-1"
-        data-tip={`Use name:store-name for search store by name\nUse city:city-name for search store by city\nUse province:province-name for search store by province\nif you don't specify the criteria, it will search by name`}
+        className="tooltip tooltip-left tooltip-info flex items-center gap-1"
+        // data-tip={`Use name:store-name for search store by name\nUse city:city-name for search store by city\nUse province:province-name for search store by province\nif you don't specify the criteria, it will search by name`}
       >
-        <CiCircleInfo className="text-xl" />
+        {/* <CiCircleInfo className="text-xl" /> */}
         <input
           type="text"
           placeholder="name:store-name"
-          className="input input-sm input-bordered w-full max-w-xs"
+          className="w-xs input input-sm input-bordered"
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>

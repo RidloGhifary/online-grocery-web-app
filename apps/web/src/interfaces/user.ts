@@ -69,7 +69,7 @@ export interface UserInterface {
   email: string;
   phone_number: string | null;
   gender: "male" | "female";
-  password: string | null;
+  password?: string ;
   middle_name: string | null;
   image: string | null;
   referral: string | null;

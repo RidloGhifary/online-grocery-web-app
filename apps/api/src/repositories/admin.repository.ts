@@ -254,7 +254,7 @@ class AdminRepository {
       }
       const [newData] = await prisma.$transaction([
         prisma.user.create({
-          data: { ...admin, role: { create: { role_id: roleId } } },
+          data: { ...admin, role: { create: { role_id: roleId } }, validated_at: new Date },
         }),
       ]);
       if (newData) {
@@ -278,8 +278,20 @@ class AdminRepository {
     try {
       const adminId = admin.id;
       const roleId = admin.role_id;
+      let hashedPassword :string
+      // console.log('admin passswwwworrdd');
+      
+      // console.log(admin.password);
+      
+      if (admin.password) {
+        hashedPassword = await bcrypt.hash(admin.password, 10);
+        admin.password = hashedPassword
+      } else {
+        admin.password = undefined
+      }
       delete admin.role_id;
       delete admin.id;
+      // const prepData = {...admin, }
       const roleUpdate = {role: {
         updateMany: {
           where: { user_id: adminId },

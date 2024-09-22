@@ -1,7 +1,9 @@
 "use client";
+import AdminDataDelete from "@/components/features-2/admin/AdminManageDelete";
 import AdminManageDetailWithImage from "@/components/features-2/admin/AdminManageDetailWithImage";
 import AdminForm from "@/components/features-2/admin/AdminManageForm";
 import AdminManageTable from "@/components/features-2/admin/AdminManageTable";
+import AdminUpdateForm from "@/components/features-2/admin/AdminManageUpdateForm";
 import { Modal } from "@/components/features-2/ui/Modal";
 import PaginationPushRoute from "@/components/features-2/ui/PaginationPushRoute";
 import SearchBar from "@/components/features-2/ui/SearchBar";
@@ -24,7 +26,6 @@ export default function () {
   );
   const [, setCurrentData] = useAtom(currentDetailAdminAtom)
   function handleClose() {
-    setOperation(undefined);
     setCurrentData(undefined)
     setCurrentOperation("idle");
   }
@@ -151,6 +152,8 @@ export default function () {
       >
         {currentOperation==='detail'? <AdminManageDetailWithImage />:''}
         {currentOperation==='add'? <AdminForm />:''}
+        {currentOperation==='edit'? <AdminUpdateForm />:''}
+        {currentOperation==='delete'? <AdminDataDelete />:''}
       </Modal>
     </>
   );

@@ -18,7 +18,7 @@ export default function AdminProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (admin?.data) {
       const permissions = flattenUserPermissions(admin.data);
-      console.log(admin);
+      // console.log(admin);
       
       setPermissions(permissions);
     }

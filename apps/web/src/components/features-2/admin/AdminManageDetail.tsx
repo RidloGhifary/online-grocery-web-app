@@ -38,6 +38,10 @@ export default function () {
                 </td>
               </tr>
               <tr className="border-b">
+                <td className="py-2 text-sm font-bold">Username</td>
+                <td className="py-2 text-right text-sm">{admin.username}</td>
+              </tr>
+              <tr className="border-b">
                 <td className="py-2 text-sm font-bold">Email</td>
                 <td className="py-2 text-right text-sm">{admin.email}</td>
               </tr>

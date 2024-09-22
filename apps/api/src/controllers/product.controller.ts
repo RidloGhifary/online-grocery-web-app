@@ -394,7 +394,7 @@ export class ProductController {
     res: Response,
   ): Promise<void | Response> {
     const product: UpdateProductInputInterface = req.body;
-    console.log(product);
+    // console.log(product);
     
     const updatedData = await productRepository.updateProduct(product);
     if (!updatedData.ok) {

@@ -443,10 +443,10 @@ export default function AdminProductUpdateForm() {
         </div>
       </div>
 
-      {/* Submit button */}
+      {/* Other action button */}
       <div className="flex max-w-full justify-end py-5">
         <div className="flex flex-row justify-end gap-3">
-          <PermissionWrapper permissionRequired={"admin_product_update"}>
+          <PermissionWrapper permissionRequired={"super"}>
             <Button
               replaceTWClass="btn btn-error btn-sm"
               id={initialData.id}
@@ -468,7 +468,7 @@ export default function AdminProductUpdateForm() {
             Detail
             <FaInfo />
           </Button>
-          <PermissionWrapper permissionRequired={"admin_product_delete"}>
+          <PermissionWrapper permissionRequired={"super"}>
             <Button type="submit" replaceTWClass="btn btn-primary btn-sm">
               Save <FaRegSave />
               {mutation.isPending ? (

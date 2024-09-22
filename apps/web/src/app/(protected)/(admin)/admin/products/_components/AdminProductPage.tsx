@@ -68,7 +68,7 @@ export default function AdminProductPage() {
       setIsDebouncing(false);
     },
     1000,
-    { leading: true },
+    { leading: true,trailing:true, },
   );
 
   const onSearch: ChangeEventHandler<HTMLInputElement> = (e) => {

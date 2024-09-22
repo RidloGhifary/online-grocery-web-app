@@ -1,35 +1,42 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import ButtonWithAction from "../ui/ButtonWithAction";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/constants/queryKeys";
 import Select from "react-select";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import { UploadDropzone } from "@/utils/uploadthing";
-import { FaCheck, FaRegSave, FaTrash } from "react-icons/fa";
+import { FaCheck, FaInfo, FaRegSave, FaTrash } from "react-icons/fa";
 import Image from "next/image";
 import { Bounce, toast } from "react-toastify";
 import { useSearchParams } from "next/navigation";
 import { useAtom } from "jotai";
 import { getAllRoleList } from "@/actions/role";
-import { currentAdminOperationAtom, currentDetailAdminAtom } from "@/stores/adminStores";
-import { createAdmin, updateAdmin } from "@/actions/admin";
-import { UserInputInterface, UserInterface, UserUpdateInputInterface } from "@/interfaces/user";
+import {
+  currentAdminOperationAtom,
+  currentDetailAdminAtom,
+} from "@/stores/adminStores";
+import { updateAdmin } from "@/actions/admin";
+import { UserInterface, UserUpdateInputInterface } from "@/interfaces/user";
 import Button from "../ui/ButtonWithAction";
+import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
+import PermissionWrapper from "../auth/PermissionWrapper";
 
 // Define the Zod schema for validation
 const adminSchema = z.object({
-  id:z.number().positive('ID should be in valid format'),
+  id: z.number().positive("ID should be in valid format"),
   username: z.string().min(1, { message: "Username is required" }).optional(),
   email: z.string().email({ message: "Invalid email address" }),
-  phone_number: z.string().nullable().optional().optional(),
-  first_name: z.string().min(1, { message: "First name is required" }).optional(),
+  phone_number: z.string().nullable().optional().optional().refine((value) => value && /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(value),'Not valid phone number'),
+  first_name: z
+    .string()
+    .min(1, { message: "First name is required" })
+    .optional(),
   last_name: z.string().min(1, { message: "Last name is required" }).optional(),
   gender: z.enum(["male", "female"]).optional(),
-  password: z.string().min(1, { message: "Password is required" }).optional().nullable(),
+  password: z.string().optional(),
   middle_name: z.string().nullable().optional(),
   image: z.string().nullable().optional(),
   role_id: z.number().int().min(1, { message: "Role is required" }).optional(), // Add the image field
@@ -41,7 +48,7 @@ type AdminFormValues = z.infer<typeof adminSchema>;
 export default function AdminUpdateForm() {
   const queryClient = useQueryClient();
   const queryParams = useSearchParams();
-  const [currentData, setCurrentData] = useAtom(currentDetailAdminAtom)
+  const [currentData, setCurrentData] = useAtom(currentDetailAdminAtom);
 
   const [, setCurrentOperation] = useAtom(currentAdminOperationAtom);
   const { data: rolesData, isLoading: roleLoading } = useQuery({
@@ -52,8 +59,17 @@ export default function AdminUpdateForm() {
   // Check if rolesData is valid and contains data
   const roles = Array.isArray(rolesData?.data?.data) ? rolesData.data.data : [];
 
-  const [uploadedImages, setUploadedImages] = useState<string>();
-  
+  const [uploadedImages, setUploadedImages] = useState<string | undefined>(
+    currentData?.image! ,
+  );
+
+  const currentRole = currentData?.role ? currentData?.role[0].role?.id : 2;
+
+  console.log(roles);
+
+  console.log("--");
+
+  console.log({ ...currentData, password: undefined, role_id: currentRole });
 
   const {
     register,
@@ -61,14 +77,17 @@ export default function AdminUpdateForm() {
     formState: { errors },
     setValue,
     watch,
-    reset
+    reset,
   } = useForm<AdminFormValues>({
     resolver: zodResolver(adminSchema),
-    defaultValues: currentData,
+    defaultValues: { ...currentData, role_id: currentRole },
+    mode:'onChange'
   });
+
   useEffect(() => {
     reset(currentData);
   }, [currentData, reset]);
+
   const mutation = useMutation({
     mutationFn: updateAdmin,
     onSuccess: () => {
@@ -82,7 +101,7 @@ export default function AdminUpdateForm() {
         progress: undefined,
         theme: "colored",
         transition: Bounce,
-        // containerId:10912
+        containerId: 10912,
       });
       const params = {
         search: queryParams.get("search") || "",
@@ -151,7 +170,7 @@ export default function AdminUpdateForm() {
       }
     },
   });
-  
+
   const onSubmit = (data: AdminFormValues) => {
     // Create a copy of the submitted data
     const modifiedData = { ...data };
@@ -162,8 +181,15 @@ export default function AdminUpdateForm() {
       if (key === "id") return;
 
       // Compare the submitted value with the initial value
-      type CommonKeys = keyof AdminFormValues &
-        keyof UserInterface;
+      type CommonKeys = keyof AdminFormValues & keyof UserInterface;
+
+      if (
+        key === "password" &&
+        (!data[key as CommonKeys] || data[key as CommonKeys] === "")
+      ) {
+        delete modifiedData[key as keyof AdminFormValues];
+        // return;
+      }
 
       if (data[key as CommonKeys] === currentData?.[key as CommonKeys]) {
         // If the value is the same as the initial data, delete the field
@@ -222,23 +248,50 @@ export default function AdminUpdateForm() {
     setUploadedImages(undefined);
     setValue("image", uploadedImages);
   };
+
+  function handleDetail(e: MouseEvent) {
+    e.preventDefault();
+    setCurrentOperation("detail");
+  }
+
+  function handleDelete(e: MouseEvent) {
+    e.preventDefault();
+    setCurrentOperation("delete");
+  }
+
   useEffect(() => {
     if (mutation.isSuccess) {
       console.log("success");
+      const params = {
+        search: queryParams.get("search") || "",
+        orderField: queryParams.get("orderField") || "name",
+        order: (queryParams.get("order") as "asc" | "desc") || "asc",
+        page: Number(queryParams.get("page")) || 1,
+        limit: Number(queryParams.get("limit")) || 20,
+      };
       queryClient.invalidateQueries({
-        queryKey: [queryKeys.adminList],
+        queryKey: [queryKeys.adminList, { ...params }],
       });
-      setCurrentOperation("idle");
+      const updatedData = (
+        queryClient.getQueryData([
+          queryKeys.adminList,
+          { ...params },
+        ]) as CommonPaginatedResultInterface<UserInterface[]>
+      ).data?.data?.filter((admin) => admin.id == currentData?.id)[0];
+      if (updatedData) {
+        setCurrentData(updatedData);
+      }
+      setCurrentOperation("detail");
     }
   }, [mutation.isSuccess]);
 
   if (!currentData) {
-    return <></>
+    return <></>;
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <h1 className="text-center text-xl font-extrabold">Add Admin</h1>
+      <h1 className="text-center text-xl font-extrabold">Update Admin</h1>
 
       {/* Username */}
       <label className="form-control w-full">
@@ -431,32 +484,60 @@ export default function AdminUpdateForm() {
             <FaTrash />
           </Button>
         )}
-        <div className="flex max-w-full flex-col items-center justify-center">
-          <UploadDropzone
-            className="w-full cursor-pointer"
-            endpoint="adminImage"
-            config={{ mode: "auto" }}
-            disabled={mutation.isSuccess}
-            onClientUploadComplete={(res) => {
-              handleUploadComplete(res[0].url);
-            }}
-          />
-        </div>
+        {!uploadedImages && (
+          <div className="flex max-w-full flex-col items-center justify-center">
+            <UploadDropzone
+              className="w-full cursor-pointer"
+              endpoint="adminImage"
+              config={{ mode: "auto" }}
+              disabled={mutation.isSuccess}
+              onClientUploadComplete={(res) => {
+                handleUploadComplete(res[0].url);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex max-w-full justify-end py-5">
-        <ButtonWithAction type="submit" replaceTWClass="btn btn-primary btn-sm">
-          Save <FaRegSave />
-          {mutation.isPending ? (
-            <span className="loading loading-spinner loading-xs"></span>
-          ) : mutation.isSuccess ? (
-            <>
-              <FaCheck />
-            </>
-          ) : (
-            ""
-          )}
-        </ButtonWithAction>
+        <div className="flex flex-row justify-end gap-3">
+          <PermissionWrapper permissionRequired={"super"}>
+            <Button
+              replaceTWClass="btn btn-error btn-sm"
+              id={currentData.id}
+              action={handleDelete}
+              eventType="onClick"
+              type="button"
+            >
+              Delete
+              <FaTrash />
+            </Button>
+          </PermissionWrapper>
+          <Button
+            replaceTWClass="btn btn-accent btn-sm"
+            action={handleDetail}
+            eventType="onClick"
+            type="button"
+            id={currentData.id}
+          >
+            Detail
+            <FaInfo />
+          </Button>
+          <PermissionWrapper permissionRequired={"super"}>
+            <Button type="submit" replaceTWClass="btn btn-primary btn-sm">
+              Save <FaRegSave />
+              {mutation.isPending ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : mutation.isSuccess ? (
+                <>
+                  <FaCheck />
+                </>
+              ) : (
+                ""
+              )}
+            </Button>
+          </PermissionWrapper>
+        </div>
       </div>
     </form>
   );

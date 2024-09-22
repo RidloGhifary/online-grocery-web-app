@@ -24,7 +24,7 @@ import Button from "../ui/ButtonWithAction";
 const adminSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
   email: z.string().email({ message: "Invalid email address" }),
-  phone_number: z.string().nullable().optional(),
+  phone_number: z.string().nullable().optional().refine((value) => value && /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(value),'Not valid phone number'),
   first_name: z.string().min(1, { message: "First name is required" }),
   last_name: z.string().min(1, { message: "Last name is required" }),
   gender: z.enum(["male", "female"]),
@@ -73,6 +73,7 @@ export default function AdminForm() {
       role_id: 2,
       phone_number: "",
     },
+    mode:'onChange'
   });
   const mutation = useMutation({
     mutationFn: createAdmin,
@@ -158,6 +159,9 @@ export default function AdminForm() {
   });
   const onSubmit = (data: AdminFormValues) => {
     // console.log("Form Data:", data);
+    if (!data.middle_name||data.middle_name==='') {
+      delete data.middle_name
+    }
     mutation.mutate(data as unknown as UserInputInterface);
   };
 

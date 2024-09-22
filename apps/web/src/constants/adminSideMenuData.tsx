@@ -48,13 +48,13 @@ const adminSideMenuDatas: {
           href: "/accounts/admin",
           permission: "super",
         },
-        {
-          name: "admin.user.roles.list",
-          displayName: "Roles",
-          href: "/roles",
-          icon: <IoIosSettings /> ,
-          permission: "super",
-        },
+        // {
+        //   name: "admin.user.roles.list",
+        //   displayName: "Roles",
+        //   href: "/roles",
+        //   icon: <IoIosSettings /> ,
+        //   permission: "super",
+        // },
       ],
     },
     {

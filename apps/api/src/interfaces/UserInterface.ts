@@ -8,7 +8,7 @@ export interface UserInputInterface {
   email: string;
   phone_number: string | null;
   gender: $Enums.GENDER;
-  password: string | null;
+  password?: string | null;
   middle_name?: string | null;
   image?: string | null;
   referral?: string | null;

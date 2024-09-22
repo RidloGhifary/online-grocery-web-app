@@ -228,9 +228,9 @@ export class AdminController {
       pageNumber : page as number,
       limitNumber : limit as number
     })
-    console.log('customer controller');
+    // console.log('customer controller');
     
-    console.log(data);
+    // console.log(data);
     
     if (!data.ok) {
       return res.status(400).send(data);

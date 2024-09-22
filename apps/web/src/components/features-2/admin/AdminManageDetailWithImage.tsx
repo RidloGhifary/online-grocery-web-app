@@ -1,12 +1,28 @@
 "use client";
-import React from "react";
+import React, { MouseEvent } from "react";
 import { useAtom } from "jotai";
 import Image from "next/image";
-import { currentDetailAdminAtom } from "@/stores/adminStores";
+import {
+  currentAdminOperationAtom,
+  currentDetailAdminAtom,
+} from "@/stores/adminStores";
 import AdminManageDetail from "./AdminManageDetail";
+import PermissionWrapper from "../auth/PermissionWrapper";
+import Button from "../ui/ButtonWithAction";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 export default function () {
   const [currentAdmin] = useAtom(currentDetailAdminAtom);
+
+  const [, setAdminOperation] = useAtom(currentAdminOperationAtom);
+  function handleEdit(e: MouseEvent) {
+    e.preventDefault();
+    setAdminOperation("edit");
+  }
+  function handleDelete(e: MouseEvent) {
+    e.preventDefault();
+    setAdminOperation("delete");
+  }
 
   if (!currentAdmin) {
     return <></>;
@@ -31,6 +47,34 @@ export default function () {
           />
         </div>
         <AdminManageDetail />
+        <div className="w-full">
+          <div className="flex flex-row justify-end gap-3">
+            <PermissionWrapper permissionRequired={"super"}>
+              <Button
+                replaceTWClass="btn btn-accent btn-sm"
+                action={handleEdit}
+                eventType="onClick"
+                type="button"
+                id={currentAdmin.id}
+              >
+                Edit
+                <FaEdit />
+              </Button>
+            </PermissionWrapper>
+            <PermissionWrapper permissionRequired={"super"}>
+              <Button
+                replaceTWClass="btn btn-error btn-sm"
+                id={currentAdmin.id}
+                action={handleDelete}
+                eventType="onClick"
+                type="button"
+              >
+                Delete
+                <FaTrash />
+              </Button>
+            </PermissionWrapper>
+          </div>
+        </div>
       </div>
     </>
   );

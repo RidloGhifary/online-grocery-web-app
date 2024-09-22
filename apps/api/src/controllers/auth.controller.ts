@@ -54,7 +54,7 @@ export class AuthController {
       if (userRole) {
         formattedUser = {
           ...user,
-          role: userRole.role.name,
+          role: userRole?.role?.name,
         };
       } else {
         formattedUser = user;

@@ -1,7 +1,10 @@
 export const queryKeys = {
   products: 'products',
   productCategories: 'productCategories',
-  adminInfo : 'adminInfo'
+  adminInfo : 'adminInfo',
+  adminList : 'adminList',
+  roles : 'roles',
+  customers : 'customers'
 };
 // export const adminQueryKey = {
 //   adminProducts: 'adminProducts',

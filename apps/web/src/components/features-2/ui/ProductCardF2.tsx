@@ -10,7 +10,10 @@ export default function ({
   price = 10000,
   city = "Jakarta",
   slug = "lorem",
+  image = 'https://placehold.co/600x400.svg'
 }: ProductCardListInterface) {
+  // console.log(JSON.stringify(image));
+  
   return (
     // w-11/12
     <Link
@@ -21,7 +24,7 @@ export default function ({
         <Image
           width={300}
           height={300}
-          src="/sample-product-image.jpg"
+          src={image}
           alt="Placeholder"
           className="h-[180px] w-full object-contain"
           loading="lazy"

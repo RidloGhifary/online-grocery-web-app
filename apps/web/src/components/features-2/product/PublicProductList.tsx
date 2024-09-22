@@ -21,7 +21,7 @@ export default function PublicProductList({
       ) : (
         (products as unknown as ProductCompleteInterface[]).map((e, i) => (
           <div className="my-2 flex items-center justify-center" key={i}>
-            <ProductCardF2 name={e.name} price={e.price} slug={e.slug!} />
+            <ProductCardF2 image={(JSON.parse(e.image!) as unknown as string[])[0]} name={e.name} price={e.price} slug={e.slug!} />
           </div>
         ))
       )}

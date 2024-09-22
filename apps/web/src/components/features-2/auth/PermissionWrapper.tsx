@@ -19,6 +19,8 @@ export default function PermissionWrapper({
   // Function to check if the permissionInput satisfies the permissionRequired or contains 'super'
   const hasPermission = () => {
     // If user has 'super', allow rendering
+    console.log(permissions);
+    
     if (permissions.includes('super')) {
       return true;
     }

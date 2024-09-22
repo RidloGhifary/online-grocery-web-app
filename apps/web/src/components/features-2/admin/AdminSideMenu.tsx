@@ -64,7 +64,7 @@ export default function AdminSideMenu() {
 
       if (item.subMenu && item.subMenu.length > 0) {
         return (
-          <li key={item.name}>
+          <li key={item.name+(Math.random() + 1).toString(36).substring(7)}>
             <details open={shouldOpen}>
               <summary>{item.icon as ReactNode?item.icon as ReactNode:''} {renderDisplayName(item.displayName)}</summary>
               <ul> {renderMenuItems(item.subMenu)}</ul>
@@ -73,7 +73,7 @@ export default function AdminSideMenu() {
         );
       } else {
         return (
-          <li key={item.name}>
+          <li key={item.name+(Math.random() + 1).toString(36).substring(7)}>
             <Link className={` ${isActive ? "font-bold" : ""}`} href={`${baseUrlGroup}${item.href}`}>
             {item.icon as ReactNode?item.icon as ReactNode:''} {renderDisplayName(item.displayName)}
             </Link>

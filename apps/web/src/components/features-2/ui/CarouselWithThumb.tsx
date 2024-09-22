@@ -12,6 +12,14 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
   images,
 }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
+  const [loadingImages, setLoadingImages] = useState<boolean[]>([]);
+
+  const handleImageLoad = (index: number) => {
+    setLoadingImages((prevState) =>
+      prevState.map((item, i) => (i === index ? false : item))
+    );
+  };
+
   let usedImg: string[] = images!;
   let imgExist = false;
 
@@ -26,6 +34,7 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
     usedImg = images;
   }
   useEffect(() => {
+    setLoadingImages(new Array(usedImg.length).fill(true));
     const handleResize = () => {
       if (thumbsSwiper) {
         thumbsSwiper.update(); // Update Swiper on resize
@@ -37,7 +46,7 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [thumbsSwiper]);
+  }, [thumbsSwiper,usedImg.length]);
   return (
     <div className="w-full">
       <Swiper
@@ -56,6 +65,12 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
       >
         {usedImg.map((src, index) => (
           <SwiperSlide key={index}>
+            {loadingImages[index] && (<>
+              <div className="w-full flex flex-grow justify-center items-center self-center">
+              <span className="loading loading-spinner loading-lg"></span>
+              </div>
+            </>
+            )}
             <Image
               src={src}
               alt={`Image ${index + 1}`}
@@ -63,6 +78,9 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
               width={800}
               height={800}
               priority
+              loading="eager"
+              onLoad={() => handleImageLoad(index)}
+              style={{ display: loadingImages[index] ? "none" : "block" }}
             />
           </SwiperSlide>
         ))}

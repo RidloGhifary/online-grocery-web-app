@@ -86,11 +86,11 @@ class CategoryRepository {
       ok: false,
     };
     try {
-      const newData = await prisma.productCategory.create({
+      const [newData] = await prisma.$transaction([prisma.productCategory.create({
         data: {
           ...productCategory,
         },
-      });
+      })]);
       result.data = newData;
       result.ok = true;
       result.message = 'Success adding data';
@@ -110,7 +110,7 @@ class CategoryRepository {
     try {
       const categoryId = productCategory.id;
       delete productCategory.id;
-      const newData = await prisma.productCategory.update({
+      const [newData] = await prisma.$transaction([prisma.productCategory.update({
         data: {
           ...productCategory,
         },
@@ -118,7 +118,10 @@ class CategoryRepository {
           id: categoryId,
           deletedAt: null,
         },
-      });
+      })]);
+      if (!newData) {
+        throw new Error('404 not found');
+      }
       result.data = newData;
       result.ok = true;
       result.message = 'Success update data';
@@ -136,9 +139,9 @@ class CategoryRepository {
       ok: false,
     };
     try {
-      const deleted = await prisma.productCategory.delete({
+      const [deleted] = await prisma.$transaction([prisma.productCategory.delete({
         where: { id: productCategoryId, deletedAt: null },
-      });
+      })]) ;
       if (!deleted) {
         throw new Error(JSON.stringify(deleted));
       }

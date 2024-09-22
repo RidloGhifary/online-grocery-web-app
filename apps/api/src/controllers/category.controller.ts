@@ -44,6 +44,7 @@ export class CategoryController {
     }
     return res.status(201).send(updatedData);
   }
+  
   public async deleteCategory(
     req: Request,
     res: Response,

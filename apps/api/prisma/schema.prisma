@@ -101,7 +101,7 @@ model RolesHasPermission {
 }
 
 model UserHasRole {
-  id      Int  @id @default(autoincrement())
+  id      Int   @id @default(autoincrement())
   user    User? @relation(fields: [user_id], references: [id])
   user_id Int?
   role    Role? @relation(fields: [role_id], references: [id])
@@ -315,32 +315,40 @@ model StoreHasProduct {
 }
 
 model StocksAdjustment {
-  id                 Int             @id @default(autoincrement())
-  qty_change         Int
-  type               StockAdjustType
-  managed_by         User            @relation(fields: [managed_by_id], references: [id])
-  managed_by_id      Int
-  product            Product         @relation(fields: [product_id], references: [id])
-  product_id         Int
-  detail             String
-  from_store         Store           @relation("FromStore", fields: [from_store_id], references: [id])
-  from_store_id      Int
-  destinied_store    Store?           @relation("DestiniedStore", fields: [destinied_store_id], references: [id])
-  destinied_store_id Int
-  order_detail_id    Int?
-  order_detail       OrderDetail?    @relation("OrderDetailInStock", fields: [order_detail_id], references: [id])
+  id                    Int               @id @default(autoincrement())
+  qty_change            Int
+  type                  StockAdjustType
+  managed_by            User              @relation(fields: [managed_by_id], references: [id])
+  managed_by_id         Int
+  product               Product           @relation(fields: [product_id], references: [id])
+  product_id            Int
+  detail                String
+  from_store            Store?             @relation("FromStore", fields: [from_store_id], references: [id])
+  from_store_id         Int?
+  destinied_store       Store?            @relation("DestiniedStore", fields: [destinied_store_id], references: [id])
+  destinied_store_id    Int?
+  order_detail_id       Int?
+  order_detail          OrderDetail?      @relation("OrderDetailInStock", fields: [order_detail_id], references: [id])
+  adjustment_related_id Int?
+  adjustment_related    StocksAdjustment? @relation("adjustment_related", fields: [adjustment_related_id], references: [id])
+  adjustment_related_end StocksAdjustment[] @relation("adjustment_related")
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  createdAt        DateTime?          @default(now())
+  updatedAt        DateTime?          @updatedAt
+  deletedAt        DateTime?
 
   @@index([id])
   @@map("stocks_adjustments")
 }
 
 enum StockAdjustType {
-  increment
-  decreement
+  manual_adjusment
+  mutation_pending
+  mutation_cancel
+  mutation_complete
+  purchase
+  cancel
+  checkout
 }
 
 model Cart {

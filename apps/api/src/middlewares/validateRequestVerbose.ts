@@ -15,7 +15,7 @@ const validateRequestVerbose = <T extends ZodSchema>(
     
     console.log(req.body);
 
-    if (typeof req.body.image === 'string') {
+    if (req.originalUrl.includes('products') && typeof req.body.image === 'string') {
       try {
         req.body.image = JSON.parse(req.body.image);
       } catch (error) {

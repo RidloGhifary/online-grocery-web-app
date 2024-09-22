@@ -82,6 +82,34 @@ export interface UserInterface {
   role ?: UserHasRole[]
 }
 
+
+export interface UserInputInterface {
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string | null;
+  gender: "male" | "female";
+  password: string | null;
+  middle_name: string | null;
+  image: string | null;
+  role_id : number
+}
+
+export interface UserUpdateInputInterface {
+  id?: number
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string | null;
+  gender: "male" | "female";
+  password: string | null;
+  middle_name: string | null;
+  image: string | null;
+  role_id : number
+}
+
 export interface UserHasRole {
   id: number;
   user_id: number;

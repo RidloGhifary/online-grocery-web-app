@@ -4,7 +4,7 @@ import { FaHome, FaShoppingBag, FaUser, FaUserFriends } from "react-icons/fa";
 import { FaShop } from "react-icons/fa6";
 import { IoIosSettings } from "react-icons/io";
 import { GiFruitBowl } from "react-icons/gi";
-import { MdCategory } from "react-icons/md";
+import { MdAdminPanelSettings, MdCategory } from "react-icons/md";
 
 export interface AdminSideMenuInterface {
   name?: string;
@@ -29,24 +29,31 @@ const adminSideMenuDatas: {
       permission: "admin_dashboard_access",
     },
     {
-      name: "admin.users.menu",
+      name: "admin.user.menu",
       displayName:'Account',
       icon: <FaUserFriends />,
-      permission: "admin_users_access",
+      permission: "admin_user_access",
       subMenu: [
         {
-          name: "admin.users.list",
-          displayName: "User",
+          name: "admin.user.list",
+          displayName: "Customer",
           icon:<FaUser />,
-          href: "/user",
-          permission: "admin_users_list",
+          href: "/accounts/customers",
+          permission: "admin_user_list",
         },
         {
-          name: "admin.users.roles.list",
+          name: "admin.user.list",
+          displayName: "Admin",
+          icon:<MdAdminPanelSettings />,
+          href: "/accounts/admin",
+          permission: "super",
+        },
+        {
+          name: "admin.user.roles.list",
           displayName: "Roles",
           href: "/roles",
           icon: <IoIosSettings /> ,
-          permission: "admin_users_roles_list",
+          permission: "super",
         },
       ],
     },
@@ -68,7 +75,7 @@ const adminSideMenuDatas: {
           displayName: "Categories",
           href: "/categories",
           icon:<MdCategory />,
-          permission: "admin_product_category",
+          permission: "admin_product_category_list",
         },
       ],
     },

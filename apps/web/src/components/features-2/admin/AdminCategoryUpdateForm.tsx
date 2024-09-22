@@ -6,12 +6,10 @@ import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast, Bounce } from "react-toastify";
 import { useSearchParams } from "next/navigation";
-import { updateProduct } from "@/actions/products";
 import {
   ProductCompleteInterface,
-  UpdateProductInputInterface,
 } from "@/interfaces/ProductInterface";
-import { FaCheck, FaInfo, FaRegSave, FaTrash } from "react-icons/fa";
+import { FaCheck, FaRegSave, FaTrash } from "react-icons/fa";
 import Button from "../ui/ButtonWithAction";
 import { queryKeys } from "@/constants/queryKeys";
 import { useAtom } from "jotai";
@@ -172,6 +170,9 @@ export default function AdminCategoryUpdateForm() {
       queryClient.invalidateQueries({
         queryKey: [queryKeys.productCategories],
       });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products],
+      });
       setCurrentOperation("idle");
     }
   }, [mutation.isSuccess]);
@@ -181,7 +182,7 @@ export default function AdminCategoryUpdateForm() {
   }
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <h1 className="text-center text-xl font-extrabold">Update Product</h1>
+      <h1 className="text-center text-xl font-extrabold">Update Category</h1>
 
       {/* Name */}
       <label className="form-control w-full">

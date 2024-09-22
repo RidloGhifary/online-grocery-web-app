@@ -9,6 +9,7 @@ const protectedRoutes = [
   "/checkout",
   "/transaction",
 ];
+
 const adminRoutes = ["/create-store", "/admin"];
 const authRoutes = ["/login", "/register", "/verify-account"];
 

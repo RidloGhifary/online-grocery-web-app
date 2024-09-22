@@ -14,13 +14,9 @@ export default async function Page() {
     queryFn: () => getProductCategoryList({}),
   });
 
-//   console.log("Server-side categories data:", await getProductCategoryList({}));
-// console.log("Dehydrated state:", dehydrate(queryClient));
-
   return (
     <>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        {/* <AdminProductPage /> */}
         <AdminCategoriesPage/>
       </HydrationBoundary>
     </>

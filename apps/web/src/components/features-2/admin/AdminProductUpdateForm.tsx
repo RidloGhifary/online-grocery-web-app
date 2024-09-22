@@ -26,7 +26,11 @@ import {
 } from "@/stores/productStores";
 import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 import { CategoryCompleteInterface } from "@/interfaces/CategoryInterface";
-import { useProductCategory, useProductCategoryWithFilter } from "@/hooks/publicProductCategoriesHooks";
+import {
+  useProductCategory,
+  useProductCategoryWithFilter,
+} from "@/hooks/publicProductCategoriesHooks";
+import PermissionWrapper from "../auth/PermissionWrapper";
 
 // Define the Zod schema for validation
 const updateProductSchema = z.object({
@@ -60,9 +64,7 @@ export default function AdminProductUpdateForm() {
   const queryParams = useSearchParams();
 
   const queryClient = useQueryClient();
-  const {
-    data:categories, 
-  } = useProductCategory();
+  const { data: categories, isLoading:categoryLoading } = useProductCategory();
 
   const controls = useDragControls();
   const [, setCurrentOperation] = useAtom(currentProductOperation);
@@ -123,7 +125,7 @@ export default function AdminProductUpdateForm() {
         theme: "colored",
         transition: Bounce,
         // toastId:1,
-        containerId:10912
+        containerId: 10912,
       });
       const params = {
         search: queryParams.get("search") || "",
@@ -159,7 +161,7 @@ export default function AdminProductUpdateForm() {
         theme: "colored",
         transition: Bounce,
         // toastId:2,
-        containerId:10912
+        containerId: 10912,
       });
     },
   });
@@ -234,10 +236,15 @@ export default function AdminProductUpdateForm() {
       };
       queryClient.invalidateQueries({
         queryKey: [queryKeys.products, { ...params }],
-      })
-      const updatedData = (queryClient.getQueryData([queryKeys.products,{...params}]) as CommonPaginatedResultInterface<ProductCompleteInterface[]>).data?.data?.filter(product=>product.id == initialData?.id )[0]
+      });
+      const updatedData = (
+        queryClient.getQueryData([
+          queryKeys.products,
+          { ...params },
+        ]) as CommonPaginatedResultInterface<ProductCompleteInterface[]>
+      ).data?.data?.filter((product) => product.id == initialData?.id)[0];
       if (updatedData) {
-        setInitialData(updatedData)
+        setInitialData(updatedData);
       }
       setCurrentOperation("detail");
     }
@@ -293,6 +300,8 @@ export default function AdminProductUpdateForm() {
           value={categoryOptions?.find(
             (option) => option.value === watch("product_category_id"),
           )}
+          isLoading={categoryLoading}
+          loadingMessage={()=><span className="loading loading-spinner loading-xs"></span>}
         />
         {errors.product_category_id && (
           <p className="text-red-500">{errors.product_category_id.message}</p>
@@ -437,16 +446,18 @@ export default function AdminProductUpdateForm() {
       {/* Submit button */}
       <div className="flex max-w-full justify-end py-5">
         <div className="flex flex-row justify-end gap-3">
-          <Button
-            replaceTWClass="btn btn-error btn-sm"
-            id={initialData.id}
-            action={handleDelete}
-            eventType="onClick"
-            type="button"
-          >
-            Delete
-            <FaTrash />
-          </Button>
+          <PermissionWrapper permissionRequired={"admin_product_update"}>
+            <Button
+              replaceTWClass="btn btn-error btn-sm"
+              id={initialData.id}
+              action={handleDelete}
+              eventType="onClick"
+              type="button"
+            >
+              Delete
+              <FaTrash />
+            </Button>
+          </PermissionWrapper>
           <Button
             replaceTWClass="btn btn-accent btn-sm"
             action={handleDetail}
@@ -457,19 +468,20 @@ export default function AdminProductUpdateForm() {
             Detail
             <FaInfo />
           </Button>
-
-          <Button type="submit" replaceTWClass="btn btn-primary btn-sm">
-            Save <FaRegSave />
-            {mutation.isPending ? (
-              <span className="loading loading-spinner loading-xs"></span>
-            ) : mutation.isSuccess ? (
-              <>
-                <FaCheck />
-              </>
-            ) : (
-              ""
-            )}
-          </Button>
+          <PermissionWrapper permissionRequired={"admin_product_delete"}>
+            <Button type="submit" replaceTWClass="btn btn-primary btn-sm">
+              Save <FaRegSave />
+              {mutation.isPending ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : mutation.isSuccess ? (
+                <>
+                  <FaCheck />
+                </>
+              ) : (
+                ""
+              )}
+            </Button>
+          </PermissionWrapper>
         </div>
       </div>
     </form>

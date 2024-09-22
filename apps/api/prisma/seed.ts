@@ -44,7 +44,7 @@ function generateProducts() {
 }
 
 async function generateStoreHasProduct(products: Product[], stores: Store[]) {
-  // let data : StoreHasProduct[] = []
+  let dataFinal : StoreHasProduct[] = []
   let counter = 1
   for (const product of products) {
     for (const store of stores) {
@@ -60,10 +60,11 @@ async function generateStoreHasProduct(products: Product[], stores: Store[]) {
         },
       });
       counter++
-      console.log(data);
+      // console.log(data);
+      dataFinal.push(data)
     };
   };
-  // return data
+  return dataFinal
 }
 // Fetch provinces using axios
 async function fetchProvinces() {
@@ -167,27 +168,27 @@ async function main() {
         {
           id: 10,
           name: 'admin_product_category_list',
-          display_name: 'Admin Product List',
+          display_name: 'Admin Product Category List',
         },
         {
           id: 11,
           name: 'admin_product_category_detail',
-          display_name: 'Admin Product Detail',
+          display_name: 'Admin Product Category Detail',
         },
         {
           id: 12,
           name: 'admin_product_category_create',
-          display_name: 'Admin Product Create',
+          display_name: 'Admin Product Category Create',
         },
         {
           id: 13,
           name: 'admin_product_category_update',
-          display_name: 'Admin Product Update',
+          display_name: 'Admin Category Update',
         },
         {
           id: 14,
           name: 'admin_product_category_delete',
-          display_name: 'Admin Product Delete',
+          display_name: 'Admin Category Delete',
         },
         {
           id: 15,
@@ -244,6 +245,11 @@ async function main() {
           name: 'admin_role_assign',
           display_name: 'Admin Role Assign',
         },
+        {
+          id: 25,
+          name: 'admin_role_list',
+          display_name: 'Admin Role List',
+        },
       ],
     });
 
@@ -288,6 +294,78 @@ async function main() {
       },
     });
 
+    // const itterate = Array.from({ length: 25 }, (_, i) => i + 1); 
+
+    
+    const storeAdminUser = prisma.user.upsert({
+      where: { id: 2 },
+      update: {},
+      create: {
+        id: 2,
+        email: 'store.admin@ogro.com',
+        first_name: 'Store',
+        last_name: 'Admin',
+        username: 'store_admin',
+        password: await bcrypt.hash(
+          process.env.SUPERUSER_PASSWORD!,
+          await bcrypt.genSalt(),
+        ),
+        validated_at: new Date().toISOString(),
+        validation_sent_at: new Date().toISOString(),
+        referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
+      },
+    });
+
+    const storeAdminRole = prisma.role.upsert({
+      where: { id: 2 },
+      update: {},
+      create: {
+        name: 'store_admin',
+        display_name: 'Store Admin',
+        id: 2,
+        roles_permissions: {
+          createMany: {
+            data: [
+              {
+                permission_id : 2,
+              },
+              {
+                permission_id : 3,
+              },
+              {
+                permission_id : 4,
+              },
+              {
+                permission_id : 5,
+              },
+              {
+                permission_id : 9,
+              },
+              {
+                permission_id : 10,
+              },
+              {
+                permission_id : 15,
+              },
+              {
+                permission_id : 16,
+              },
+            ],
+            // itterate
+            // .filter((i) => i > 1)  // Filter out the first permission
+            // .map((i) => ({ permission_id: i })),  // Map to the proper permission object,
+            skipDuplicates: true,
+          },
+        },
+        
+        user_role: {
+          createMany: { data: [{ user_id: 2, id: 2 }], skipDuplicates: true },
+        },
+      },
+    });
+
+
+
     // Seeding product categories
     const productCategory = prisma.productCategory.createMany({
       data: [
@@ -312,7 +390,7 @@ async function main() {
         address: '123 Main St',
         kecamatan: 'Downtown',
         kelurahan: 'Central',
-        image: 'central-store.jpg',
+        image: 'https://placehold.co/600x400.svg',
         latitude: new Prisma.Decimal(12.345678),
         longtitude: new Prisma.Decimal(98.765432),
         id: 1,
@@ -329,7 +407,7 @@ async function main() {
         address: '456 Elm St',
         kecamatan: 'Uptown',
         kelurahan: 'North',
-        image: 'branch-store.jpg',
+        image: 'https://placehold.co/600x400.svg',
         latitude: new Prisma.Decimal(23.456789),
         longtitude: new Prisma.Decimal(87.654321),
         id: 2,
@@ -354,13 +432,17 @@ async function main() {
       res_permission,
       res_superAdminUser,
       res_superRole,
+      res_storeAdminUser,
+      res_storeAdminRole,
       res_productCategory,
       res_products,
       res_store,
     ] = await Promise.all([
       permission,
       superAdminUser,
-      superRole,
+      superRole, 
+      storeAdminUser,
+      storeAdminRole,
       productCategory,
       products,
       storeSeed,
@@ -370,6 +452,8 @@ async function main() {
       res_permission,
       res_superAdminUser,
       res_superRole,
+      res_storeAdminUser,
+      res_storeAdminRole,
       res_productCategory,
       res_products,
       res_store,
@@ -379,7 +463,11 @@ async function main() {
       await prisma.product.findMany(),
       await prisma.store.findMany(),
     );
+    console.log(await prisma.product.findMany(),
+    await prisma.store.findMany(),);
+    
     console.log(generateStoreHasProductData);
+    
     
   } catch (error) {
     console.error(error);

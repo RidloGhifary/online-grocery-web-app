@@ -26,6 +26,7 @@ export interface ProductCardListInterface {
   price: number;
   slug: string;
   city?: string;
+  image?: string
 }
 
 export interface ProductRecordInterface {

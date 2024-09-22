@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import prisma from '@/prisma';
+import { adminRepository } from '@/repositories/admin.repository';
+import { User } from '@prisma/client';
+import { UserInputInterface } from '@/interfaces/UserInterface';
 
 export class AdminController {
   async getAllAdmins(req: Request, res: Response) {
@@ -198,4 +201,81 @@ export class AdminController {
       res.status(500).json({ ok: false, message: 'Internal server error' });
     }
   }
+
+  async getAllAdmin (req: Request, res: Response) :  Promise<Response|void> {
+    const { search, order, order_field } = req.query;
+    const { page = 1, limit = 20 } = req.query;
+    const data = await adminRepository.getAllAdmin({
+      search: search as string,
+      order: order as 'asc' | 'desc',
+      orderField: order_field as 'name' ,
+      pageNumber : page as number,
+      limitNumber : limit as number
+    })
+    if (!data.ok) {
+      return res.status(400).send(data);
+    }
+    return res.status(200).send(data);
+  }
+
+  async getAllCustomer (req: Request, res: Response) :  Promise<Response|void> {
+    const { search, order, order_field } = req.query;
+    const { page = 1, limit = 20 } = req.query;
+    const data = await adminRepository.getAllCustomer({
+      search: search as string,
+      order: order as 'asc' | 'desc',
+      orderField: order_field as 'name' ,
+      pageNumber : page as number,
+      limitNumber : limit as number
+    })
+    console.log('customer controller');
+    
+    console.log(data);
+    
+    if (!data.ok) {
+      return res.status(400).send(data);
+    }
+    return res.status(200).send(data);
+  }
+
+  public async createAdmin(
+    req: Request,
+    res: Response,
+  ): Promise<void | Response> {
+    const admin: User = req.body;
+    // console.log(admin);
+    
+    const newData = await adminRepository.createAdmin(admin);
+    if (!newData.ok) {
+      return res.status(400).send(newData);
+    }
+    return res.status(201).send(newData);
+  }
+  
+  public async updateAdmin(
+    req: Request,
+    res: Response,
+  ): Promise<void | Response> {
+    const admin: UserInputInterface = req.body;
+    // console.log(admin);
+    
+    const updatedData = await adminRepository.updateAdmin(admin);
+    if (!updatedData.ok) {
+      return res.status(400).send(updatedData);
+    }
+    return res.status(201).send(updatedData);
+  }
+
+  public async deleteAdmin(
+    req: Request,
+    res: Response,
+  ): Promise<void | Response> {
+    const {id}  = req.params
+    const admin = await adminRepository.deleteAdmin(Number(id))
+    if (!admin.ok) {
+      return res.status(500).send(admin);
+    }
+    return res.status(201).send(admin);
+  }
+
 }

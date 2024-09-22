@@ -123,14 +123,14 @@ class ProductRepository {
       citiId = 152; //Jakarta Pusat
     }
     const isSuper =
-      userLoggedIn.data?.role[0].role.roles_permissions.filter(
+      userLoggedIn.data?.role[0].role?.roles_permissions.filter(
         (e) =>
           e.permission.name == 'super' ||
-          userLoggedIn.data?.role[0].role.name == 'super_admin',
+          userLoggedIn.data?.role[0].role?.name == 'super_admin',
       )[0].permission.name == 'super';
 
     const isAdmin =
-      userLoggedIn.data?.role[0].role.roles_permissions.filter(
+      userLoggedIn.data?.role[0].role?.roles_permissions.filter(
         (e) => e.permission.name == 'admin_access',
       )[0].permission.name == 'admin_access';
 
@@ -196,14 +196,14 @@ class ProductRepository {
     //   citiId = 152; //Jakarta Pusat
     // }
     const isSuper =
-      userLoggedIn.data?.role[0].role.roles_permissions.filter(
+      userLoggedIn.data?.role[0].role?.roles_permissions.filter(
         (e) =>
           e.permission.name == 'super' ||
-          userLoggedIn.data?.role[0].role.name == 'super_admin',
+          userLoggedIn.data?.role[0].role?.name == 'super_admin',
       )[0].permission.name == 'super';
 
     const isAdmin =
-      userLoggedIn.data?.role[0].role.roles_permissions.filter(
+      userLoggedIn.data?.role[0].role?.roles_permissions.filter(
         (e) => e.permission.name == 'admin_access',
       )[0].permission.name == 'admin_access';
 
@@ -261,14 +261,16 @@ class ProductRepository {
       if (Array.isArray(product.image)) {
         product.image = JSON.stringify(product.image);
       }
-      const newData = await prisma.product.create({
-        data: {
-          ...product,
-        },
-        include: {
-          product_category: true,
-        },
-      });
+      const [newData] = await prisma.$transaction([
+        prisma.product.create({
+          data: {
+            ...product,
+          },
+          include: {
+            product_category: true,
+          },
+        })
+      ]);
       result.data = newData;
       result.ok = true;
       result.message = 'Success adding data';
@@ -294,15 +296,20 @@ class ProductRepository {
       }
       const product_id = product.id;
       delete product.id;
-      const updatedData = await prisma.product.update({
-        data: {
-          ...product,
-        },
-        where: {
-          id: product_id,
-          deletedAt:null
-        },
-      });
+      const [updatedData] = await prisma.$transaction([
+        prisma.product.update({
+          data: {
+            ...product,
+          },
+          where: {
+            id: product_id,
+            deletedAt:null
+          },
+        })
+      ])
+      if (!updatedData) {
+        throw new Error('404 not found');
+      }
       result.data = updatedData;
       result.ok = true;
       result.message = 'Success update data';
@@ -320,7 +327,7 @@ class ProductRepository {
       ok: false,
     };
     try {
-      const deleted = await prisma.product.delete({ where: { id: productId, deletedAt:null } });
+      const [deleted] = await prisma.$transaction([prisma.product.delete({ where: { id: productId, deletedAt:null } })]);
       if (!deleted) {
         throw new Error(JSON.stringify(deleted));
       }

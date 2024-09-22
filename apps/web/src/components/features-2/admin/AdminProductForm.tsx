@@ -46,7 +46,7 @@ export default function ProductForm() {
   const [, setCurrentOperation] = useAtom(
     currentProductOperation,
   );
-  const { data:categoriesData } = useQuery({
+  const { data:categoriesData, isLoading:categoryLoading } = useQuery({
     queryKey: [queryKeys.productCategories],
     queryFn: async () => await getProductCategoryList({}),
   })
@@ -239,6 +239,8 @@ export default function ProductForm() {
             (option) => option.value === watch("product_category_id"),
           )}
           isDisabled={mutation.isSuccess}
+          isLoading={categoryLoading}
+          loadingMessage={()=><span className="loading loading-spinner loading-xs"></span>}
         />
         {errors.product_category_id && (
           <p className="text-red-500">{errors.product_category_id.message}</p>

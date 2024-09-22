@@ -1,4 +1,3 @@
-import { RoleHasPermissionInterface } from "@/interfaces/RoleInterface";
 import { UserInterface } from "@/interfaces/user";
 
 export function flattenUserPermissions(user?: UserInterface): string[] {

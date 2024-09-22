@@ -9,6 +9,7 @@ import {
 } from "@/stores/productStores";
 import Button from "../ui/ButtonWithAction";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import PermissionWrapper from "../auth/PermissionWrapper";
 
 export default function () {
   const [currentProduct] = useAtom(currentDetailProductsAtom);
@@ -61,7 +62,7 @@ export default function () {
         {tab === "Detail" ? <AdminProductDetail /> : ""}
         {tab === "Images" ? (
           <>
-            <div className="md:max-w-sm max-w-full">
+            <div className="max-w-full md:max-w-sm">
               <CarouselWithThumb images={JSON.parse(currentProduct?.image!)} />
             </div>
           </>
@@ -70,26 +71,30 @@ export default function () {
         )}
       </div>
       <div className="flex flex-row justify-end gap-3">
-        <Button
-          replaceTWClass="btn btn-accent btn-sm"
-          action={handleEdit}
-          eventType="onClick"
-          type="button"
-          id={currentProduct.id}
-        >
-          Edit
-          <FaEdit />
-        </Button>
-        <Button
-          replaceTWClass="btn btn-error btn-sm"
-          id={currentProduct.id}
-          action={handleDelete}
-          eventType="onClick"
-          type="button"
-        >
-          Delete
-          <FaTrash />
-        </Button>
+        <PermissionWrapper permissionRequired={"admin_product_update"}>
+          <Button
+            replaceTWClass="btn btn-accent btn-sm"
+            action={handleEdit}
+            eventType="onClick"
+            type="button"
+            id={currentProduct.id}
+          >
+            Edit
+            <FaEdit />
+          </Button>
+        </PermissionWrapper>
+        <PermissionWrapper permissionRequired={"admin_product_delete"}>
+          <Button
+            replaceTWClass="btn btn-error btn-sm"
+            id={currentProduct.id}
+            action={handleDelete}
+            eventType="onClick"
+            type="button"
+          >
+            Delete
+            <FaTrash />
+          </Button>
+        </PermissionWrapper>
       </div>
     </>
   );

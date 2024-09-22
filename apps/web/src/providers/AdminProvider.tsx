@@ -7,7 +7,7 @@ import { useAtom } from 'jotai';
 import { permissionsAtom } from '@/stores/permissionStores';
 import { getAdmin } from '@/actions/user';
 
-export default function PermissionsProvider({ children }: { children: ReactNode }) {
+export default function AdminProvider({ children }: { children: ReactNode }) {
   const { data: admin, isLoading, error } = useQuery({
     queryKey: ['adminInfo'],
     queryFn: getAdmin,
@@ -18,6 +18,8 @@ export default function PermissionsProvider({ children }: { children: ReactNode 
   useEffect(() => {
     if (admin?.data) {
       const permissions = flattenUserPermissions(admin.data);
+      console.log(admin);
+      
       setPermissions(permissions);
     }
   }, [admin, setPermissions]);

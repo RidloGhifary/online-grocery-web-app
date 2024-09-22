@@ -5,8 +5,8 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
-  // url      = "mysql://root:justin123456@localhost:3306/finpro"
+  // url      = env("DATABASE_URL")
+  url      = "mysql://root:justin123456@localhost:3306/finpro"
 }
 
 enum GENDER {
@@ -325,8 +325,8 @@ model StocksAdjustment {
   detail             String
   from_store         Store?           @relation("FromStore", fields: [from_store_id], references: [id]) // changed to nullable
   from_store_id      Int? // changed to nullable
-  destinied_store    Store           @relation("DestiniedStore", fields: [destinied_store_id], references: [id]) 
-  destinied_store_id Int
+  destinied_store    Store?           @relation("DestiniedStore", fields: [destinied_store_id], references: [id]) 
+  destinied_store_id Int?
   order_detail_id    Int?
   order_detail       OrderDetail?    @relation("OrderDetailInStock", fields: [order_detail_id], references: [id])
   adjustment_related_id Int?  //new

@@ -527,8 +527,10 @@ export class OrderController {
         return res.status(400).json({ ok: false, message: 'Invalid order ID' });
       }
 
+      // Find the order
       const order = await prisma.order.findUnique({
         where: { id: orderId },
+        include: { order_details: true }, // Include order details to handle stock mutations
       });
 
       if (!order || order.customer_id !== req.currentUser?.id) {
@@ -543,10 +545,108 @@ export class OrderController {
           .json({ ok: false, message: 'Cannot cancel order at this stage' });
       }
 
+      // Begin the cancellation process: Update order status to "cancelled"
       const cancelledOrder = await prisma.order.update({
         where: { id: orderId },
         data: { order_status_id: 6 },
       });
+
+      // Process each order detail for stock adjustment
+      for (const detail of order.order_details) {
+        // Handle the purchase stock adjustment (only for the original store)
+        const stockAdjustment = await prisma.stocksAdjustment.findFirst({
+          where: { order_detail_id: detail.id, type: 'checkout' },
+        });
+
+        if (stockAdjustment && stockAdjustment.destinied_store_id !== null) {
+          console.log('Updating original store stock...');
+
+          // Ensure we increment the stock by a positive value (reverting deduction)
+          const storeHasProduct = await prisma.storeHasProduct.findFirst({
+            where: {
+              store_id: stockAdjustment.destinied_store_id,
+              product_id: detail.product_id,
+            },
+          });
+
+          if (storeHasProduct) {
+            console.log(
+              'Restoring stock for the original store:',
+              storeHasProduct.id,
+            );
+
+            await prisma.storeHasProduct.update({
+              where: { id: storeHasProduct.id },
+              data: {
+                qty: { increment: Math.abs(stockAdjustment.qty_change) },
+              }, // Increment the exact quantity deducted
+            });
+
+            // Create a new stock adjustment entry for the cancelled order
+            await prisma.stocksAdjustment.create({
+              data: {
+                qty_change: Math.abs(stockAdjustment.qty_change), // Positive value for the stock being added back
+                type: 'cancel',
+                managed_by_id: order.managed_by_id,
+                product_id: detail.product_id,
+                detail: `cancel order for product id ${detail.product_id} in store id ${detail.store_id}`,
+                destinied_store_id: detail.store_id,
+                order_detail_id: detail.id,
+                adjustment_related_id: stockAdjustment.id, // Reference the original adjustment
+              },
+            });
+          } else {
+            console.error('Original store stock not found for update.');
+          }
+        }
+
+        // Handle the mutation part separately (if there was any stock mutation)
+        const mutation = await prisma.stocksAdjustment.findFirst({
+          where: { order_detail_id: detail.id, mutation_type: 'pending' },
+        });
+
+        if (mutation && mutation.from_store_id !== null) {
+          console.log('Updating mutation store stock...');
+
+          const aidingStoreHasProduct = await prisma.storeHasProduct.findFirst({
+            where: {
+              store_id: mutation.from_store_id,
+              product_id: detail.product_id,
+            },
+          });
+
+          if (aidingStoreHasProduct) {
+            console.log(
+              'Restoring stock for the aiding store:',
+              aidingStoreHasProduct.id,
+            );
+
+            // Ensure we decrement the mutation stock (since it was added during mutation)
+            await prisma.storeHasProduct.update({
+              where: { id: aidingStoreHasProduct.id }, // Ensure this is the aiding store, not the original
+              data: { qty: { increment: Math.abs(mutation.qty_change) } }, // Decrement the mutation stock
+            });
+
+            // Create a new stock adjustment for the cancelled mutation
+            await prisma.stocksAdjustment.create({
+              data: {
+                qty_change: mutation.qty_change * -1, // Revert the mutation (negative value)
+                type: 'cancel',
+                managed_by_id: mutation.managed_by_id,
+                product_id: mutation.product_id,
+                detail: `aborted mutation of order detail ${detail.id} for checkout in store ${detail.store_id}, return product to store id ${mutation.from_store_id}`,
+                from_store_id: mutation.destinied_store_id, // Swap destination and source
+                destinied_store_id: mutation.from_store_id, // Swap destination and source
+                order_detail_id: detail.id,
+                mutation_type: 'abort',
+                adjustment_related_id: mutation.id, // Reference the original mutation adjustment
+              },
+            });
+          } else {
+            console.error('Mutation store stock not found for update.');
+          }
+        }
+      }
 
       return res.status(200).json({ ok: true, order: cancelledOrder });
     } catch (error: any) {

@@ -2,6 +2,7 @@ import {
   Prisma,
   PrismaClient,
   Product,
+  StocksAdjustment,
   Store,
   StoreHasProduct,
 } from '@prisma/client';
@@ -24,7 +25,7 @@ function generateProducts() {
     const sku = `SKU${i.toString().padStart(4, '0')}`;
     const description = faker.commerce.productDescription();
     const unitInGram = faker.number.int({ min: 10, max: 100 });
-    const imageUrl = JSON.stringify([faker.image.url()])
+    const imageUrl = JSON.stringify([faker.image.url()]);
 
     products.push({
       id: i,
@@ -44,27 +45,27 @@ function generateProducts() {
 }
 
 async function generateStoreHasProduct(products: Product[], stores: Store[]) {
-  let dataFinal : StoreHasProduct[] = []
-  let counter = 1
+  let dataFinal: StoreHasProduct[] = [];
+  let counter = 1;
   for (const product of products) {
     for (const store of stores) {
       const data = await prisma.storeHasProduct.upsert({
-        where :{
-          id : counter
+        where: {
+          id: counter,
         },
-        update :{},
-        create :{
+        update: {},
+        create: {
           product_id: product.id,
           qty: 10,
           store_id: store.id,
         },
       });
-      counter++
+      counter++;
       // console.log(data);
-      dataFinal.push(data)
-    };
-  };
-  return dataFinal
+      dataFinal.push(data);
+    }
+  }
+  return dataFinal;
 }
 // Fetch provinces using axios
 async function fetchProvinces() {
@@ -294,9 +295,8 @@ async function main() {
       },
     });
 
-    // const itterate = Array.from({ length: 25 }, (_, i) => i + 1); 
+    // const itterate = Array.from({ length: 25 }, (_, i) => i + 1);
 
-    
     const storeAdminUser = prisma.user.upsert({
       where: { id: 2 },
       update: {},
@@ -327,28 +327,28 @@ async function main() {
           createMany: {
             data: [
               {
-                permission_id : 2,
+                permission_id: 2,
               },
               {
-                permission_id : 3,
+                permission_id: 3,
               },
               {
-                permission_id : 4,
+                permission_id: 4,
               },
               {
-                permission_id : 5,
+                permission_id: 5,
               },
               {
-                permission_id : 9,
+                permission_id: 9,
               },
               {
-                permission_id : 10,
+                permission_id: 10,
               },
               {
-                permission_id : 15,
+                permission_id: 15,
               },
               {
-                permission_id : 16,
+                permission_id: 16,
               },
             ],
             // itterate
@@ -357,14 +357,12 @@ async function main() {
             skipDuplicates: true,
           },
         },
-        
+
         user_role: {
           createMany: { data: [{ user_id: 2, id: 2 }], skipDuplicates: true },
         },
       },
     });
-
-
 
     // Seeding product categories
     const productCategory = prisma.productCategory.createMany({
@@ -383,10 +381,10 @@ async function main() {
     });
     const stores: Store[] = [
       {
-        created_by: 1, // Assuming user ID 1 exists
+        created_by: 1, 
         name: 'JKT Ogro Central',
         store_type: 'central',
-        city_id: 152, // Assuming city ID 1 exists
+        city_id: 152, 
         address: '123 Main St',
         kecamatan: 'Downtown',
         kelurahan: 'Central',
@@ -397,7 +395,7 @@ async function main() {
         createdAt: new Date(),
         updatedAt: null,
         deletedAt: null,
-        province_id: 6
+        province_id: 6,
       },
       {
         created_by: 1, // Assuming user ID 2 exists
@@ -414,7 +412,7 @@ async function main() {
         createdAt: new Date(),
         updatedAt: null,
         deletedAt: null,
-        province_id: 6
+        province_id: 6,
       },
     ];
 
@@ -428,47 +426,60 @@ async function main() {
       skipDuplicates: true,
     });
 
-    const [
-      res_permission,
-      res_superAdminUser,
-      res_superRole,
-      res_storeAdminUser,
-      res_storeAdminRole,
-      res_productCategory,
-      res_products,
-      res_store,
-    ] = await Promise.all([
+    const stage1 = await Promise.allSettled([
       permission,
       superAdminUser,
-      superRole, 
       storeAdminUser,
-      storeAdminRole,
       productCategory,
+    ])
+    console.log(stage1);
+
+    const stage2 = await Promise.allSettled([
       products,
-      storeSeed,
-    ]);
-
-    console.log(
-      res_permission,
-      res_superAdminUser,
-      res_superRole,
-      res_storeAdminUser,
-      res_storeAdminRole,
-      res_productCategory,
-      res_products,
-      res_store,
-    );
-
-    const generateStoreHasProductData =  await generateStoreHasProduct(
+      storeAdminRole,
+      superRole,
+      storeSeed
+    ])
+    console.log(stage2);
+  
+    const [productData, storeData] = await Promise.allSettled([
       await prisma.product.findMany(),
       await prisma.store.findMany(),
+    ]);
+
+    const productSettled =
+      productData.status === 'fulfilled' ? productData.value : [];
+
+    const storeSettled =
+      storeData.status === 'fulfilled' ? storeData.value : [];
+
+    if (productSettled.length === 0 || stores.length === 0) {
+      throw new Error('Failed to fetch products or stores');
+    }
+    const generateStoreHasProductData = await generateStoreHasProduct(
+      productSettled,
+      storeSettled,
     );
-    console.log(await prisma.product.findMany(),
-    await prisma.store.findMany(),);
-    
+    const stockAdjustmentData: Prisma.StocksAdjustmentCreateManyInput[] =
+      generateStoreHasProductData.map((data) => ({
+        managed_by_id: 1, // Adjust as necessary
+        product_id: data.product_id as number, // Ensure product_id is not null
+        qty_change: data.qty as number, // Ensure qty is not null
+        type: 'manual_adjusment',
+        destinied_store_id: data.store_id as number, // Ensure store_id is not null
+        detail: `Initial stock for product ${data.product_id} in store ${data.store_id}`,
+        from_store_id: null, // Adjust this value if needed
+        order_detail_id: null, // Adjust this value if needed
+        adjustment_related_id: null, // Adjust this value if needed
+        deletedAt: null, // Assuming you're not setting this for new records
+      }));
+
+    const seedStockAdjusment = await prisma.stocksAdjustment.createMany({
+      data: [...stockAdjustmentData],
+      skipDuplicates: true
+    });
     console.log(generateStoreHasProductData);
-    
-    
+    console.log(seedStockAdjusment);
   } catch (error) {
     console.error(error);
   } finally {

@@ -8,6 +8,7 @@ interface Product {
   price: number;
   image: string | null;
   description: string;
+  unit_in_gram: number;
 }
 
 interface CartItem {
@@ -118,6 +119,9 @@ const CartItem: React.FC<CartItemProps> = ({
             ) : (
               <span className="font-semibold">{item.qty}</span>
             )}
+          </div>
+          <div className="mt-2 font-semibold">
+            Total weight: {item.qty * item.product.unit_in_gram} gram
           </div>
         </div>
       </div>

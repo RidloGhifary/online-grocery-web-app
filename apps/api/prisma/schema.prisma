@@ -5,7 +5,8 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  // url      = env("DATABASE_URL")
+  url      = "mysql://root:justin123456@localhost:3306/finpro"
 }
 
 enum GENDER {
@@ -286,8 +287,6 @@ model Product {
   carts             Cart[]
   vouchers          Voucher[]
   product_discounts ProductDiscount[]
-  // store             Store?             @relation(fields: [store_id], references: [id])
-  // store_id          Int?
   order_detail      OrderDetail[]
   StoreHasProduct   StoreHasProduct[]  @relation("StoreHasProduct")
 
@@ -315,40 +314,43 @@ model StoreHasProduct {
 }
 
 model StocksAdjustment {
-  id                    Int               @id @default(autoincrement())
-  qty_change            Int
-  type                  StockAdjustType
-  managed_by            User              @relation(fields: [managed_by_id], references: [id])
-  managed_by_id         Int
-  product               Product           @relation(fields: [product_id], references: [id])
-  product_id            Int
-  detail                String
-  from_store            Store?             @relation("FromStore", fields: [from_store_id], references: [id])
-  from_store_id         Int?
-  destinied_store       Store?            @relation("DestiniedStore", fields: [destinied_store_id], references: [id])
-  destinied_store_id    Int?
-  order_detail_id       Int?
-  order_detail          OrderDetail?      @relation("OrderDetailInStock", fields: [order_detail_id], references: [id])
-  adjustment_related_id Int?
-  adjustment_related    StocksAdjustment? @relation("adjustment_related", fields: [adjustment_related_id], references: [id])
-  adjustment_related_end StocksAdjustment[] @relation("adjustment_related")
+  id                 Int             @id @default(autoincrement())
+  qty_change         Int
+  type               StockAdjustType
+  mutation_type MutationType? //new
+  managed_by         User            @relation(fields: [managed_by_id], references: [id])
+  managed_by_id      Int
+  product            Product         @relation(fields: [product_id], references: [id])
+  product_id         Int
+  detail             String
+  from_store         Store?           @relation("FromStore", fields: [from_store_id], references: [id]) // changed to nullable
+  from_store_id      Int? // changed to nullable
+  destinied_store    Store?           @relation("DestiniedStore", fields: [destinied_store_id], references: [id]) 
+  destinied_store_id Int?
+  order_detail_id    Int?
+  order_detail       OrderDetail?    @relation("OrderDetailInStock", fields: [order_detail_id], references: [id])
+  adjustment_related_id Int?  //new
+  adjustment_related    StocksAdjustment? @relation("adjustment_related", fields: [adjustment_related_id], references: [id]) //new
+  adjustment_related_end StocksAdjustment[] @relation("adjustment_related") //new
 
-  createdAt        DateTime?          @default(now())
-  updatedAt        DateTime?          @updatedAt
-  deletedAt        DateTime?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
 
   @@index([id])
   @@map("stocks_adjustments")
 }
 
 enum StockAdjustType {
-  manual_adjusment
-  mutation_pending
-  mutation_cancel
-  mutation_complete
-  purchase
-  cancel
-  checkout
+checkout // new
+purchase // new
+cancel // new
+}
+
+enum MutationType {
+pending // new
+complete // new
+abort // new
 }
 
 model Cart {
@@ -381,6 +383,7 @@ model Order {
   expedition        Expedition                @relation(fields: [expedition_id], references: [id])
   expedition_id     Int
   payment_proof     String?
+  note String?
   order_status      OrderStatus               @relation(fields: [order_status_id], references: [id])
   order_status_id   Int
   address_id        Int //newly added
@@ -392,6 +395,8 @@ model Order {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
   deletedAt DateTime?
+    cancelAt        DateTime?
+    completeAt DateTime?
 
   @@index([id])
   @@index([invoice])

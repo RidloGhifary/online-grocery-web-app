@@ -26,6 +26,7 @@ interface CreateOrderRequest {
   storeId: number;
   selectedCourier: string;
   selectedCourierPrice: number;
+  note?: string;
 }
 
 interface CreateOrderResponse {

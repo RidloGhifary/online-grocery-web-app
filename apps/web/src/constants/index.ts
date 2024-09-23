@@ -6,6 +6,7 @@ import {
   FaHandshake,
   FaBoxOpen,
 } from "react-icons/fa";
+import { FaGears } from "react-icons/fa6";
 import { MdCancel } from "react-icons/md";
 
 export interface mockCartItem {
@@ -20,8 +21,8 @@ export interface mockCartItem {
 export const paymentStages = [
   { id: 1, label: "waiting for payment", icon: FaMoneyBillWave },
   { id: 2, label: "waiting payment confirmation", icon: FaCheckCircle },
-  { id: 3, label: "processing", icon: FaTruck },
-  { id: 4, label: "delivered", icon: FaBoxOpen },
+  { id: 3, label: "processing", icon: FaGears },
+  { id: 4, label: "delivered", icon: FaTruck },
   { id: 5, label: "completed", icon: FaHandshake },
   // { label: "Pesanan Selesai", icon: FaHandHoldingHeart },
 ];

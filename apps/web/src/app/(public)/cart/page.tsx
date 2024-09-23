@@ -110,18 +110,32 @@ const CartPage: React.FC = () => {
         return;
       }
 
-      setCheckoutItems(
-        selectedForCheckout.map((item) => ({
-          ...item,
-          product:
-            items.find((cartItem) => cartItem.product_id === item.product_id)
-              ?.product || {},
-        })),
-      );
-
-      await selectForCheckout(
+      const response = await selectForCheckout(
         selectedForCheckout.map((item) => item.product_id),
         selectedForCheckout.map((item) => item.qty),
+      );
+
+      const itemsFromBackend = response.data;
+
+      setCheckoutItems(
+        selectedForCheckout.map((item) => {
+          const backendItem = itemsFromBackend.find(
+            (backendItem: CartItem) =>
+              backendItem.product_id === item.product_id,
+          );
+
+          return {
+            ...item,
+            id: backendItem ? backendItem.id : 0, // Add missing fields
+            user_id: backendItem ? backendItem.user_id : 0,
+            store_id: backendItem ? backendItem.store_id : 0,
+            totalPrice: backendItem ? backendItem.totalPrice : 0,
+            product:
+              items.find((cartItem) => cartItem.product_id === item.product_id)
+                ?.product || {},
+            totalWeight: backendItem ? backendItem.totalWeight : 0, // Use backend's total weight
+          };
+        }),
       );
 
       router.push("/cart/checkout");
@@ -129,6 +143,33 @@ const CartPage: React.FC = () => {
       console.error("Error selecting items for checkout:", error);
     }
   };
+
+  // const handleProceedToCheckout = async () => {
+  //   try {
+  //     if (selectedForCheckout.length === 0) {
+  //       console.error("No items selected for checkout");
+  //       return;
+  //     }
+
+  //     setCheckoutItems(
+  //       selectedForCheckout.map((item) => ({
+  //         ...item,
+  //         product:
+  //           items.find((cartItem) => cartItem.product_id === item.product_id)
+  //             ?.product || {},
+  //       })),
+  //     );
+
+  //     await selectForCheckout(
+  //       selectedForCheckout.map((item) => item.product_id),
+  //       selectedForCheckout.map((item) => item.qty),
+  //     );
+
+  //     router.push("/cart/checkout");
+  //   } catch (error) {
+  //     console.error("Error selecting items for checkout:", error);
+  //   }
+  // };
 
   const handleQuantityChange = async (productId: number, quantity: number) => {
     try {

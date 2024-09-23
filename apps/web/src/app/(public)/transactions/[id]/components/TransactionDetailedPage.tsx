@@ -8,6 +8,7 @@ import TransactionItemsTable from "./TransactionItemsTable";
 import MainLink from "@/components/MainLink";
 import MainButton from "@/components/MainButton";
 import { useParams } from "next/navigation";
+import { Modal } from "@/components/Modal";
 import {
   getOrderById,
   cancelOrder,
@@ -34,8 +35,10 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
   const [error, setError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { startUpload } = useUploadThing("imageUploader");
-  const [timeLeftUntilConfirmation, setTimeLeftUntilConfirmation] =
-    useState<number>(0);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalButtonColor, setModalButtonColor] = useState("red");
 
   useEffect(() => {
     const fetchTransactionDetails = async () => {
@@ -43,18 +46,32 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
         const response = await getOrderById(Number(id));
         setTransactionDetails(response.data);
         setPaymentStage(response.data.order_status.status);
-        const orderCreatedAt = new Date(
-          response.data.order_details[0].createdAt,
-        ).getTime();
-        const currentTime = new Date().getTime();
-        const timeElapsed = Math.floor((currentTime - orderCreatedAt) / 1000);
-        const timeRemaining = 60 - timeElapsed;
+        if (response.data.order_status_id === 1) {
+          setModalTitle(`Notification`);
+          setModalMessage(
+            `You haven't provided a payment proof or it was declined, please upload your payment proof again before time limit`,
+          );
+          setModalButtonColor("red");
+          setShowModal(true);
+        }
 
-        setTimeLeft(timeRemaining > 0 ? timeRemaining : 0);
-
-        if (response.data.order_status.status === "delivered") {
-          const timeRemainingForAutoConfirmation = 60;
-          setTimeLeftUntilConfirmation(timeRemainingForAutoConfirmation);
+        if (response.data.order_status_id === 3) {
+          setModalTitle("Order Confirmation");
+          setModalMessage(
+            `
+            Your order with the details below is being processed.\n
+            Invoice: ${response.data.invoice}\n
+            Customer: ${response.data.customer.first_name} ${response.data.customer.last_name}\n
+            Delivery Address: ${response.data.address.address}, ${response.data.address.city.city_name}\n
+            Delivery Service: ${response.data.expedition.display_name}\n
+            Store: ${response.data.store.name}, ${response.data.store.address}, ${response.data.store.city.city_name}\n
+            Total Price: Rp. ${(
+              response.data.totalProductPrice + response.data.deliveryPrice
+            ).toLocaleString()}
+            `,
+          );
+          setModalButtonColor("green");
+          setShowModal(true);
         }
       } catch (error: any) {
         setError(error.message);
@@ -91,9 +108,6 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
       const timer = setInterval(() => {
         setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
       }, 1000);
-      // if (timeLeft === 0) {
-      //   handleCancelTransaction();
-      // }
       return () => clearInterval(timer);
     }
   }, [timeLeft, paymentStage, fileUploaded]);
@@ -111,20 +125,25 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     }
   };
 
-  useEffect(() => {
-    if (paymentStage === "delivered") {
-      const confirmationTimer = setInterval(() => {
-        setTimeLeftUntilConfirmation((prev) => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
+  const formatTimeForCompletion = () => {
+    if (!transactionDetails) return null;
+    const completionAtTime = new Date(transactionDetails.completeAt);
+    return completionAtTime.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Jakarta",
+    });
+  };
 
-      // console.log(timeLeftUntilConfirmation);
-      if (timeLeftUntilConfirmation == 0) {
-        handleConfirmDelivery();
-      }
-
-      return () => clearInterval(confirmationTimer);
-    }
-  }, [timeLeftUntilConfirmation, paymentStage]);
+  const formatTimeForCancellation = () => {
+    if (!transactionDetails) return null;
+    const cancelAtTime = new Date(transactionDetails.cancelAt);
+    return cancelAtTime.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Jakarta",
+    });
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -164,12 +183,7 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
-
+  console.log(transactionDetails?.order_status.status);
   const currentStageIndex = paymentStages.findIndex(
     (stage) => stage.label === transactionDetails?.order_status.status,
   );
@@ -229,9 +243,6 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
               </div>
             </div>
           ))}
-          {/* <div className="mt-4 text-center text-lg">
-            {order_status_id !== 6 && <p>{order_status?.status}</p>}
-          </div> */}
         </div>
       )}
       {paymentStage === "cancelled" && (
@@ -247,9 +258,10 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
             Payment Status: Waiting for Payment
           </div>
           <div className="mb-4 flex justify-center text-lg">
-            Please make the payment within {formatTime(timeLeft)} to avoid order
-            cancellation.
+            Please make the payment by {formatTimeForCancellation()} to avoid
+            order cancellation.
           </div>
+
           <div className="mb-4 flex justify-center">
             <input type="file" accept="image/*" onChange={handleFileChange} />
           </div>
@@ -291,6 +303,9 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
           <div className="mb-4 flex justify-center text-lg">
             Your order is already delivered
           </div>
+          <div className="mb-4 flex justify-center text-lg">
+            Your order will be auto-completed by {formatTimeForCompletion()}
+          </div>
           <div className="flex justify-center">
             <MainButton
               text="Confirm Delivery"
@@ -309,6 +324,30 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
             Thankyou for your purchase!
           </div>
         </>
+      )}
+      {showModal && (
+        <Modal
+          show={showModal}
+          closeButton={false}
+          onClose={() => setShowModal(false)}
+          buttonColor={modalButtonColor}
+        >
+          <h2 className="mb-4 text-center text-lg font-semibold">
+            {modalTitle}
+          </h2>
+          <p className="flex justify-around whitespace-pre-line">
+            {modalMessage}
+          </p>
+          {transactionDetails.order_status_id === 3 && (
+            <div className="mt-4 flex justify-center">
+              <MainButton
+                text="Confirm"
+                onClick={() => setShowModal(false)}
+                className="bg-green-500 text-white"
+              />
+            </div>
+          )}
+        </Modal>
       )}
       {order_status_id === 1 && paymentStage !== "cancelled" && (
         <div className="flex justify-center">
@@ -332,3 +371,74 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
 };
 
 export default TransactionDetailedPage;
+
+// useEffect(() => {
+//   if (paymentStage === "delivered") {
+//     const confirmationTimer = setInterval(() => {
+//       setTimeLeftUntilConfirmation((prev) => (prev > 0 ? prev - 1 : 0));
+//     }, 1000);
+
+//     // console.log(timeLeftUntilConfirmation);
+//     if (timeLeftUntilConfirmation == 0) {
+//       handleConfirmDelivery();
+//     }
+
+//     return () => clearInterval(confirmationTimer);
+//   }
+// }, [timeLeftUntilConfirmation, paymentStage]);
+
+// const [timeLeftUntilConfirmation, setTimeLeftUntilConfirmation] =
+// useState<number>(0);
+
+// const orderCreatedAt = new Date(
+//   response.data.order_details[0].createdAt,
+// ).getTime();
+// const cancelAtTime = new Date(response.data.cancelAt).getTime();
+// const currentTime = new Date().getTime();
+// const timeElapsed = Math.floor((currentTime - orderCreatedAt) / 1000);
+// const timeRemaining = 60 - timeElapsed;
+
+// setTimeLeft(timeRemaining > 0 ? timeRemaining : 0);
+
+// if (response.data.order_status.status === "delivered") {
+//   const timeRemainingForAutoConfirmation = 60;
+//   setTimeLeftUntilConfirmation(timeRemainingForAutoConfirmation);
+// }
+
+// const counterEnd = new Date(Date.now() + timeRemaining * 1000);
+// const endTime = new Date(Date.now() + timeRemaining * 1000);
+// const formattedEndTime = endTime.toLocaleTimeString([], {
+//   hour: "2-digit",
+//   minute: "2-digit",
+//   timeZone: "Asia/Jakarta",
+// });
+
+// const endTime = counterEnd.toLocaleTimeString([], {
+//   hour: "2-digit",
+//   minute: "2-digit",
+//   timeZone: "Asia/Jakarta",
+// });
+// setModalMessage(
+//   `Your payment proof was declined, please upload your payment proof again before ${endTime}`,
+// );
+
+// const formatTimeForCancellation = () => {
+//   const counterEnd = new Date(Date.now() + timeLeft * 1000);
+//   return counterEnd.toLocaleTimeString([], {
+//     hour: "2-digit",
+//     minute: "2-digit",
+//   });
+// };
+
+{
+  /* <div className="mb-4 flex justify-center text-lg">
+            Please make the payment within {formatTime(timeLeft)} to avoid order
+            cancellation.
+          </div> */
+}
+
+{
+  /* <div className="mt-4 text-center text-lg">
+            {order_status_id !== 6 && <p>{order_status?.status}</p>}
+          </div> */
+}

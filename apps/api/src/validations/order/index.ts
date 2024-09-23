@@ -1,5 +1,26 @@
 import { z } from 'zod';
 
+// export const createOrderSchema = z.object({
+//   userId: z.number(),
+//   checkoutItems: z.array(
+//     z.object({
+//       product_id: z.number(),
+//       quantity: z.number(),
+//       price: z.number(),
+//     }),
+//   ),
+//   selectedAddressId: z.number(),
+//   storeId: z.number(),
+//   selectedCourier: z.string(),
+//   selectedCourierPrice: z.number(),
+// }).transform((data) => ({
+//   ...data,
+//   checkoutItems: data.checkoutItems.map((item) => ({
+//     ...item,
+//     quantity: item.quantity ?? 0, // Ensure quantity is always a number
+//   })),
+// }));
+
 export const createOrderSchema = z.object({
   userId: z.number(),
   checkoutItems: z.array(
@@ -13,6 +34,7 @@ export const createOrderSchema = z.object({
   storeId: z.number(),
   selectedCourier: z.string(),
   selectedCourierPrice: z.number(),
+  note: z.string().optional(),
 });
 
 export const getOrdersByUserSchema = z.object({

@@ -144,33 +144,6 @@ const CartPage: React.FC = () => {
     }
   };
 
-  // const handleProceedToCheckout = async () => {
-  //   try {
-  //     if (selectedForCheckout.length === 0) {
-  //       console.error("No items selected for checkout");
-  //       return;
-  //     }
-
-  //     setCheckoutItems(
-  //       selectedForCheckout.map((item) => ({
-  //         ...item,
-  //         product:
-  //           items.find((cartItem) => cartItem.product_id === item.product_id)
-  //             ?.product || {},
-  //       })),
-  //     );
-
-  //     await selectForCheckout(
-  //       selectedForCheckout.map((item) => item.product_id),
-  //       selectedForCheckout.map((item) => item.qty),
-  //     );
-
-  //     router.push("/cart/checkout");
-  //   } catch (error) {
-  //     console.error("Error selecting items for checkout:", error);
-  //   }
-  // };
-
   const handleQuantityChange = async (productId: number, quantity: number) => {
     try {
       await updateCartItemQuantity(productId, quantity);

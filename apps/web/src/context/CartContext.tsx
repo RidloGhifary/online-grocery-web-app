@@ -39,13 +39,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const [cartItemCount, setCartItemCount] = useState<number>(0);
   const [checkoutItems, setCheckoutItemsState] = useState<CartItem[]>([]);
 
-  // Set checkout items and persist to local storage
   const setCheckoutItems = (items: CartItem[]) => {
     setCheckoutItemsState(items);
-    localStorage.setItem("checkoutItems", JSON.stringify(items)); // Persist in local storage
+    localStorage.setItem("checkoutItems", JSON.stringify(items));
   };
 
-  // Refresh cart item count
   const refreshCart = async () => {
     try {
       const response = await getCartItems();
@@ -66,40 +64,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // Clear localStorage on browser close or navigating away (but not on reload)
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       const confirmationMessage = "Are you sure you want to leave this page?";
-      // This triggers only when the user is closing the page
       event.preventDefault();
-      event.returnValue = confirmationMessage; // For modern browsers
-      return confirmationMessage; // For legacy browsers
+      event.returnValue = confirmationMessage;
+      return confirmationMessage;
 
-      // Clear only if the page is being closed, not reloaded
       if (!event.defaultPrevented) {
         localStorage.removeItem("checkoutItems");
       }
     };
 
     const handlePopState = () => {
-      // Clear localStorage when user navigates using back/forward buttons
       localStorage.removeItem("checkoutItems");
     };
 
-    // Attach the listeners
-    // window.addEventListener("beforeunload", handleBeforeUnload);
     window.addEventListener("popstate", handlePopState);
 
-    // Load checkoutItems from local storage on component mount (page reload)
     refreshCart();
     const savedCheckoutItems = localStorage.getItem("checkoutItems");
     if (savedCheckoutItems) {
       setCheckoutItemsState(JSON.parse(savedCheckoutItems));
     }
 
-    // Clean up the listeners on unmount
     return () => {
-      // window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("popstate", handlePopState);
     };
   }, []);

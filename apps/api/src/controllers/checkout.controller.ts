@@ -24,8 +24,6 @@ export class CheckoutController {
       }
 
       const validatedData = checkoutSchema.parse(req.body);
-
-      // const { productIds, quantities, addressId } = validation.data;
       const { addressId } = validation.data;
 
       const currentUser = req.currentUser;
@@ -55,7 +53,6 @@ export class CheckoutController {
 
       let closestStore;
       if (!selectedAddress) {
-        // If no address is provided or user has no address, select the 'central' store
         const centralStore = stores.find(
           (store) => store.store_type === 'central',
         );
@@ -108,7 +105,6 @@ export class CheckoutController {
     productId: number,
     qtyNeeded: number,
   ): Promise<number | null> => {
-    // Validate the inputs using the Zod schema
     const validation = stockMutationSchema.safeParse({
       selectedStoreId,
       productId,
@@ -121,7 +117,6 @@ export class CheckoutController {
       );
     }
 
-    // Fetch the selected store's coordinates and city_id
     const selectedStore = await prisma.store.findUnique({
       where: { id: selectedStoreId },
       select: { latitude: true, longtitude: true, city_id: true },
@@ -131,7 +126,6 @@ export class CheckoutController {
       throw new Error('Selected store not found.');
     }
 
-    // Fetch all stores in the same city (excluding the selected store) that have enough stock for the product
     const storesWithEnoughStock = await prisma.storeHasProduct.findMany({
       where: {
         product_id: productId,
@@ -154,10 +148,9 @@ export class CheckoutController {
     });
 
     if (storesWithEnoughStock.length === 0) {
-      return null; // No store found with enough stock
+      return null;
     }
 
-    // Convert latitude/longitude from Decimal to number for distance calculation
     const selectedStoreLatitude = selectedStore.latitude.toNumber();
     const selectedStoreLongitude = selectedStore.longtitude.toNumber();
 
@@ -234,7 +227,6 @@ export class CheckoutController {
         return res.status(400).json({ message: 'Expedition not found' });
       }
 
-      // Create the order and order details
       const newOrder = await prisma.order.create({
         data: {
           invoice: 'INV-TEMPDATA',
@@ -256,21 +248,18 @@ export class CheckoutController {
           },
         },
         include: {
-          order_details: true, // Include the created OrderDetails
+          order_details: true,
         },
       });
 
-      // Update the invoice with the correct order id
       const invoice = `INV-${newOrder.id.toString().padStart(7, '0')}`;
       await prisma.order.update({
         where: { id: newOrder.id },
         data: { invoice },
       });
 
-      // Fetch the created OrderDetails for further processing
-      const orderDetails = newOrder.order_details; // OrderDetails included above
+      const orderDetails = newOrder.order_details;
 
-      // Process each checkout item for stock adjustment or mutation
       for (const item of checkoutItems) {
         const productStock = await prisma.storeHasProduct.findFirst({
           where: {
@@ -279,7 +268,6 @@ export class CheckoutController {
           },
         });
 
-        // Find the corresponding OrderDetail for the current item
         const orderDetail = orderDetails.find(
           (detail) =>
             detail.product_id === item.product_id &&
@@ -297,9 +285,8 @@ export class CheckoutController {
           productStock.qty !== null &&
           productStock.qty >= item.quantity
         ) {
-          // Regular stock adjustment: enough stock in the selected store
           await prisma.storeHasProduct.update({
-            where: { id: productStock.id }, // Use 'id' as unique identifier
+            where: { id: productStock.id },
             data: {
               qty: { decrement: item.quantity },
             },
@@ -313,7 +300,7 @@ export class CheckoutController {
               product_id: item.product_id,
               detail: `checkout for product ${item.product_id} in store ${storeId}`,
               destinied_store_id: storeId,
-              order_detail_id: orderDetail.id, // Use the OrderDetail ID
+              order_detail_id: orderDetail.id,
             },
           });
         } else if (
@@ -321,8 +308,7 @@ export class CheckoutController {
           productStock.qty !== null &&
           productStock.qty < item.quantity
         ) {
-          // Stock mutation: not enough stock in the selected store, find a nearby store
-          const qtyNeeded = item.quantity - (productStock.qty ?? 0); // Handle nullable qty
+          const qtyNeeded = item.quantity - (productStock.qty ?? 0);
           const closestStoreId = await this.findClosestStoreForStockMutation(
             storeId,
             item.product_id,
@@ -330,15 +316,13 @@ export class CheckoutController {
           );
 
           if (closestStoreId) {
-            // Decrement available stock in the original store
             await prisma.storeHasProduct.update({
-              where: { id: productStock.id }, // Use 'id' instead of 'store_id_product_id'
+              where: { id: productStock.id },
               data: {
                 qty: { decrement: productStock.qty ?? 0 },
               },
             });
 
-            // Decrement stock in the closest aiding store
             const aidingProductStock = await prisma.storeHasProduct.findFirst({
               where: {
                 store_id: closestStoreId,
@@ -348,13 +332,12 @@ export class CheckoutController {
 
             if (aidingProductStock) {
               await prisma.storeHasProduct.update({
-                where: { id: aidingProductStock.id }, // Use unique 'id'
+                where: { id: aidingProductStock.id },
                 data: {
                   qty: { decrement: qtyNeeded },
                 },
               });
 
-              // Log stock adjustment for the original store
               await prisma.stocksAdjustment.create({
                 data: {
                   qty_change: -(productStock.qty ?? 0),
@@ -363,11 +346,10 @@ export class CheckoutController {
                   product_id: item.product_id,
                   detail: `checkout for product ${item.product_id} in store ${storeId}`,
                   destinied_store_id: storeId,
-                  order_detail_id: orderDetail.id, // Use the OrderDetail ID
+                  order_detail_id: orderDetail.id,
                 },
               });
 
-              // Log stock mutation from the closest aiding store
               await prisma.stocksAdjustment.create({
                 data: {
                   qty_change: -qtyNeeded,
@@ -377,7 +359,7 @@ export class CheckoutController {
                   detail: `mutation for order detail of ${orderDetail.id} from store ${closestStoreId} for checkout in store ${storeId}`,
                   from_store_id: closestStoreId,
                   destinied_store_id: storeId,
-                  order_detail_id: orderDetail.id, // Use the OrderDetail ID
+                  order_detail_id: orderDetail.id,
                   mutation_type: 'pending',
                 },
               });
@@ -395,28 +377,24 @@ export class CheckoutController {
 
   getVouchers = async (req: CustomRequest, res: Response) => {
     try {
-      // Validate the request using Zod
       const currentUser = req.currentUser;
       if (!currentUser) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      // Get the current date
       const currentDate = new Date();
 
-      // Retrieve all vouchers that are active within the current date
       const vouchers = await prisma.voucher.findMany({
         where: {
           started_at: { lte: currentDate },
           end_at: { gte: currentDate },
         },
         include: {
-          product: true, // Include related product if needed
-          product_discount: true, // Include related product discount if needed
+          product: true,
+          product_discount: true,
         },
       });
 
-      // Process vouchers based on their types
       const processedVouchers = vouchers.map((voucher) => {
         const {
           voucher_type,
@@ -434,10 +412,8 @@ export class CheckoutController {
         switch (voucher_type) {
           case 'buy_n_get_n':
             if (is_all_get) {
-              // Apply to all products in the cart
               applicableProducts = ['All Products'];
             } else if (product_id) {
-              // Apply to a specific product
               applicableProducts = [`Product ID: ${product_id}`];
             }
             break;
@@ -489,7 +465,6 @@ export class CheckoutController {
         };
       });
 
-      // Send the processed vouchers to the client
       return res.status(200).json({ vouchers: processedVouchers });
     } catch (error) {
       if (error instanceof ZodError) {
@@ -497,38 +472,32 @@ export class CheckoutController {
           .status(400)
           .json({ message: 'Validation Error', errors: error.errors });
       }
-      console.error(error); // Log the unknown error for debugging
+      console.error(error);
       return res.status(500).json({ message: 'Internal Server Error' });
     }
   };
   getVoucherById = async (req: CustomRequest, res: Response) => {
     try {
-      // Ensure voucherId is a number
       const voucherId = parseInt(req.params.voucherId, 10);
 
-      // Get current user (assumes this middleware is already in place)
       const currentUser = req.currentUser;
       if (!currentUser) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      // Fetch voucher by ID, ensuring it belongs to the user or is available for all
       const voucher = await prisma.voucher.findFirst({
         where: {
-          id: voucherId, // Directly pass voucherId here
-          OR: [
-            { is_all_get: true }, // Available for all users
-            { product_id: { not: null } }, // Adjust according to logic
-          ],
+          id: voucherId,
+          OR: [{ is_all_get: true }, { product_id: { not: null } }],
           started_at: {
-            lte: new Date(), // Ensure voucher has started
+            lte: new Date(),
           },
           end_at: {
-            gte: new Date(), // Ensure voucher has not expired
+            gte: new Date(),
           },
         },
         include: {
-          product_discount: true, // Correct field name (from Prisma schema)
+          product_discount: true,
         },
       });
 
@@ -543,7 +512,7 @@ export class CheckoutController {
           .status(400)
           .json({ message: 'Validation Error', errors: error.errors });
       }
-      console.error(error); // Log unknown error
+      console.error(error);
       return res.status(500).json({ message: 'Internal Server Error' });
     }
   };

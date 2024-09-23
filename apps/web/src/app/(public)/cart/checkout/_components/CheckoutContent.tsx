@@ -24,27 +24,19 @@ interface Props {
   user: UserProps | null;
 }
 
+type SelectedVoucher = {
+  id: number;
+  discountAmount: number;
+  discountType: string;
+  type: "product" | "delivery";
+};
+
 interface Voucher {
   id: string;
   code: string;
   voucher_type: string;
   discount_type: string;
   discount_amount: number;
-}
-
-interface ProductVoucher {
-  id: number;
-  product_id: number;
-  product_discount: {
-    discount: number;
-    discount_type: string;
-  };
-}
-
-interface DeliveryVoucher {
-  id: number;
-  delivery_discount?: number;
-  is_delivery_free?: boolean;
 }
 
 const CheckOutContent: React.FC<Props> = ({ user }) => {
@@ -56,16 +48,16 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
   const [storeCityId, setStoreCityId] = useState<number | null>(null);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [selectedCourierPrice, setSelectedCourierPrice] = useState<number>(0);
-  const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
   const [selectedCourier, setSelectedCourier] = useState<string>("jne");
   const [deliveryService, setDeliveryService] = useState<number>(0);
   const [deliveryNotes, setDeliveryNotes] = useState("");
   const [selectedProductVoucher, setSelectedProductVoucher] =
-    useState<Voucher | null>(null);
+    useState<SelectedVoucher | null>(null);
   const [selectedDeliveryVoucher, setSelectedDeliveryVoucher] =
-    useState<Voucher | null>(null);
+    useState<SelectedVoucher | null>(null);
   const [subtotal, setSubtotal] = useState<number>(0);
   const [deliveryTotal, setDeliveryTotal] = useState<number>(0);
+
   const [selectedAddress, setSelectedAddress] =
     useState<UserAddressProps | null>(
       selectedAddressActive as UserAddressProps,
@@ -85,16 +77,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
       : 10;
   const router = useRouter();
 
-  useEffect(() => {
-    if (checkoutItems) {
-      const initialSubtotal = checkoutItems.reduce(
-        (acc, item) => acc + item.qty * item.product.price,
-        0,
-      );
-      setSubtotal(initialSubtotal);
-      console.log("Initial Subtotal:", initialSubtotal);
-    }
-  }, [checkoutItems]);
+  console.log(checkoutItems);
 
   const { data: nearestStoreData, error: nearestStoreError } = useQuery({
     queryKey: ["nearestStore", selectedAddress?.id],
@@ -141,8 +124,10 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     if (deliveryData) {
       const initialPrice =
         deliveryData?.data?.results[0]?.costs[0]?.cost[0]?.value;
-      setSelectedCourierPrice(initialPrice);
-      setDeliveryService(initialPrice);
+      if (initialPrice) {
+        setSelectedCourierPrice(initialPrice);
+        setDeliveryService(initialPrice);
+      }
     }
   }, [deliveryData]);
 
@@ -153,23 +138,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
         if (response.data && response.data.vouchers) {
           const allVouchers = response.data.vouchers;
           console.log(allVouchers);
-
-          // Separate product vouchers and delivery vouchers
-          const productVouchers = allVouchers.filter((voucher) =>
-            ["buy_n_get_n", "product_discount"].includes(voucher.voucher_type),
-          );
-          const deliveryVouchers = allVouchers.filter((voucher) =>
-            ["delivery_discount", "delivery_free"].includes(
-              voucher.voucher_type,
-            ),
-          );
-
-          // Update state for vouchers
           setVouchers(allVouchers);
-          setSelectedProductVoucher(productVouchers[0] || null);
-          console.log("Selected Product Voucher:", selectedProductVoucher); // Default to first product voucher if available
-          setSelectedDeliveryVoucher(deliveryVouchers[0] || null);
-          console.log("Selected Delivery Voucher:", selectedDeliveryVoucher); // Default to first delivery voucher if available
         }
       } catch (error) {
         console.error("Error fetching vouchers", error);
@@ -179,37 +148,107 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     fetchVouchers();
   }, []);
 
-  useEffect(() => {
-    if (selectedProductVoucher && subtotal) {
-      const discount = selectedProductVoucher.discount_amount;
-      const discountType = selectedProductVoucher.discount_type;
+  console.log(vouchers);
 
-      // Apply discount based on the type (percentage or fixed amount)
-      if (discountType === "percentage") {
-        setSubtotal((prevSubtotal) => prevSubtotal * (1 - discount / 100));
-      } else if (discountType === "amount") {
-        setSubtotal((prevSubtotal) => Math.max(0, prevSubtotal - discount));
-      }
+  useEffect(() => {
+    if (checkoutItems) {
+      const initialSubtotal = checkoutItems.reduce(
+        (acc, item) => acc + item.qty * item.product.price,
+        0,
+      );
+      console.log("Initial Subtotal:", initialSubtotal);
+      setSubtotal(initialSubtotal);
     }
-  }, [selectedProductVoucher, subtotal]);
+  }, [checkoutItems]);
+
+  const handleProductVoucherSelect = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const selectedVoucher = vouchers.find(
+      (voucher) => voucher.id == e.target.value,
+    );
+
+    if (selectedVoucher) {
+      const discount = selectedVoucher.product_discount?.discount || 0;
+      const discountType =
+        selectedVoucher.product_discount?.discount_type || "nominal";
+
+      setSelectedProductVoucher({
+        id: selectedVoucher.id,
+        voucher: selectedVoucher.voucher,
+        discountAmount: discount,
+        discountType: discountType,
+        type: "product",
+      });
+    }
+  };
+
+  const handleDeliveryVoucherSelect = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const selectedVoucher = vouchers.find(
+      (voucher) => voucher.id == e.target.value,
+    );
+
+    if (selectedVoucher) {
+      const discount = selectedVoucher.delivery_discount || 0;
+      const discountType =
+        selectedVoucher.voucher_type === "delivery_free"
+          ? "free"
+          : "percentage";
+
+      setSelectedDeliveryVoucher({
+        id: selectedVoucher.id,
+        discountAmount: discount,
+        discountType: discountType,
+        type: "delivery",
+      });
+    }
+  };
 
   useEffect(() => {
-    if (selectedDeliveryVoucher) {
-      // Check if the voucher offers free delivery or a discount
-      if (selectedDeliveryVoucher.voucher_type === "delivery_free") {
-        setDeliveryTotal(0); // Free delivery
-      } else if (selectedDeliveryVoucher.voucher_type === "delivery_discount") {
-        setDeliveryTotal((prevDeliveryTotal) =>
-          Math.max(
-            0,
-            prevDeliveryTotal - selectedDeliveryVoucher.discount_amount,
-          ),
+    if (selectedProductVoucher && checkoutItems) {
+      console.log(checkoutItems);
+      let newSubtotal = checkoutItems.reduce(
+        (acc, item) => acc + item.qty * item.product.price,
+        0,
+      );
+      console.log(`the pre-calculation subtotal is: ${newSubtotal}`);
+      const discount = parseInt(selectedProductVoucher?.discountAmount) || 0;
+      console.log(discount);
+      const discountType = selectedProductVoucher?.discountType || "nominal";
+      console.log(discountType);
+      if (discountType === "percentage") {
+        newSubtotal = newSubtotal * (1 - discount / 100);
+      } else if (discountType === "nominal") {
+        newSubtotal = Math.max(0, newSubtotal - discount);
+      }
+      console.log(`post-calculation subtotal is: ${newSubtotal}`);
+      setSubtotal(newSubtotal);
+    }
+  }, [selectedProductVoucher, checkoutItems]);
+
+  useEffect(() => {
+    if (selectedDeliveryVoucher && selectedCourierPrice > 0) {
+      console.log("Selected Delivery Voucher:", selectedDeliveryVoucher);
+
+      const discount = parseInt(selectedDeliveryVoucher?.discountAmount) || 0;
+      const discountType =
+        selectedDeliveryVoucher?.discountType || "percentage";
+      console.log(`Delivery discount: ${discount}, Type: ${discountType}`);
+
+      if (discountType === "free") {
+        setDeliveryTotal(0);
+      } else if (discountType === "percentage") {
+        const discountedDelivery = selectedCourierPrice * (1 - discount / 100);
+        setDeliveryTotal(Math.max(0, discountedDelivery));
+        console.log(
+          `Post-calculation delivery total is: ${discountedDelivery}`,
         );
       }
-    } else {
-      setDeliveryTotal(selectedCourierPrice); // Set delivery total to selected courier price if no voucher
+    } else if (selectedCourierPrice > 0) {
+      setDeliveryTotal(selectedCourierPrice);
     }
-    console.log("Delivery Total after voucher application:", deliveryTotal);
   }, [selectedDeliveryVoucher, selectedCourierPrice]);
 
   const handleCreateOrder = async () => {
@@ -308,20 +347,25 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
           <CheckoutSummary
             items={checkoutItems}
             deliveryPrice={selectedCourierPrice}
+            selectedProductVoucher={selectedProductVoucher}
+            selectedDeliveryVoucher={selectedDeliveryVoucher}
             showDeliveryPrice={true}
             buttonText="Proceed to Payment"
             onCheckout={handleOpenModal}
+            onProductVoucherSelect={handleProductVoucherSelect}
+            onDeliveryVoucherSelect={handleDeliveryVoucherSelect}
+            subtotal={subtotal}
+            deliveryTotal={deliveryTotal}
             productVouchers={vouchers.filter(
               (v) =>
                 v.voucher_type === "buy_n_get_n" ||
                 v.voucher_type === "product_discount",
-            )} // Pass only product vouchers
+            )}
             deliveryVouchers={vouchers.filter(
               (v) =>
                 v.voucher_type === "delivery_discount" ||
                 v.voucher_type === "delivery_free",
-            )} // Pass only delivery vouchers
-            showVoucherButton={true} // Enable voucher button
+            )}
           />
         </div>
       </div>
@@ -396,89 +440,3 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
 };
 
 export default CheckOutContent;
-
-// const [totalWeight, setTotalWeight] = useState<number>(0);
-// const router = useRouter();
-
-// const {
-//   data: deliveryData,
-//   isLoading,
-//   error,
-// } = useQuery({
-//   queryKey: ["deliveryData", selectedCourier, selectedAddress?.city_id],
-//   queryFn: () =>
-//     getDeliveryOptions({
-//       origin: storeCityId ? storeCityId.toString() : "154",
-//       destination: selectedAddress?.city_id!!,
-//       weight: totalWeight,
-//       courier: selectedCourier,
-//     }),
-//   enabled: !!selectedCourier && !!selectedAddress?.city_id,
-// });
-
-// useEffect(() => {
-//   if (checkoutItems.length > 0) {
-//     const weight = checkoutItems.reduce(
-//       (acc, item) => acc + item.qty * item.product.unit_in_gram,
-//       0,
-//     );
-//     setTotalWeight(weight);
-//     console.log("Total weight calculated:", weight);
-//   }
-// }, [checkoutItems]);
-
-{
-  /* <CheckoutSummary
-            items={checkoutItems}
-            deliveryPrice={selectedCourierPrice}
-            showDeliveryPrice={true}
-            buttonText="Proceed to Payment"
-            onCheckout={handleOpenModal}
-            showVoucherButton={false}
-          /> */
-}
-
-// useEffect(() => {
-//   if (selectedProductVoucher && subtotal) {
-//     const { discount, discount_type } =
-//       selectedProductVoucher.product_discount;
-//     if (discount_type === "percentage") {
-//       setSubtotal(
-//         (prevSubtotal) => prevSubtotal - prevSubtotal * (discount / 100),
-//       );
-//     } else if (discount_type === "amount") {
-//       setSubtotal((prevSubtotal) => prevSubtotal - discount);
-//     }
-//   }
-// }, [selectedProductVoucher, subtotal]);
-
-// useEffect(() => {
-//   if (selectedDeliveryVoucher && selectedCourierPrice) {
-//     if (selectedDeliveryVoucher.is_delivery_free) {
-//       setDeliveryTotal(0); // Free delivery
-//     } else if (selectedDeliveryVoucher.delivery_discount) {
-//       setDeliveryTotal(
-//         (prevDeliveryTotal) =>
-//           prevDeliveryTotal - selectedDeliveryVoucher.delivery_discount,
-//       );
-//     }
-//   } else {
-//     setDeliveryTotal(selectedCourierPrice); // Set delivery total to selected courier price
-//   }
-// }, [selectedDeliveryVoucher, selectedCourierPrice]);
-
-// useEffect(() => {
-//   const fetchVouchers = async () => {
-//     try {
-//       const response: AxiosResponse<{ vouchers: Voucher[] }> =
-//         await getVouchers();
-//       if (response.data && response.data.vouchers) {
-//         setVouchers(response.data.vouchers);
-//       }
-//     } catch (error) {
-//       console.error("Error fetching vouchers", error);
-//     }
-//   };
-
-//   fetchVouchers();
-// }, []);

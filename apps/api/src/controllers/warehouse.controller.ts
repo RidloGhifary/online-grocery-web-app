@@ -404,82 +404,6 @@ export class WarehouseController {
     }
   };
 
-  // deliverProduct = async (req: CustomRequest, res: Response) => {
-  //   const validationResult = deliverProductSchema.safeParse(req.body);
-  //   if (!validationResult.success) {
-  //     return res.status(400).json({ error: validationResult.error.errors });
-  //   }
-
-  //   const { orderId } = validationResult.data;
-
-  //   const currentUser = req.currentUser;
-  //   if (!currentUser) {
-  //     return res.status(401).json({ error: 'User not authenticated' });
-  //   }
-
-  //   try {
-  //     const order = await prisma.order.findUnique({
-  //       where: { id: orderId },
-  //       include: { order_details: true },
-  //     });
-
-  //     if (!order || order.order_status_id !== 3) {
-  //       return res
-  //         .status(400)
-  //         .json({ error: 'Invalid order status or order not found' });
-  //     }
-
-  //     const storeAdmin = await prisma.storeHasAdmin.findFirst({
-  //       where: { user_id: currentUser.id, store_id: order.store_id },
-  //     });
-
-  //     const isSuperAdmin = await prisma.userHasRole.findFirst({
-  //       where: { user_id: currentUser.id, role: { name: 'super_admin' } },
-  //     });
-
-  //     if (
-  //       !isSuperAdmin &&
-  //       (!storeAdmin || storeAdmin.store_id !== order.store_id)
-  //     ) {
-  //       return res.status(403).json({ error: 'Unauthorized access' });
-  //     }
-
-  //     for (const detail of order.order_details) {
-  //       const storeProduct = await prisma.storeHasProduct.findFirst({
-  //         where: { product_id: detail.product_id, store_id: order.store_id },
-  //       });
-
-  //       if (
-  //         !storeProduct ||
-  //         storeProduct.qty === null ||
-  //         storeProduct.qty < detail.qty
-  //       ) {
-  //         return res.status(400).json({
-  //           error:
-  //             'Requested store has no enough inventory of product in warehouse',
-  //         });
-  //       }
-
-  //       await prisma.storeHasProduct.update({
-  //         where: { id: storeProduct.id },
-  //         data: { qty: storeProduct.qty - detail.qty },
-  //       });
-  //     }
-
-  //     await prisma.order.update({
-  //       where: { id: orderId },
-  //       data: { order_status_id: 4 },
-  //     });
-
-  //     return res
-  //       .status(200)
-  //       .json({ message: 'Product delivered successfully' });
-  //   } catch (error) {
-  //     console.error(error);
-  //     return res.status(500).json({ error: 'Internal server error' });
-  //   }
-  // };
-
   deliverProduct = async (req: CustomRequest, res: Response) => {
     const validationResult = deliverProductSchema.safeParse(req.body);
     if (!validationResult.success) {
@@ -523,15 +447,13 @@ export class WarehouseController {
         return res.status(403).json({ error: 'Unauthorized access' });
       }
 
-      // Process each order detail
       for (const detail of order.order_details) {
-        // 1. Fetch original checkout data (where from_store_id is null)
         const checkoutData = await prisma.stocksAdjustment.findFirst({
           where: {
             order_detail_id: detail.id,
             type: 'checkout',
-            from_store_id: null, // Original transaction from the store
-            destinied_store_id: order.store_id, // Store in the order table
+            from_store_id: null,
+            destinied_store_id: order.store_id,
           },
         });
 
@@ -541,46 +463,41 @@ export class WarehouseController {
           });
         }
 
-        // 2. Check if there is a mutation for this order detail
         const mutationData = await prisma.stocksAdjustment.findMany({
           where: {
             order_detail_id: detail.id,
             // type: 'checkout',
-            from_store_id: { not: null }, // Mutation involves a different store
-            destinied_store_id: order.store_id, // Matches store from the order
+            from_store_id: { not: null },
+            destinied_store_id: order.store_id,
           },
         });
 
-        // a. If mutation exists, check if any of them have 'complete' type
         const completedMutation = mutationData.find(
           (mutation) => mutation.mutation_type === 'complete',
         );
 
-        // If mutation exists and is not completed, block the delivery process
         if (mutationData.length > 0 && !completedMutation) {
           return res.status(400).json({
             error: `Stock mutation for order detail ID ${detail.id} is still pending.`,
           });
         }
 
-        // 3. Log the purchase data to stocksAdjustment
         await prisma.stocksAdjustment.create({
           data: {
-            qty_change: 0, // No quantity change, just confirming the delivery
-            type: 'purchase', // Log as a purchase type
-            managed_by_id: currentUser.id, // ID of the admin executing the delivery
-            product_id: detail.product_id, // Product being delivered
+            qty_change: 0,
+            type: 'purchase',
+            managed_by_id: currentUser.id,
+            product_id: detail.product_id,
             detail: `Products for order detail id ${detail.id} have been sent to customer by store id ${order.store_id}`,
-            from_store_id: null, // No from_store_id since it's the original store's purchase
-            destinied_store_id: order.store_id, // The store associated with the order
-            order_detail_id: detail.id, // Link to the specific order detail
-            mutation_type: null, // No mutation type needed for this log
-            adjustment_related_id: checkoutData.id, // Referencing the original 'checkout' type data
+            from_store_id: null,
+            destinied_store_id: order.store_id,
+            order_detail_id: detail.id,
+            mutation_type: null,
+            adjustment_related_id: checkoutData.id,
           },
         });
       }
 
-      // Update order status to 'delivered'
       await prisma.order.update({
         where: { id: orderId },
         data: { order_status_id: 4 },
@@ -619,7 +536,6 @@ export class WarehouseController {
           .json({ error: 'Invalid order status or order not found' });
       }
 
-      // Ensure that the current user has appropriate admin permissions
       const storeAdmin = await prisma.storeHasAdmin.findFirst({
         where: { user_id: currentUser.id, store_id: order.store_id },
       });
@@ -635,15 +551,12 @@ export class WarehouseController {
         return res.status(403).json({ error: 'Unauthorized access' });
       }
 
-      // Process each order detail for stock adjustment
       for (const detail of order.order_details) {
-        // Handle the original stock adjustment (from checkout)
         const stockAdjustment = await prisma.stocksAdjustment.findFirst({
           where: { order_detail_id: detail.id, type: 'checkout' },
         });
 
         if (stockAdjustment && stockAdjustment.destinied_store_id !== null) {
-          // Handle returning stock to the original store
           const originalStoreHasProduct =
             await prisma.storeHasProduct.findFirst({
               where: {
@@ -653,15 +566,13 @@ export class WarehouseController {
             });
 
           if (originalStoreHasProduct) {
-            // Update stock for the original store
             await prisma.storeHasProduct.update({
               where: { id: originalStoreHasProduct.id },
               data: {
-                qty: { increment: Math.abs(stockAdjustment.qty_change) }, // Ensure positive quantity is added back
+                qty: { increment: Math.abs(stockAdjustment.qty_change) },
               },
             });
 
-            // Log the cancellation in stocksAdjustment
             await prisma.stocksAdjustment.create({
               data: {
                 qty_change: Math.abs(stockAdjustment.qty_change),
@@ -671,19 +582,17 @@ export class WarehouseController {
                 detail: `Cancel order for product ID ${detail.product_id} in store ID ${detail.store_id}`,
                 destinied_store_id: detail.store_id,
                 order_detail_id: detail.id,
-                adjustment_related_id: stockAdjustment.id, // Link to the original stock adjustment
+                adjustment_related_id: stockAdjustment.id,
               },
             });
           }
         }
 
-        // Handle any mutations (if stock was moved from another store)
         const mutation = await prisma.stocksAdjustment.findFirst({
           where: { order_detail_id: detail.id, mutation_type: 'pending' },
         });
 
         if (mutation && mutation.from_store_id !== null) {
-          // Return stock to the aiding store involved in the mutation
           const aidingStoreHasProduct = await prisma.storeHasProduct.findFirst({
             where: {
               store_id: mutation.from_store_id,
@@ -692,34 +601,31 @@ export class WarehouseController {
           });
 
           if (aidingStoreHasProduct) {
-            // Update stock for the aiding store
             await prisma.storeHasProduct.update({
               where: { id: aidingStoreHasProduct.id },
               data: {
-                qty: { increment: Math.abs(mutation.qty_change) }, // Return the mutation quantity
+                qty: { increment: Math.abs(mutation.qty_change) },
               },
             });
 
-            // Log the cancellation of the mutation in stocksAdjustment
             await prisma.stocksAdjustment.create({
               data: {
-                qty_change: mutation.qty_change * -1, // Negative value for reverting the mutation
+                qty_change: mutation.qty_change * -1,
                 type: 'cancel',
                 managed_by_id: currentUser.id,
                 product_id: mutation.product_id,
                 detail: `Cancel mutation of order detail ID ${detail.id} for checkout in store ${detail.store_id}, return product to store ID ${mutation.from_store_id}`,
-                from_store_id: mutation.destinied_store_id, // Swap destination and source
-                destinied_store_id: mutation.from_store_id, // Swap destination and source
+                from_store_id: mutation.destinied_store_id,
+                destinied_store_id: mutation.from_store_id,
                 order_detail_id: detail.id,
                 mutation_type: 'abort',
-                adjustment_related_id: mutation.id, // Link to the original mutation adjustment
+                adjustment_related_id: mutation.id,
               },
             });
           }
         }
       }
 
-      // Finally, update the order status to "cancelled"
       await prisma.order.update({
         where: { id: orderId },
         data: { order_status_id: 6 },
@@ -731,90 +637,4 @@ export class WarehouseController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
-
-  // cancelOrder = async (req: CustomRequest, res: Response) => {
-  //   const validationResult = cancelOrderSchema.safeParse(req.body);
-  //   if (!validationResult.success) {
-  //     return res.status(400).json({ error: validationResult.error.errors });
-  //   }
-
-  //   const { orderId } = validationResult.data;
-  //   const currentUser = req.currentUser;
-  //   if (!currentUser) {
-  //     return res.status(401).json({ error: 'User not authenticated' });
-  //   }
-
-  //   try {
-  //     const order = await prisma.order.findUnique({
-  //       where: { id: orderId },
-  //       include: { order_details: true },
-  //     });
-
-  //     if (!order || order.order_status_id >= 4) {
-  //       return res
-  //         .status(400)
-  //         .json({ error: 'Invalid order status or order not found' });
-  //     }
-
-  //     const storeAdmin = await prisma.storeHasAdmin.findFirst({
-  //       where: { user_id: currentUser.id, store_id: order.store_id },
-  //     });
-
-  //     const isSuperAdmin = await prisma.userHasRole.findFirst({
-  //       where: { user_id: currentUser.id, role: { name: 'super_admin' } },
-  //     });
-
-  //     if (
-  //       !isSuperAdmin &&
-  //       (!storeAdmin || storeAdmin.store_id !== order.store_id)
-  //     ) {
-  //       return res.status(403).json({ error: 'Unauthorized access' });
-  //     }
-
-  //     for (const orderDetail of order.order_details) {
-  //       const stockAdjustments = await prisma.stocksAdjustment.findMany({
-  //         where: { order_detail_id: orderDetail.id, type: 'checkout' },
-  //       });
-
-  //       if (stockAdjustments.length > 0) {
-  //         for (const adjustment of stockAdjustments) {
-  //           await prisma.stocksAdjustment.create({
-  //             data: {
-  //               qty_change: adjustment.qty_change,
-  //               type: 'cancel',
-  //               managed_by_id: currentUser.id,
-  //               product_id: adjustment.product_id,
-  //               detail: `Return for order_detail_id ${orderDetail.id} cancellation`,
-  //               from_store_id: adjustment.destinied_store_id,
-  //               destinied_store_id: adjustment.from_store_id,
-  //               order_detail_id: orderDetail.id,
-  //             },
-  //           });
-
-  //           await prisma.storeHasProduct.updateMany({
-  //             where: {
-  //               store_id: adjustment.from_store_id,
-  //               product_id: adjustment.product_id,
-  //             },
-  //             data: {
-  //               qty: {
-  //                 increment: adjustment.qty_change,
-  //               },
-  //             },
-  //           });
-  //         }
-  //       }
-  //     }
-
-  //     await prisma.order.update({
-  //       where: { id: orderId },
-  //       data: { order_status_id: 6 },
-  //     });
-
-  //     return res.status(200).json({ message: 'Order cancelled successfully' });
-  //   } catch (error) {
-  //     console.error(error);
-  //     return res.status(500).json({ error: 'Internal server error' });
-  //   }
-  // };
 }

@@ -1,5 +1,4 @@
-import React from "react";
-import VoucherButton from "@/components/VoucherButton";
+import React, { useState, useEffect } from "react";
 import MainButton from "@/components/MainButton";
 import convertToRupiah from "@/utils/convertRupiah";
 
@@ -57,24 +56,29 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
   deliveryVouchers,
   showVoucherButton = true,
 }) => {
-  // Add console logs to trace calculations
-  console.log("Items:", items);
-  console.log("Subtotal before discount:", subtotal);
-  console.log("Selected Product Voucher:", selectedProductVoucher);
-  console.log("Selected Delivery Voucher:", selectedDeliveryVoucher);
-  console.log("Delivery Total:", deliveryTotal);
+  const [selectedProductVoucherId, setSelectedProductVoucherId] = useState<
+    string | null
+  >(selectedProductVoucher?.id || null);
+  const [selectedDeliveryVoucherId, setSelectedDeliveryVoucherId] = useState<
+    string | null
+  >(selectedDeliveryVoucher?.id || null);
+
+  useEffect(() => {
+    setSelectedProductVoucherId(selectedProductVoucher?.id || null);
+    setSelectedDeliveryVoucherId(selectedDeliveryVoucher?.id || null);
+  }, [selectedProductVoucher, selectedDeliveryVoucher]);
+
+  useEffect(() => {
+    console.log("Product Vouchers:", productVouchers);
+    console.log("Delivery Vouchers:", deliveryVouchers);
+  }, [productVouchers, deliveryVouchers]);
 
   const discountedSubtotal =
     subtotal - (selectedProductVoucher?.discountAmount || 0);
-  console.log("Discounted Subtotal:", discountedSubtotal);
-
   const discountedDelivery =
     deliveryTotal - (selectedDeliveryVoucher?.discountAmount || 0);
-  console.log("Discounted Delivery:", discountedDelivery);
-
   const finalTotal =
     discountedSubtotal + (showDeliveryPrice ? discountedDelivery : 0);
-  console.log("Final Total:", finalTotal);
 
   return (
     <div className="fixed bottom-0 left-0 right-0 rounded-lg bg-white p-6 shadow-lg lg:static lg:mt-6 lg:shadow-none">
@@ -88,7 +92,9 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
       {showDeliveryPrice && (
         <div className="mb-2 flex justify-between">
           <span>Delivery:</span>
-          <span>{convertToRupiah(deliveryTotal)}</span>
+          <span>
+            {convertToRupiah(isNaN(deliveryTotal) ? 0 : deliveryTotal)}
+          </span>
         </div>
       )}
 
@@ -115,18 +121,33 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
 
       {showVoucherButton && (
         <>
-          <VoucherButton
-            selectedVoucher={selectedProductVoucher?.id || null}
-            onVoucherSelect={onProductVoucherSelect}
-            vouchers={productVouchers.map((v) => v.id)}
-            label="Product Voucher"
-          />
-          <VoucherButton
-            selectedVoucher={selectedDeliveryVoucher?.id || null}
-            onVoucherSelect={onDeliveryVoucherSelect}
-            vouchers={deliveryVouchers.map((v) => v.id)}
-            label="Delivery Voucher"
-          />
+          <label>Product Voucher</label>
+          <select
+            value={selectedProductVoucherId || ""}
+            onChange={onProductVoucherSelect}
+          >
+            <option value="">Select Product Voucher</option>
+            {productVouchers.map((voucher) => (
+              <option key={voucher.id} value={voucher.id}>
+                {voucher.type === "product" &&
+                  `-${voucher.discountAmount}% off`}
+              </option>
+            ))}
+          </select>
+
+          <label>Delivery Voucher</label>
+          <select
+            value={selectedDeliveryVoucherId || ""}
+            onChange={onDeliveryVoucherSelect}
+          >
+            <option value="">Select Delivery Voucher</option>
+            {deliveryVouchers.map((voucher) => (
+              <option key={voucher.id} value={voucher.id}>
+                {voucher.type === "delivery" &&
+                  `-${voucher.discountAmount}% off`}
+              </option>
+            ))}
+          </select>
         </>
       )}
 

@@ -120,32 +120,6 @@ export async function updateCartItemQuantity(
   }
 }
 
-// export const selectForCheckout = async (
-//   productIds: number[],
-//   quantities: number[],
-// ) => {
-//   const token = getToken();
-//   if (!token) {
-//     throw new Error("User is not authenticated");
-//   }
-
-//   try {
-//     const response = await api.post<SelectForCheckoutResponse>(
-//       "/cart/select-for-checkout",
-//       { productIds, quantities },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       },
-//     );
-
-//     return response;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
-
 export const selectForCheckout = async (
   productIds: number[],
   quantities: number[],

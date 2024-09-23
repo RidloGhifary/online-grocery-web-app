@@ -228,43 +228,6 @@ export const getOrderById = async (
   }
 };
 
-// export const getOrderById = async (
-//   id: number,
-// ): Promise<AxiosResponse<OrderDetailResponse>> => {
-//   const token = getToken();
-
-//   if (!token) {
-//     throw new Error("User is not authenticated");
-//   }
-
-//   try {
-//     const response = await api.get<OrderDetailResponse>(
-//       `/warehouse/manage-order/detail/${id}`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       },
-//     );
-
-//     // Ensure totalProductPrice and deliveryPrice are included in the response
-//     if (!response.data.totalProductPrice || !response.data.deliveryPrice) {
-//       throw new Error("Total product price or delivery price not calculated");
-//     }
-//     console.log(response);
-//     return response;
-//   } catch (error: any) {
-//     if (error.response) {
-//       console.error("API call error:", error.response.data);
-//       throw new Error(
-//         `Failed to fetch order: ${error.response.data.message || error.message}`,
-//       );
-//     }
-//     console.error("Unknown error:", error.message);
-//     throw new Error("An unknown error occurred while fetching order details.");
-//   }
-// };
-
 export const handlePaymentProof = async (
   orderId: number,
   action: "accept" | "decline",

@@ -4,8 +4,11 @@ import convertToRupiah from "@/utils/convertRupiah";
 
 interface Voucher {
   id: string;
+  voucher: string;
   discountAmount: number;
   type: "product" | "delivery";
+  discountType: "percentage" | "nominal";
+  description: string;
 }
 
 interface Product {
@@ -68,15 +71,22 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
     setSelectedDeliveryVoucherId(selectedDeliveryVoucher?.id || null);
   }, [selectedProductVoucher, selectedDeliveryVoucher]);
 
-  useEffect(() => {
-    console.log("Product Vouchers:", productVouchers);
-    console.log("Delivery Vouchers:", deliveryVouchers);
-  }, [productVouchers, deliveryVouchers]);
+  const calculateDiscount = (voucher: Voucher | null, total: number) => {
+    if (!voucher) return 0;
+    if (voucher.discountType === "percentage") {
+      return (voucher.discountAmount / 100) * total;
+    }
+    return voucher.discountAmount;
+  };
 
-  const discountedSubtotal =
-    subtotal - (selectedProductVoucher?.discountAmount || 0);
-  const discountedDelivery =
-    deliveryTotal - (selectedDeliveryVoucher?.discountAmount || 0);
+  const productDiscount = calculateDiscount(selectedProductVoucher, subtotal);
+  const deliveryDiscount = calculateDiscount(
+    selectedDeliveryVoucher,
+    deliveryTotal,
+  );
+
+  const discountedSubtotal = subtotal - productDiscount;
+  const discountedDelivery = deliveryTotal - deliveryDiscount;
   const finalTotal =
     discountedSubtotal + (showDeliveryPrice ? discountedDelivery : 0);
 
@@ -99,18 +109,22 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
       )}
 
       {selectedProductVoucher && (
-        <div className="mb-2 flex justify-between">
-          <span>Product Voucher ({selectedProductVoucher.id}):</span>
-          <span>-{convertToRupiah(selectedProductVoucher.discountAmount)}</span>
+        <div className="mb-2 flex flex-col">
+          <div className="flex justify-between">
+            <span>Product Voucher ({selectedProductVoucher.voucher}):</span>
+            <span>-{convertToRupiah(productDiscount)}</span>
+          </div>
+          <small>{selectedProductVoucher.description}</small>
         </div>
       )}
 
       {selectedDeliveryVoucher && (
-        <div className="mb-2 flex justify-between">
-          <span>Delivery Voucher ({selectedDeliveryVoucher.id}):</span>
-          <span>
-            -{convertToRupiah(selectedDeliveryVoucher.discountAmount)}
-          </span>
+        <div className="mb-2 flex flex-col">
+          <div className="flex justify-between">
+            <span>Delivery Voucher ({selectedDeliveryVoucher.voucher}):</span>
+            <span>-{convertToRupiah(deliveryDiscount)}</span>
+          </div>
+          <small>{selectedDeliveryVoucher.description}</small>
         </div>
       )}
 
@@ -129,8 +143,10 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
             <option value="">Select Product Voucher</option>
             {productVouchers.map((voucher) => (
               <option key={voucher.id} value={voucher.id}>
-                {voucher.type === "product" &&
-                  `-${voucher.discountAmount}% off`}
+                {voucher.voucher} -
+                {voucher.discountType === "percentage"
+                  ? `${voucher.discountAmount}% off`
+                  : `Rp. ${voucher.discountAmount}`}
               </option>
             ))}
           </select>
@@ -143,8 +159,10 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
             <option value="">Select Delivery Voucher</option>
             {deliveryVouchers.map((voucher) => (
               <option key={voucher.id} value={voucher.id}>
-                {voucher.type === "delivery" &&
-                  `-${voucher.discountAmount}% off`}
+                {voucher.voucher} -
+                {voucher.discountType === "percentage"
+                  ? `${voucher.discountAmount}% off`
+                  : `Rp. ${voucher.discountAmount}`}
               </option>
             ))}
           </select>

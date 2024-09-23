@@ -189,7 +189,6 @@ export class CheckoutController {
   createOrder = async (req: CustomRequest, res: Response) => {
     try {
       const validation = createOrderSchema.safeParse(req.body);
-
       if (!validation.success) {
         return res.status(400).json({ error: validation.error.errors });
       }
@@ -201,6 +200,8 @@ export class CheckoutController {
         storeId,
         selectedCourier,
         selectedCourierPrice,
+        productVoucherId,
+        deliveryVoucherId,
         note,
       } = validation.data;
 
@@ -213,7 +214,6 @@ export class CheckoutController {
         where: { store_id: storeId },
         select: { user_id: true },
       });
-
       if (!storeAdmin) {
         return res.status(400).json({ error: 'No admin found for this store' });
       }
@@ -222,9 +222,18 @@ export class CheckoutController {
         where: { name: selectedCourier },
         select: { id: true },
       });
-
       if (!expedition) {
         return res.status(400).json({ message: 'Expedition not found' });
+      }
+
+      let totalVoucherDiscount = 0;
+
+      let productVoucher = null;
+      if (productVoucherId) {
+        productVoucher = await prisma.voucher.findUnique({
+          where: { id: productVoucherId },
+          include: { product_discount: true },
+        });
       }
 
       const newOrder = await prisma.order.create({
@@ -238,18 +247,34 @@ export class CheckoutController {
           address_id: selectedAddressId,
           note,
           order_details: {
-            create: checkoutItems.map((item) => ({
-              product_id: item.product_id,
-              qty: item.quantity,
-              store_id: storeId,
-              price: item.price,
-              sub_total: item.price * item.quantity + selectedCourierPrice,
-            })),
+            create: checkoutItems.map((item) => {
+              let discountedPrice = item.price;
+
+              if (productVoucher) {
+                const productDiscount = productVoucher.product_discount;
+                if (productDiscount) {
+                  if (productDiscount.discount_type === 'percentage') {
+                    discountedPrice =
+                      item.price * (1 - productDiscount.discount / 100);
+                  } else if (productDiscount.discount_type === 'nominal') {
+                    discountedPrice = item.price - productDiscount.discount;
+                  }
+                }
+                totalVoucherDiscount +=
+                  (item.price - discountedPrice) * item.quantity;
+              }
+
+              return {
+                product_id: item.product_id,
+                qty: item.quantity,
+                store_id: storeId,
+                price: discountedPrice,
+                sub_total: discountedPrice * item.quantity,
+              };
+            }),
           },
         },
-        include: {
-          order_details: true,
-        },
+        include: { order_details: true },
       });
 
       const invoice = `INV-${newOrder.id.toString().padStart(7, '0')}`;
@@ -262,10 +287,7 @@ export class CheckoutController {
 
       for (const item of checkoutItems) {
         const productStock = await prisma.storeHasProduct.findFirst({
-          where: {
-            store_id: storeId,
-            product_id: item.product_id,
-          },
+          where: { store_id: storeId, product_id: item.product_id },
         });
 
         const orderDetail = orderDetails.find(
@@ -287,9 +309,7 @@ export class CheckoutController {
         ) {
           await prisma.storeHasProduct.update({
             where: { id: productStock.id },
-            data: {
-              qty: { decrement: item.quantity },
-            },
+            data: { qty: { decrement: item.quantity } },
           });
 
           await prisma.stocksAdjustment.create({
@@ -318,24 +338,17 @@ export class CheckoutController {
           if (closestStoreId) {
             await prisma.storeHasProduct.update({
               where: { id: productStock.id },
-              data: {
-                qty: { decrement: productStock.qty ?? 0 },
-              },
+              data: { qty: { decrement: productStock.qty ?? 0 } },
             });
 
             const aidingProductStock = await prisma.storeHasProduct.findFirst({
-              where: {
-                store_id: closestStoreId,
-                product_id: item.product_id,
-              },
+              where: { store_id: closestStoreId, product_id: item.product_id },
             });
 
             if (aidingProductStock) {
               await prisma.storeHasProduct.update({
                 where: { id: aidingProductStock.id },
-                data: {
-                  qty: { decrement: qtyNeeded },
-                },
+                data: { qty: { decrement: qtyNeeded } },
               });
 
               await prisma.stocksAdjustment.create({
@@ -368,6 +381,52 @@ export class CheckoutController {
         }
       }
 
+      if (deliveryVoucherId) {
+        const deliveryVoucher = await prisma.voucher.findUnique({
+          where: { id: deliveryVoucherId },
+        });
+        let deliveryDiscount = 0;
+
+        if (deliveryVoucher && deliveryVoucher.delivery_discount !== null) {
+          deliveryDiscount =
+            selectedCourierPrice * (deliveryVoucher.delivery_discount / 100);
+        }
+
+        await prisma.usersVoucher.create({
+          data: {
+            user_id: currentUser.id,
+            voucher_id: deliveryVoucherId,
+            used_at: new Date(),
+          },
+        });
+
+        await prisma.orderHasVoucher.create({
+          data: {
+            order_id: newOrder.id,
+            voucher_id: deliveryVoucherId,
+            nominal: deliveryDiscount,
+          },
+        });
+
+        const updatedOrderDetails = orderDetails.map((detail) => {
+          const newSubTotal =
+            detail.sub_total -
+            detail.sub_total * (deliveryDiscount / selectedCourierPrice);
+          return {
+            id: detail.id,
+            sub_total: newSubTotal,
+          };
+        });
+
+        const updatePromises = updatedOrderDetails.map((detail) =>
+          prisma.orderDetail.update({
+            where: { id: detail.id },
+            data: { sub_total: detail.sub_total },
+          }),
+        );
+
+        await Promise.all(updatePromises);
+      }
       return res.status(200).json(newOrder);
     } catch (error) {
       console.error('Error in createOrder:', error);

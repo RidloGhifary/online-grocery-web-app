@@ -460,14 +460,15 @@ async function main() {
       productSettled,
       storeSettled,
     );
+    const recentStoreHasProduct = await prisma.storeHasProduct.findMany({include:{product:true, store:true}})
     const stockAdjustmentData: Prisma.StocksAdjustmentCreateManyInput[] =
-      generateStoreHasProductData.map((data) => ({
+      recentStoreHasProduct.map((data) => ({
         managed_by_id: 1, // Adjust as necessary
         product_id: data.product_id as number, // Ensure product_id is not null
         qty_change: data.qty as number, // Ensure qty is not null
         type: 'manual_adjusment',
         destinied_store_id: data.store_id as number, // Ensure store_id is not null
-        detail: `Initial stock for product ${data.product_id} in store ${data.store_id}`,
+        detail: `Initial stock for product ${data.product?.name} in store ${data.store?.name}`,
         from_store_id: null, // Adjust this value if needed
         order_detail_id: null, // Adjust this value if needed
         adjustment_related_id: null, // Adjust this value if needed

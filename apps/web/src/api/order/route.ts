@@ -60,19 +60,6 @@ interface OrdersByUserResponse {
   pagination: PaginationInfo;
 }
 
-interface CancelOrderRequest {
-  orderId: number;
-}
-
-interface UploadPaymentProofRequest {
-  orderId: number;
-  paymentProof: File;
-}
-
-interface ConfirmDeliveryRequest {
-  orderId: number;
-}
-
 interface GenericResponse {
   message: string;
 }
@@ -317,40 +304,3 @@ export const confirmDelivery = async (
     throw new Error("An unknown error occurred while confirming the delivery.");
   }
 };
-
-// export const uploadPaymentProof = async (
-//   orderId: number,
-//   paymentProofUrl: string,
-// ): Promise<AxiosResponse<GenericResponse>> => {
-//   const token = getToken();
-
-//   if (!token) {
-//     throw new Error("User is not authenticated");
-//   }
-
-//   try {
-//     const response = await api.post<GenericResponse>(
-//       `/orders/upload-payment/${orderId}`,
-//       { payment_proof: paymentProofUrl },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//         },
-//       },
-//     );
-
-//     return response;
-//   } catch (error: any) {
-//     if (error.response) {
-//       console.error("API call error:", error.response.data);
-//       throw new Error(
-//         `Failed to upload payment proof: ${error.response.data.message || error.message}`,
-//       );
-//     }
-//     console.error("Unknown error:", error.message);
-//     throw new Error(
-//       "An unknown error occurred while uploading the payment proof.",
-//     );
-//   }
-// };

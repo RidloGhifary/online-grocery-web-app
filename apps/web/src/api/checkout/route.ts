@@ -1,14 +1,12 @@
 import axios, { AxiosResponse } from "axios";
 import Cookies from "js-cookie";
 
-// Interface for the items being checked out
 interface CheckoutItem {
   product_id: number;
   quantity: number;
   price: number;
 }
 
-// Interface for the request body of createOrder
 interface CreateOrderRequest {
   userId: number;
   checkoutItems: CheckoutItem[];
@@ -44,24 +42,24 @@ interface FindNearestStoreResponse {
   closestStore: NearestStore;
 }
 
-// Interface for a Voucher object
 interface Voucher {
   id: number;
+  voucher: string;
   voucher_type: string;
-  product_id?: number;
   product_discount?: {
     discount: number;
     discount_type: string;
   };
   delivery_discount?: number;
   is_delivery_free?: boolean;
-  applicableProducts: string[];
+  product?: {
+    name: string;
+  };
 }
 
-// Interface for the getVouchers API response
 interface GetVouchersResponse {
   vouchers: Voucher[];
-  message?: string; // Optional message if needed
+  message?: string;
 }
 
 interface VoucherByIdResponse {
@@ -124,28 +122,23 @@ export const createOrder = async (
       orderData,
       {
         headers: {
-          Authorization: `Bearer ${token}`, // Pass the token
+          Authorization: `Bearer ${token}`,
         },
       },
     );
-    return response; // Return the full Axios response
+    return response;
   } catch (error) {
     throw new Error(`Error creating order: ${error}`);
   }
 };
 
-export const getVouchers = async (): Promise<
-  AxiosResponse<GetVouchersResponse>
-> => {
+export const getVouchers = async (): Promise<AxiosResponse<Voucher>> => {
   const token = getToken();
-  const response = await api.get<GetVouchersResponse>(
-    "/checkout/get-vouchers",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  const response = await api.get<Voucher>("/checkout/get-vouchers", {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  );
+  });
   return response;
 };
 

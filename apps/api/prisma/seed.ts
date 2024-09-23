@@ -466,7 +466,7 @@ async function main() {
         managed_by_id: 1, // Adjust as necessary
         product_id: data.product_id as number, // Ensure product_id is not null
         qty_change: data.qty as number, // Ensure qty is not null
-        type: 'manual_adjusment',
+        type: 'manual',
         destinied_store_id: data.store_id as number, // Ensure store_id is not null
         detail: `Initial stock for product ${data.product?.name} in store ${data.store?.name}`,
         from_store_id: null, // Adjust this value if needed

@@ -5,8 +5,8 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  // url      = env("DATABASE_URL")
-  url      = "mysql://root:justin123456@localhost:3306/finpro"
+  url      = env("DATABASE_URL")
+  // url      = "mysql://root:justin123456@localhost:3306/finpro"
 }
 
 enum GENDER {
@@ -345,6 +345,7 @@ enum StockAdjustType {
 checkout // new
 purchase // new
 cancel // new
+manual
 }
 
 enum MutationType {

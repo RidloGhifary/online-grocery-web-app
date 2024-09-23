@@ -48,10 +48,10 @@ export class WarehouseController {
       });
 
       const isSuperAdmin = userRoles.some(
-        (role) => role.role.name === 'super_admin',
+        (role) => role?.role?.name === 'super_admin',
       );
       const isStoreAdmin = userRoles.some(
-        (role) => role.role.name === 'store_admin',
+        (role) => role?.role?.name === 'store_admin',
       );
 
       if (!isSuperAdmin && !isStoreAdmin) {

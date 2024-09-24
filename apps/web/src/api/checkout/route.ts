@@ -14,7 +14,9 @@ interface CreateOrderRequest {
   storeId: number;
   selectedCourier: string;
   selectedCourierPrice: number;
-  note?: string; // Optional
+  note?: string;
+  productVoucherId?: number | null;
+  deliveryVoucherId?: number | null;
 }
 
 interface CreateOrderResponse {
@@ -55,11 +57,6 @@ interface Voucher {
   product?: {
     name: string;
   };
-}
-
-interface GetVouchersResponse {
-  vouchers: Voucher[];
-  message?: string;
 }
 
 interface VoucherByIdResponse {
@@ -127,8 +124,11 @@ export const createOrder = async (
       },
     );
     return response;
-  } catch (error) {
-    throw new Error(`Error creating order: ${error}`);
+  } catch (error: any) {
+    console.error(
+      "Error creating order: ",
+      error.response ? error.response.data : error.message,
+    );
   }
 };
 

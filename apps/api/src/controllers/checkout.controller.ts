@@ -255,7 +255,7 @@ export class CheckoutController {
                 if (productDiscount) {
                   if (productDiscount.discount_type === 'percentage') {
                     discountedPrice =
-                      item.price * (1 - productDiscount.discount / 100);
+                      item.price * ((100 - productDiscount.discount) / 100);
                   } else if (productDiscount.discount_type === 'nominal') {
                     discountedPrice = item.price - productDiscount.discount;
                   }
@@ -276,6 +276,24 @@ export class CheckoutController {
         },
         include: { order_details: true },
       });
+
+      if (productVoucherId && productVoucher) {
+        await prisma.usersVoucher.create({
+          data: {
+            user_id: currentUser.id,
+            voucher_id: productVoucherId,
+            used_at: new Date(),
+          },
+        });
+
+        await prisma.orderHasVoucher.create({
+          data: {
+            order_id: newOrder.id,
+            voucher_id: productVoucherId,
+            nominal: totalVoucherDiscount,
+          },
+        });
+      }
 
       const invoice = `INV-${newOrder.id.toString().padStart(7, '0')}`;
       await prisma.order.update({
@@ -382,15 +400,33 @@ export class CheckoutController {
       }
 
       if (deliveryVoucherId) {
-        const deliveryVoucher = await prisma.voucher.findUnique({
-          where: { id: deliveryVoucherId },
-        });
-        let deliveryDiscount = 0;
+        const finalDeliveryCost = selectedCourierPrice;
 
-        if (deliveryVoucher && deliveryVoucher.delivery_discount !== null) {
-          deliveryDiscount =
-            selectedCourierPrice * (deliveryVoucher.delivery_discount / 100);
-        }
+        const totalProductSubTotal = orderDetails.reduce(
+          (sum, detail) => sum + detail.sub_total,
+          0,
+        );
+
+        const updatedOrderDetails = orderDetails.map((detail) => {
+          const itemDeliveryCost =
+            (detail.sub_total / totalProductSubTotal) * finalDeliveryCost;
+
+          const newSubTotal = detail.sub_total + itemDeliveryCost;
+
+          return {
+            id: detail.id,
+            sub_total: newSubTotal,
+          };
+        });
+
+        const updatePromises = updatedOrderDetails.map((detail) =>
+          prisma.orderDetail.update({
+            where: { id: detail.id },
+            data: { sub_total: detail.sub_total },
+          }),
+        );
+
+        await Promise.all(updatePromises);
 
         await prisma.usersVoucher.create({
           data: {
@@ -404,14 +440,14 @@ export class CheckoutController {
           data: {
             order_id: newOrder.id,
             voucher_id: deliveryVoucherId,
-            nominal: deliveryDiscount,
+            nominal: finalDeliveryCost,
           },
         });
+      } else {
+        const finalDeliveryCost = selectedCourierPrice;
 
         const updatedOrderDetails = orderDetails.map((detail) => {
-          const newSubTotal =
-            detail.sub_total -
-            detail.sub_total * (deliveryDiscount / selectedCourierPrice);
+          const newSubTotal = detail.sub_total + finalDeliveryCost;
           return {
             id: detail.id,
             sub_total: newSubTotal,
@@ -576,3 +612,49 @@ export class CheckoutController {
     }
   };
 }
+
+// if (deliveryVoucherId) {
+//   const finalDeliveryCost = selectedCourierPrice;
+
+//   const totalProductSubTotal = orderDetails.reduce(
+//     (sum, detail) => sum + detail.sub_total,
+//     0,
+//   );
+
+//   const updatedOrderDetails = orderDetails.map((detail) => {
+//     const itemDeliveryCost =
+//       (detail.sub_total / totalProductSubTotal) * finalDeliveryCost;
+
+//     const newSubTotal = detail.sub_total + itemDeliveryCost;
+
+//     return {
+//       id: detail.id,
+//       sub_total: newSubTotal,
+//     };
+//   });
+
+//   const updatePromises = updatedOrderDetails.map((detail) =>
+//     prisma.orderDetail.update({
+//       where: { id: detail.id },
+//       data: { sub_total: detail.sub_total },
+//     }),
+//   );
+
+//   await Promise.all(updatePromises);
+
+//   await prisma.usersVoucher.create({
+//     data: {
+//       user_id: currentUser.id,
+//       voucher_id: deliveryVoucherId,
+//       used_at: new Date(),
+//     },
+//   });
+
+//   await prisma.orderHasVoucher.create({
+//     data: {
+//       order_id: newOrder.id,
+//       voucher_id: deliveryVoucherId,
+//       nominal: finalDeliveryCost,
+//     },
+//   });
+// }

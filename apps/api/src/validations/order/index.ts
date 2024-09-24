@@ -13,8 +13,8 @@ export const createOrderSchema = z.object({
   storeId: z.number(),
   selectedCourier: z.string(),
   selectedCourierPrice: z.number(),
-  productVoucherId: z.number().optional(),
-  deliveryVoucherId: z.number().optional(),
+  productVoucherId: z.number().nullable(),
+  deliveryVoucherId: z.number().nullable(),
   note: z.string().optional(),
 });
 

@@ -219,7 +219,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
       const discountType = selectedProductVoucher?.discountType || "nominal";
       console.log(discountType);
       if (discountType === "percentage") {
-        newSubtotal = newSubtotal * (1 - discount / 100);
+        newSubtotal = newSubtotal * ((100 - discount) / 100);
       } else if (discountType === "nominal") {
         newSubtotal = Math.max(0, newSubtotal - discount);
       }
@@ -263,9 +263,16 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
         selectedAddressId: selectedAddress?.id as number,
         storeId: nearestStoreData?.data?.closestStore.id as number,
         selectedCourier,
-        selectedCourierPrice,
+        selectedCourierPrice: deliveryTotal,
         note: deliveryNotes,
+        productVoucherId: selectedProductVoucher
+          ? selectedProductVoucher.id
+          : null,
+        deliveryVoucherId: selectedDeliveryVoucher
+          ? selectedDeliveryVoucher.id
+          : null,
       };
+      console.log("Order Data:", orderData);
 
       const response = await createOrder(orderData);
 

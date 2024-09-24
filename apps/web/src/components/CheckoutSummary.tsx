@@ -51,7 +51,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
   buttonText,
   showDeliveryPrice = true,
   deliveryPrice,
-  subtotal,
+  subtotal, // already passed from CheckoutContent
   deliveryTotal,
   disableButton = false,
   onCheckout,
@@ -76,6 +76,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
     if (voucher.discountType === "percentage") {
       return (voucher.discountAmount / 100) * total;
     }
+    console.log(voucher.discountAmount);
     return voucher.discountAmount;
   };
 
@@ -87,8 +88,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
 
   const discountedSubtotal = subtotal - productDiscount;
   const discountedDelivery = deliveryTotal - deliveryDiscount;
-  const finalTotal =
-    discountedSubtotal + (showDeliveryPrice ? discountedDelivery : 0);
+  const finalTotal = subtotal + deliveryTotal;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 rounded-lg bg-white p-6 shadow-lg lg:static lg:mt-6 lg:shadow-none">
@@ -96,7 +96,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
 
       <div className="mb-2 flex justify-between">
         <span>Subtotal:</span>
-        <span>{convertToRupiah(discountedSubtotal)}</span>
+        <span>{convertToRupiah(subtotal)}</span>
       </div>
 
       {showDeliveryPrice && (
@@ -105,26 +105,6 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
           <span>
             {convertToRupiah(isNaN(deliveryTotal) ? 0 : deliveryTotal)}
           </span>
-        </div>
-      )}
-
-      {selectedProductVoucher && (
-        <div className="mb-2 flex flex-col">
-          <div className="flex justify-between">
-            <span>Product Voucher ({selectedProductVoucher.voucher}):</span>
-            <span>-{convertToRupiah(productDiscount)}</span>
-          </div>
-          <small>{selectedProductVoucher.description}</small>
-        </div>
-      )}
-
-      {selectedDeliveryVoucher && (
-        <div className="mb-2 flex flex-col">
-          <div className="flex justify-between">
-            <span>Delivery Voucher ({selectedDeliveryVoucher.voucher}):</span>
-            <span>-{convertToRupiah(deliveryDiscount)}</span>
-          </div>
-          <small>{selectedDeliveryVoucher.description}</small>
         </div>
       )}
 
@@ -181,6 +161,28 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
 };
 
 export default CheckoutSummary;
+
+{
+  /* {selectedProductVoucher && (
+        <div className="mb-2 flex flex-col">
+          <div className="flex justify-between">
+            <span>Product Voucher ({selectedProductVoucher.voucher}):</span>
+            <span>-{convertToRupiah(productDiscount)}</span>
+          </div>
+          <small>{selectedProductVoucher.description}</small>
+        </div>
+      )}
+
+      {selectedDeliveryVoucher && (
+        <div className="mb-2 flex flex-col">
+          <div className="flex justify-between">
+            <span>Delivery Voucher ({selectedDeliveryVoucher.voucher}):</span>
+            <span>-{convertToRupiah(deliveryDiscount)}</span>
+          </div>
+          <small>{selectedDeliveryVoucher.description}</small>
+        </div>
+      )} */
+}
 
 // import React from "react";
 // import VoucherButton from "@/components/VoucherButton";

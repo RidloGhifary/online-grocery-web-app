@@ -45,7 +45,6 @@ export default function FormLogin() {
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: LoginFormData) => loginAuth(data),
     onSuccess: (res) => {
-      console.log("🚀 ~ FormLogin ~ res:", res);
       if (!res.ok) {
         return toast.error(res?.message || "Something went wrong!");
       }

@@ -9,24 +9,24 @@ const protectedRoutes = [
   "/checkout",
   "/transaction",
 ];
-const adminRoutes = ["/create-store", "/admin"];
+const superAdminRoutes = ["/admin/stores"];
+const adminRoutes = ["/admin"];
 const authRoutes = ["/login", "/register", "/verify-account"];
 
 export default function middleware(req: NextRequest) {
   const token = cookies().get("token")?.value;
 
-  let decoded: (JwtPayload & { email?: string }) | null = null;
+  let decoded: (JwtPayload & { role?: string }) | null = null;
   let isAdmin = false;
+  let isSuperAdmin = false;
   let isLoggedIn = false;
 
   try {
     if (token) {
       decoded = jwtDecode<JwtPayload & { email: string }>(token);
       isLoggedIn = true;
-      isAdmin =
-        decoded.email?.includes("super.admin") ||
-        decoded.email?.includes("store.admin") ||
-        false;
+      isAdmin = decoded.role?.includes("admin") || false;
+      isSuperAdmin = decoded.role?.includes("super_admin") || false;
     }
   } catch (error) {
     console.error("JWT decoding error:", error);
@@ -48,13 +48,22 @@ export default function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL(redirectUrl, req.url));
     }
   } else if (isAdmin) {
-    // Redirect SuperAdmins away from authRoutes and protectedRoutes
+    // Redirect SuperAdmins away from authRoutes
     if (authRoutes.some((route) => path.startsWith(route))) {
       return NextResponse.redirect(new URL("/admin", req.url));
     }
 
+    // Redirect Admins away from protectedRoutes
     if (protectedRoutes.some((route) => path.startsWith(route))) {
       return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
+    // Redirect Store Admins away from superAdminRoutes
+    if (!isSuperAdmin) {
+      // SuperAdmins handling
+      if (superAdminRoutes.some((route) => path.startsWith(route))) {
+        return NextResponse.redirect(new URL("/admin", req.url));
+      }
     }
   } else {
     // Regular users handling

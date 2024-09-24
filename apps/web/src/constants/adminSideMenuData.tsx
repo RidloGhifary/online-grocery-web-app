@@ -1,6 +1,7 @@
 import React from "react";
 import { IconType } from "react-icons";
 import { FaHome, FaShoppingBag, FaUserFriends } from "react-icons/fa";
+import { FaStore } from "react-icons/fa6";
 
 export interface AdminSideMenuInterface {
   name?: string;
@@ -26,8 +27,8 @@ const adminSideMenuDatas: {
     },
     {
       name: "admin.users.menu",
-      displayName:'User',
-      icon: <FaUserFriends size={'1.5em'} />,
+      displayName: "User",
+      icon: <FaUserFriends size={"1.5em"} />,
       permission: "admin_users_access",
       subMenu: [
         {
@@ -74,18 +75,12 @@ const adminSideMenuDatas: {
       name: "admin.stores.menu",
       displayName: "Stores",
       permission: "super",
-      icon: <FaShoppingBag size={"1.5em"} />,
+      icon: <FaStore size={"1.5em"} />,
       subMenu: [
         {
           name: "admin.stores.list",
           displayName: "Stores",
           href: "/stores",
-          permission: "super",
-        },
-        {
-          name: "admin.stores.admin",
-          displayName: "Admins",
-          href: "/admins",
           permission: "super",
         },
       ],

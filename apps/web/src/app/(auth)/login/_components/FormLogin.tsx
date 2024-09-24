@@ -12,18 +12,19 @@ import { GetCaptchaToken } from "@/utils/captcha";
 import VerifyCaptchaToken from "@/actions/verifyCaptcha";
 import axios from "axios";
 import GoogleLoginButton from "../../_components/GoogleLoginButton";
+import { loginAuth } from "@/actions/auth";
 
 const schema = z.object({
   email: z.string().email({ message: "Enter valid email!" }),
   password: z.string(),
 });
 
-type FormData = {
+export type LoginFormData = {
   email: string;
   password: string;
 };
 
-export default function FormLogin({ api_url }: { api_url: string }) {
+export default function FormLogin() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const callbackUrl = searchParams.get("callbackUrl");
@@ -33,7 +34,7 @@ export default function FormLogin({ api_url }: { api_url: string }) {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({
+  } = useForm<LoginFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       email: "",
@@ -42,10 +43,7 @@ export default function FormLogin({ api_url }: { api_url: string }) {
   });
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async (data: FormData) => {
-      const response = await axios.post(`${api_url}/auth/login`, data);
-      return response.data;
-    },
+    mutationFn: async (data: LoginFormData) => loginAuth(data),
     onSuccess: (res) => {
       if (!res.ok) {
         return toast.error(res?.message || "Something went wrong!");
@@ -56,12 +54,15 @@ export default function FormLogin({ api_url }: { api_url: string }) {
       });
 
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      setCookies("token", res.token);
+      setCookies("token", res.token as string);
 
       if (callbackUrl) {
         router.push(callbackUrl);
         router.refresh();
-      } else if (res.data.email.includes("super.admin")) {
+      } else if (
+        res?.data &&
+        (res.data as { role: string }).role.includes("admin")
+      ) {
         router.push("/admin");
         router.refresh();
       } else {
@@ -76,7 +77,7 @@ export default function FormLogin({ api_url }: { api_url: string }) {
     },
   });
 
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
+  const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     const token = await GetCaptchaToken();
     const isVerified = await VerifyCaptchaToken({ token: token as string });
     if (!isVerified.success) {

@@ -6,9 +6,9 @@ import { z } from "zod";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
 import { GetCaptchaToken } from "@/utils/captcha";
 import VerifyCaptchaToken from "@/actions/verifyCaptcha";
+import { verifyAccount } from "@/actions/auth";
 
 const schema = z
   .object({
@@ -25,7 +25,7 @@ type FormData = {
   confirm_password: string;
 };
 
-export default function VerifyAccountForm({api_url}:{api_url:string}) {
+export default function VerifyAccountForm({ api_url }: { api_url: string }) {
   const searchParams = useSearchParams();
 
   const key = searchParams.get("key");
@@ -44,10 +44,8 @@ export default function VerifyAccountForm({api_url}:{api_url:string}) {
   });
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async (data: { key: string; password: string }) => {
-      const response = await axios.post(`${api_url}/auth/verify-account`, data);
-      return response.data;
-    },
+    mutationFn: async (data: { key: string; password: string }) =>
+      verifyAccount({ key: data.key, password: data.password }),
     onSuccess: (res) => {
       if (!res.ok) {
         return toast.error(res.message || "Something went wrong!");

@@ -11,9 +11,8 @@ class UserRepository {
       ok: false,
     };
     try {
-      // console.log(tokenValidation(token).data!);
-      const {id, email} = tokenValidation(token).data!
-      
+      const { id, email } = tokenValidation(token).data!;
+
       const userDataWithRoleAndPermission = await prisma.user.findFirst({
         where: {
           AND: {
@@ -35,23 +34,23 @@ class UserRepository {
               },
             },
           },
-          store_admins : true
+          store_admins: true,
         },
       });
-      if (!userDataWithRoleAndPermission) throw new Error("404");
-      result.ok = true
-      result.data = userDataWithRoleAndPermission
-      result.message = 'User data exist'
+      if (!userDataWithRoleAndPermission) throw new Error('404');
+      result.ok = true;
+      result.data = userDataWithRoleAndPermission;
+      result.message = 'User data exist';
     } catch (error) {
-      let errorMessage = (error as Error).message
+      let errorMessage = (error as Error).message;
       switch (errorMessage) {
         case '404':
-          result.error = '404'
-          result.message = 'Data not found'
+          result.error = '404';
+          result.message = 'Data not found';
           break;
-      
+
         default:
-          result.error = error
+          result.error = error;
           break;
       }
     }

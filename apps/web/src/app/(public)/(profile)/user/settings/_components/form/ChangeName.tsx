@@ -5,9 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
-import { getCookies } from "@/actions/cookies";
 import { toast } from "react-toastify";
+import { updateProfile } from "@/actions/user";
 
 const schema = z.object({
   username: z.string().min(1, "Name is required").max(50, "Name is too long"),
@@ -32,20 +31,8 @@ export default function ChangeName({ username }: ChangeNameProps) {
   });
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async (data: { username: string }) => {
-      const cookie = await getCookies("token");
-      const response = await axios.patch(
-        "http://localhost:8000/api/users/biodata?field=username",
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${cookie}`,
-          },
-        },
-      );
-
-      return response.data;
-    },
+    mutationFn: async (data: { username: string }) =>
+      updateProfile({ username: data.username }),
     onSuccess: (res) => {
       if (res.ok) {
         toast.success(res.message || "Username updated!");
@@ -56,7 +43,9 @@ export default function ChangeName({ username }: ChangeNameProps) {
       }
     },
     onError: (res) => {
-      toast.error(res.message || "Something went wrong!");
+      const errorMessage =
+        res instanceof Error ? res.message : "Something went wrong!";
+      toast.error(errorMessage);
     },
   });
 

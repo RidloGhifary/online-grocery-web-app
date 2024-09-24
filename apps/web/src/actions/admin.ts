@@ -31,12 +31,11 @@ export async function getAvailableAdmin(): Promise<
 
     const data = await response.json();
     result.data = data.data as UserProps[];
-    result.ok = true;
+    result.ok = data.ok || true;
     result.message = data.message || "Got the available admin";
   } catch (error) {
     result.error =
-      error instanceof Error ? error.message : "Failed to unassign admin";
-    console.log(error);
+      error instanceof Error ? error.message : "Failed to get available admin";
   }
 
   return result;
@@ -48,10 +47,10 @@ export async function assignAdmin({
 }: {
   admin_id: number;
   store_id: number;
-}): Promise<CommonResultInterface<any>> {
+}): Promise<CommonResultInterface<{}>> {
   const result = {
     ok: false,
-  } as CommonResultInterface<any>;
+  } as CommonResultInterface<{}>;
 
   try {
     const token = await getCookies("token");
@@ -74,12 +73,11 @@ export async function assignAdmin({
 
     const data = await response.json();
     // result.data = data.data;
-    result.ok = true;
+    result.ok = data?.ok || true;
     result.message = data?.message || "Assigned admin";
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to assign admin";
-    console.log(error);
   }
 
   return result;
@@ -91,10 +89,10 @@ export async function unAssignAdmin({
 }: {
   admin_id: number;
   store_id: number;
-}): Promise<CommonResultInterface<any>> {
+}): Promise<CommonResultInterface<{}>> {
   const result = {
     ok: false,
-  } as CommonResultInterface<any>;
+  } as CommonResultInterface<{}>;
 
   try {
     const token = await getCookies("token");
@@ -117,12 +115,11 @@ export async function unAssignAdmin({
 
     const data = await response.json();
     // result.data = data.data;
-    result.ok = true;
+    result.ok = data?.ok || true;
     result.message = data?.message || "Unassigned admin";
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to unassign admin";
-    console.log(error);
   }
 
   return result;

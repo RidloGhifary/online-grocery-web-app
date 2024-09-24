@@ -35,7 +35,10 @@ export default function StoreDetailPage({ storeId }: { storeId: number }) {
     onSuccess: (res) => {
       if (res.ok) {
         toast.success("Admin unassigned successfully");
-        queryClient.invalidateQueries({ queryKey: ["detail-store", storeId] });
+        queryClient.invalidateQueries({
+          queryKey: ["detail-store", "available-admin", storeId],
+        });
+        setModalActive(false);
         // router.refresh();
       } else {
         toast.error(res.error || "Something went wrong!");

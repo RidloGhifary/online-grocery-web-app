@@ -1,11 +1,11 @@
 "use client";
 
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { deleteCookie, setCookies } from "@/actions/cookies";
 import { toast } from "react-toastify";
+import { changeEmail } from "@/actions/credential";
 
 export default function ChangeEmailRedirect() {
   const queryClient = useQueryClient();
@@ -16,13 +16,11 @@ export default function ChangeEmailRedirect() {
   const [cookiesSet, setCookiesSet] = useState<boolean>(false);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["user"],
+    queryKey: ["change-email-redirect"],
     queryFn: async () => {
       if (!key) return; // If key is not present, skip the query
-      const response = await axios.get(
-        `http://localhost:8000/api/credentials/change-email?key=${key}`,
-      );
-      return response.data;
+      const response = await changeEmail({ key: key as string });
+      return response;
     },
     enabled: !!key, // Only run the query if the key is present
   });
@@ -35,10 +33,12 @@ export default function ChangeEmailRedirect() {
       return;
     }
 
-    if (data && !isLoading && !cookiesSet) {
-      deleteCookie("token");
-      setCookies("token", data.token);
-      setCookiesSet(true); // Mark that cookies have been set
+    if (data) {
+      if (data.ok && !isLoading && !cookiesSet) {
+        deleteCookie("token");
+        setCookies("token", data.token as string);
+        setCookiesSet(true); // Mark that cookies have been set
+      }
     }
   }, [data, isLoading, isError, cookiesSet]);
 
@@ -49,7 +49,6 @@ export default function ChangeEmailRedirect() {
       toast.success("Email changed successfully, you can now login!", {
         position: "top-center",
       });
-      router.refresh();
       router.push("/login");
       router.refresh();
     }

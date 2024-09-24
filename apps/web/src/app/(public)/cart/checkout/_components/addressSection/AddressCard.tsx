@@ -17,7 +17,9 @@ const AddressCard: React.FC<Props> = ({
   selectedAddress,
 }) => {
   return (
-    <div className="flex items-center justify-between rounded-md border border-primary p-4">
+    <div
+      className={`flex items-center justify-between gap-5 rounded-md border border-primary ${address?.id === selectedAddress?.id ? "bg-primary/10" : ""} p-4`}
+    >
       <div className="flex flex-col gap-1">
         <div className="flex gap-2">
           <p className="badge badge-primary truncate text-sm text-white">
@@ -28,7 +30,13 @@ const AddressCard: React.FC<Props> = ({
           )}
         </div>
         <p className="text-sm">{currentUser?.phone_number}</p>
-        <p className="text-sm">{address?.address}</p>
+        <p className="text-sm">
+          {address?.address}
+          {", "}
+          {address?.kelurahan}
+          {", "}
+          {address?.kecamatan}
+        </p>
         <div className="text-sm">
           {address?.city?.city_name}, {address?.city?.province?.province},{" "}
           <i>{address?.postal_code}</i>

@@ -42,13 +42,11 @@ export class AuthRouter {
     this.router.get(
       '/google/callback',
       passport.authenticate('google', {
-        failureRedirect: 'http://localhost:8000/api/auth/google/failure',
+        failureRedirect: `${ENV.API_URL}/api/auth/google/failure`,
         failureMessage: 'Google authentication failed or was canceled',
       }),
       function (req, res) {
         const { token } = req.user as any;
-        console.log(`${ENV.NEXT_PUBLIC_APP_URL}/redirect?token=${token}`);
-
         res.redirect(`${ENV.NEXT_PUBLIC_APP_URL}/redirect?token=${token}`);
       },
     );

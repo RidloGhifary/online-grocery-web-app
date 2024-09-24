@@ -173,7 +173,7 @@ export class UserController {
       // make that remaining address the new primary address
       if (isPrimary && userAddresses.length === 2) {
         const remainingAddress = userAddresses.find(
-          (address) => address.id !== Number(address_id),
+          (address: { id: number }) => address.id !== Number(address_id),
         );
 
         if (remainingAddress) {
@@ -366,15 +366,15 @@ export class UserController {
     }
   }
 
-  public async getUserWithRoleAndPermissionAndStore (req: Request, res: Response): Promise<void | Response> {
-    const token = req.headers['authorization']
-    const userData = await userRepository.getUserWithRoleAndPermission(token)
+  public async getUserWithRoleAndPermissionAndStore(
+    req: Request,
+    res: Response,
+  ): Promise<void | Response> {
+    const token = req.headers['authorization'];
+    const userData = await userRepository.getUserWithRoleAndPermission(token);
     if (!userData.ok) {
-      console.log(userData);
-      
-      
-      return res.status(500).send(userData)
+      return res.status(500).send(userData);
     }
-    return res.status(200).send(userData)
+    return res.status(200).send(userData);
   }
 }

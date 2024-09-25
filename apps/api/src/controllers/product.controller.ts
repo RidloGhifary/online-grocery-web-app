@@ -274,16 +274,18 @@ export class ProductController {
         // });
       }
 
-      if (products.length === 0) {
-        return res
-          .status(404)
-          .json({ ok: false, message: 'No products found' });
-      }
+      const pagination = {
+        currentPage: pageNumber,
+        totalPages: Math.ceil(products.length / limitNumber),
+        next: pageNumber + 1,
+        previous: pageNumber - 1,
+      };
 
       res.status(200).json({
         ok: true,
         message: 'Successfully retrieved products based on your location.',
         data: products,
+        pagination,
       });
     } catch (error) {
       res.status(500).json({ ok: false, message: 'Internal server error' });

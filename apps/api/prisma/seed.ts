@@ -1,11 +1,7 @@
-import {
-  Prisma,
-  PrismaClient,
-  Product,
-  Store,
-  StoreHasProduct,
-} from '@prisma/client';
-import { faker, tr } from '@faker-js/faker';
+import { DiscountType, PrismaClient } from '@prisma/client';
+import type { Product, Store } from '@prisma/client';
+import { faker } from '@faker-js/faker';
+import Decimal from 'decimal.js';
 import axios from 'axios';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
@@ -24,7 +20,7 @@ function generateProducts() {
     const sku = `SKU${i.toString().padStart(4, '0')}`;
     const description = faker.commerce.productDescription();
     const unitInGram = faker.number.int({ min: 10, max: 100 });
-    const imageUrl = JSON.stringify([faker.image.url()])
+    // const imageUrl = JSON.stringify([faker.image.url()])
 
     products.push({
       id: i,
@@ -32,8 +28,8 @@ function generateProducts() {
       price,
       sku,
       unit,
+      image: null,
       product_category_id: randomCategory,
-      image: imageUrl,
       description,
       slug: faker.helpers.slugify(name).toLowerCase(),
       unit_in_gram: unitInGram,
@@ -43,23 +39,177 @@ function generateProducts() {
   return products;
 }
 
-async function generateStoreHasProduct(products: Product[], store: Store[]) {
-  // let data : StoreHasProduct[] = []
-  products.forEach((product, i) => {
-    store.forEach(async (store, i) => {
-      const data = await prisma.storeHasProduct.create({
+async function generateStoreHasProduct(products: Product[], stores: Store[]) {
+  for (const product of products) {
+    for (const store of stores) {
+      await prisma.storeHasProduct.create({
         data: {
           product_id: product.id,
-          qty: 10,
+          qty: faker.number.int({ min: 1, max: 50 }),
           store_id: store.id,
         },
       });
-      console.log(data);
-      
-    });
-  });
-  // return data
+    }
+  }
 }
+
+async function seedProductDiscounts() {
+  // Sample discounts data to seed
+  const discounts = [
+    {
+      discount: 10, // percentage
+      started_at: new Date('2024-01-01'),
+      end_at: new Date('2024-12-31'),
+      product_id: 1,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 15, // percentage
+      started_at: new Date('2024-06-01'),
+      end_at: new Date('2024-11-30'),
+      product_id: 2,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 5000, // nominal
+      started_at: new Date('2024-03-01'),
+      end_at: new Date('2024-09-30'),
+      product_id: 3,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 20, // percentage
+      started_at: new Date('2024-05-01'),
+      end_at: new Date('2024-12-31'),
+      product_id: 4,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 2500, // nominal
+      started_at: new Date('2024-07-01'),
+      end_at: new Date('2024-10-31'),
+      product_id: 5,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 30, // percentage
+      started_at: new Date('2024-08-01'),
+      end_at: new Date('2024-11-30'),
+      product_id: 6,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 3500, // nominal
+      started_at: new Date('2024-09-01'),
+      end_at: new Date('2024-12-31'),
+      product_id: 7,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 5, // percentage
+      started_at: new Date('2024-01-15'),
+      end_at: new Date('2024-06-30'),
+      product_id: 8,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 2000, // nominal
+      started_at: new Date('2024-02-01'),
+      end_at: new Date('2024-08-31'),
+      product_id: 9,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 12, // percentage
+      started_at: new Date('2024-04-01'),
+      end_at: new Date('2024-10-31'),
+      product_id: 10,
+      discount_type: DiscountType.percentage,
+    },
+  ];
+
+  for (const discount of discounts) {
+    await prisma.productDiscount.upsert({
+      where: {
+        id: discount.product_id,
+      },
+      update: {},
+      create: {
+        discount: discount.discount,
+        started_at: discount.started_at,
+        end_at: discount.end_at,
+        product: {
+          connect: { id: discount.product_id },
+        },
+        discount_type: discount.discount_type,
+      },
+    });
+  }
+
+  console.log('Product discounts seeding completed!');
+}
+
+const storesData: Store[] = [
+  {
+    created_by: 1, // Assuming user ID 1 exists
+    name: 'JKT Ogro Central',
+    store_type: 'central',
+    city_id: 152, // Assuming city ID 1 exists
+    address: '123 Main St',
+    kecamatan: 'Downtown',
+    kelurahan: 'Central',
+    image: null,
+    latitude: new Decimal(12.345678),
+    longtitude: new Decimal(98.765432),
+    id: 1,
+    createdAt: new Date(),
+    updatedAt: null,
+    deletedAt: null,
+    province_id: 6,
+  },
+  {
+    created_by: 1, // Assuming user ID 2 exists
+    name: 'Karanganyar Ogro Cabang',
+    store_type: 'branch',
+    city_id: 169,
+    address: '456 Elm St',
+    kecamatan: 'Uptown',
+    kelurahan: 'North',
+    image: null,
+    latitude: new Decimal(-7.6196965),
+    longtitude: new Decimal(111.0698003),
+    id: 2,
+    createdAt: new Date(),
+    updatedAt: null,
+    deletedAt: null,
+    province_id: 10,
+  },
+];
+
+async function seedStores() {
+  const batchSize = 5; // Adjust the batch size as necessary
+  for (let i = 0; i < storesData.length; i += batchSize) {
+    const batch = storesData.slice(i, i + batchSize);
+
+    // Prepare data for upserting
+    const upsertData = batch.map((store) => ({
+      where: { id: store.id }, // Use the id property as the unique identifier
+      create: store,
+      update: {}, // No update needed if it exists
+    }));
+
+    try {
+      // Use `upsert` to ensure each store is created only if it doesn't exist
+      for (const store of upsertData) {
+        await prisma.store.upsert(store);
+      }
+      console.log(`Batch ${i / batchSize + 1} inserted successfully.`);
+    } catch (error) {
+      console.error(`Error inserting batch starting at index ${i}:`, error);
+    }
+  }
+}
+
 // Fetch provinces using axios
 async function fetchProvinces() {
   const response = await axios.get(
@@ -188,7 +338,6 @@ async function main() {
     });
 
     // Seeding super admin user
-    // Seeding super admin user
     const superAdminUser = prisma.user.upsert({
       where: { id: 1 },
       update: {},
@@ -200,6 +349,25 @@ async function main() {
         username: 'super_admin',
         password: await bcrypt.hash(
           process.env.SUPERUSER_PASSWORD!,
+          await bcrypt.genSalt(),
+        ),
+        validated_at: new Date().toISOString(),
+        validation_sent_at: new Date().toISOString(),
+        referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
+      },
+    });
+
+    const storeAdminUser = prisma.user.upsert({
+      where: { id: 2 },
+      update: {},
+      create: {
+        id: 2,
+        email: 'windah.admin@ogro.com', // Random email
+        first_name: 'Windah',
+        last_name: 'Basudara',
+        username: 'Windah Basudara', // Random username
+        password: await bcrypt.hash(
+          process.env.SUPERUSER_PASSWORD!, // Set the password here
           await bcrypt.genSalt(),
         ),
         validated_at: new Date().toISOString(),
@@ -224,6 +392,28 @@ async function main() {
         },
         user_role: {
           createMany: { data: [{ user_id: 1, id: 1 }], skipDuplicates: true },
+        },
+      },
+    });
+
+    // Seeding store admin role and permissions
+    const storeAdminRole = prisma.role.upsert({
+      where: { id: 2 },
+      update: {},
+      create: {
+        name: 'store_admin',
+        display_name: 'Store Admin',
+        id: 2,
+        roles_permissions: {
+          createMany: {
+            data: [
+              { id: 2, permission_id: 2 }, // Add permissions relevant to the store admin role
+            ],
+            skipDuplicates: true,
+          },
+        },
+        user_role: {
+          createMany: { data: [{ user_id: 2, id: 2 }], skipDuplicates: true },
         },
       },
     });
@@ -473,92 +663,40 @@ async function main() {
       //   },
       // ],
     });
-    const stores: Store[] = [
-      {
-        created_by: 1, // Assuming user ID 1 exists
-        name: 'JKT Ogro Central',
-        store_type: 'central',
-        city_id: 152, // Assuming city ID 1 exists
-        address: '123 Main St',
-        kecamatan: 'Downtown',
-        kelurahan: 'Central',
-        image: 'central-store.jpg',
-        latitude: new Prisma.Decimal(12.345678),
-        longtitude: new Prisma.Decimal(98.765432),
-        id: 1,
-        createdAt: new Date(),
-        updatedAt: null,
-        deletedAt: null,
-        province_id: 6
-      },
-      {
-        created_by: 1, // Assuming user ID 2 exists
-        name: 'JKT Ogro Cabang',
-        store_type: 'branch',
-        city_id: 152, // Assuming city ID 2 exists
-        address: '456 Elm St',
-        kecamatan: 'Uptown',
-        kelurahan: 'North',
-        image: 'branch-store.jpg',
-        latitude: new Prisma.Decimal(23.456789),
-        longtitude: new Prisma.Decimal(87.654321),
-        id: 2,
-        createdAt: new Date(),
-        updatedAt: null,
-        deletedAt: null,
-        province_id: 6
-      },
-    ];
 
     // Seed provinces and cities
     await seedProvinces();
     await seedCities();
 
     // Execute all database operations
-    const storeSeed = prisma.store.createMany({
-      data: [...stores],
-      skipDuplicates: true,
-    });
-
-    const [
-      res_permission,
-      res_superAdminUser,
-      res_superRole,
-      res_productCategory,
-      res_products,
-      res_store,
-    ] = await Promise.all([
+    await Promise.all([
       permission,
       superAdminUser,
+      storeAdminUser,
       superRole,
+      storeAdminRole,
       productCategory,
       products,
-      storeSeed,
+      // storeSeed,
     ]);
 
-    console.log(
-      res_permission,
-      res_superAdminUser,
-      res_superRole,
-      res_productCategory,
-      res_products,
-      res_store,
-    );
+    await seedStores();
+    await seedProductDiscounts();
 
-    const generateStoreHasProductData =  await generateStoreHasProduct(
+    await generateStoreHasProduct(
       await prisma.product.findMany(),
       await prisma.store.findMany(),
     );
-    console.log(generateStoreHasProductData);
-    
+
+    console.log('Data successfully seeded');
   } catch (error) {
-    console.error(error);
+    console.error('Error during seeding:', error);
   } finally {
     await prisma.$disconnect();
   }
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error('Error during seeding:', error);
   process.exit(1);
 });

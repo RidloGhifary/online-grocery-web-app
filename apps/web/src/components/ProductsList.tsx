@@ -91,8 +91,9 @@ export default function ProductsList({ api_url }: Props) {
     );
   }
 
-  if (error)
-    return <ErrorInfo error="Ups, no products found" className="mt-8" />;
+  if (error) {
+    return <ErrorInfo error="Ups, Something went wrong" className="mt-8" />;
+  }
 
   if (products?.length === 0) {
     return <ErrorInfo error="Ups, no products found" className="mt-8" />;
@@ -105,18 +106,20 @@ export default function ProductsList({ api_url }: Props) {
           if (index === products.length - 1) {
             return (
               <div key={product?.id} ref={lastElementRef}>
-                <ProductCard product={product} />
+                <ProductCard product={product} geoLocation={!!geoLocation} />
               </div>
             );
           }
           return (
             <div key={product?.id}>
-              <ProductCard product={product} />
+              <ProductCard product={product} geoLocation={!!geoLocation} />
             </div>
           );
         })}
       </div>
-      {isFetching && <div className="mt-3 text-center">Wait a second...</div>}
+      {isFetching && !hasNextPage && (
+        <div className="mt-3 text-center">Wait a second...</div>
+      )}
     </div>
   );
 }

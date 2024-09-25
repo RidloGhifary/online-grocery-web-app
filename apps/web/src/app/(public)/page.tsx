@@ -15,9 +15,9 @@ export default function Home() {
       <Container>
         <Hero />
         <Categories />
-        {/* <ProductBasedDiscount api_url={API_URL as string} /> */}
-        {/* <hr /> */}
-        {/* <ProductsList api_url={API_URL as string} /> */}
+        <ProductBasedDiscount api_url={API_URL as string} />
+        <hr />
+        <ProductsList api_url={API_URL as string} />
       </Container>
     </div>
   );

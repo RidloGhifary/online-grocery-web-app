@@ -6,11 +6,12 @@ import { flattenUserPermissions } from '@/utils/roleAndPermission';
 import { useAtom } from 'jotai';
 import { permissionsAtom } from '@/stores/permissionStores';
 import { getAdmin } from '@/actions/user';
+import { queryKeys } from '@/constants/queryKeys';
 
 export default function AdminProvider({ children }: { children: ReactNode }) {
   const { data: admin, isLoading, error } = useQuery({
-    queryKey: ['adminInfo'],
-    queryFn: getAdmin,
+    queryKey: [queryKeys.adminInfo],
+    queryFn: ()=>getAdmin(),
   });
 
   const [, setPermissions] = useAtom(permissionsAtom);
@@ -25,7 +26,7 @@ export default function AdminProvider({ children }: { children: ReactNode }) {
   }, [admin, setPermissions]);
 
   if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading permissions</div>;
+  if (error) return <div>{error.message}</div>;
 
   return <>{children}</>;
 }

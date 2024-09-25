@@ -328,27 +328,35 @@ async function main() {
             data: [
               {
                 permission_id: 2,
+                id:2
               },
               {
                 permission_id: 3,
+                id:3
               },
               {
                 permission_id: 4,
+                id:4
               },
               {
                 permission_id: 5,
+                id:5
               },
               {
                 permission_id: 9,
+                id:6
               },
               {
                 permission_id: 10,
+                id:7
               },
               {
                 permission_id: 15,
+                id:8
               },
               {
                 permission_id: 16,
+                id:9
               },
             ],
             // itterate
@@ -401,7 +409,7 @@ async function main() {
         created_by: 1, // Assuming user ID 2 exists
         name: 'JKT Ogro Cabang',
         store_type: 'branch',
-        city_id: 152, // Assuming city ID 2 exists
+        city_id: 151, // Assuming city ID 2 exists
         address: '456 Elm St',
         kecamatan: 'Uptown',
         kelurahan: 'North',
@@ -413,6 +421,23 @@ async function main() {
         updatedAt: null,
         deletedAt: null,
         province_id: 6,
+      },
+      {
+        created_by: 1, // Assuming user ID 2 exists
+        name: 'KTNG Ogro Cabang',
+        store_type: 'branch',
+        city_id: 455, // Assuming city ID 2 exists
+        address: '456 Elm St',
+        kecamatan: 'Uptown',
+        kelurahan: 'North',
+        image: 'https://placehold.co/600x400.svg',
+        latitude: new Prisma.Decimal(-6.16667),
+        longtitude: new Prisma.Decimal(106.48333),
+        id: 3,
+        createdAt: new Date(),
+        updatedAt: null,
+        deletedAt: null,
+        province_id: 3,
       },
     ];
 
@@ -479,6 +504,38 @@ async function main() {
       data: [...stockAdjustmentData],
       skipDuplicates: true
     });
+
+    const storeHasAdminGenerate : Prisma.StoreHasAdminCreateManyInput[] = [] 
+    const admin = await prisma.user.findMany({
+      where: {
+        role: {
+          some: {
+            role_id: {
+              not: null
+            }
+          }
+        }
+      }
+    });
+
+    const storeFromDb = await prisma.store.findMany();
+    admin.forEach((adminUser) => {
+      storeFromDb.forEach((store) => {
+        storeHasAdminGenerate.push({
+          store_id: store.id,  
+          user_id: adminUser.id,
+          assignee_id: 1
+        });
+      });
+    });
+    
+    // Now you can use `storeHasAdminGenerate` in a Prisma `createMany` query to bulk insert
+    await prisma.storeHasAdmin.createMany({
+      data: storeHasAdminGenerate,
+      skipDuplicates:true
+    });
+
+    
     console.log(generateStoreHasProductData);
     console.log(seedStockAdjusment);
   } catch (error) {

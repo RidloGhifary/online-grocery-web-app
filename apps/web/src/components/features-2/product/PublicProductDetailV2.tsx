@@ -46,7 +46,7 @@ export default function PublicProductDetailV2({
       storeSelect.push({
         id: i,
         value: e.store_id,
-        label: `${e.store?.name} (${e.store?.city?.city_name})`,
+        label: `${e.store?.name} - ${e.store?.city?.city_name} (${e.store?.city?.type})`,
       });
     });
   }

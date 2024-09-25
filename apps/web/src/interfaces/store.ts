@@ -33,7 +33,8 @@ export interface StoreInterface {
   latitude: string | number;
   longtitude: string | number;
   city?: {
-    city_name: string
+    city_name: string;
+    type:'kabupaten'|'kota'
   }
   createdAt: string | Date | null;
   updatedAt: string | Date | null;

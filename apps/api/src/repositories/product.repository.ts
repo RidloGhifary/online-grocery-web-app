@@ -9,6 +9,7 @@ import tokenValidation from '@/utils/tokenValidation';
 import { userRepository } from './user.repository';
 import { UpdateProductInputInterface } from '@/interfaces/ProductInterface';
 import getCityByGeoIndo from '@/utils/getCityByGeoIndo';
+import searchFriendlyForLikeQuery from '@/utils/searchFriendlyForLikeQuery';
 
 class ProductRepository {
   async publicProductList({
@@ -19,9 +20,8 @@ class ProductRepository {
     limitNumber = 20,
     pageNumber = 1,
     token,
-    citiId,
-    latitude=null,
-    longitude=null
+    latitude = null,
+    longitude = null,
   }: {
     category?: string;
     search?: string;
@@ -29,10 +29,9 @@ class ProductRepository {
     orderField?: 'product_name' | 'category';
     pageNumber?: number;
     limitNumber?: number;
-    latitude?: number|null|string
-    longitude?:number|null|string
+    latitude?: number | null | string;
+    longitude?: number | null | string;
     token?: string;
-    citiId?: number;
   }): Promise<CommonPaginatedResultInterface<Product[]>> {
     let result = {
       ok: false,
@@ -41,35 +40,35 @@ class ProductRepository {
         pagination: null,
       },
     } as unknown as CommonPaginatedResultInterface<Product[]>;
+  
     const tokenRes = tokenValidation(token).data!;
-
-    citiId = 152; //Jakarta Pusat
-    if (tokenRes) {
-      if (latitude&&longitude) {
-        const cityName = await getCityByGeoIndo(latitude,longitude)
-        console.log('citiy name', cityName);
-        
-        if (cityName) {
-          const cityFromDB= await prisma.city.findFirst({where:{city_name:cityName}})
-        console.log('citiy db', cityFromDB);
-
-          if (cityFromDB) {
-            citiId = cityFromDB.id
-          } else {
-            citiId = undefined
-          }
-        }
+    let theCityName: string | null = null;
+  
+    if (latitude && longitude) {
+      // If latitude and longitude are provided, get the city name
+      const cityName = await getCityByGeoIndo(latitude, longitude);
+      console.log('City name:', cityName);
+      theCityName = cityName;
+  
+      if (theCityName) {
+        // Clean the city name to remove "Kabupaten/kabupaten/Kota/kota"
+        theCityName = theCityName.replace(/(Kabupaten|kabupaten|Kota|kota)/gi, '').trim();
       }
-    } 
+    } else {
+      // Default to Jakarta Pusat if no latitude/longitude
+      theCityName = 'Jakarta Pusat';
+    }
+  
     try {
       const count = await prisma.product.count({
         where: {
           ...(await productWhereInput({ search: search, category: category })),
         },
       });
-
+  
       const safePageNumber = numberization(pageNumber);
       const safeLimitNumber = numberization(limitNumber);
+  
       const res = await prisma.product.findMany({
         where: {
           ...(await productWhereInput({ search: search, category: category })),
@@ -78,57 +77,56 @@ class ProductRepository {
         take: safeLimitNumber,
         include: {
           product_category: true,
-          StoreHasProduct: citiId? {
-            where:{
-              store : {
-                city_id : citiId
-              }
+          StoreHasProduct: {
+            where: {
+              store: {
+                city: {
+                  city_name: {
+                    contains: await searchFriendlyForLikeQuery(theCityName!),
+                  },
+                },
+              },
             },
             include: {
               store: {
-                include:{
-                  city : true
-                }
-              }
+                include: {
+                  city: true,
+                },
+              },
             },
-          }: false
+          },
         },
         orderBy: !order
           ? undefined
           : [
               {
-                name:
-                  orderField && orderField === 'product_name'
-                    ? order
-                    : undefined,
+                name: orderField === 'product_name' ? order : undefined,
               },
               {
                 product_category: {
-                  name:
-                    orderField && orderField === 'category' ? order : undefined,
+                  name: orderField === 'category' ? order : undefined,
                 },
               },
               {
                 product_category: {
-                  display_name:
-                    orderField && orderField === 'category' ? order : undefined,
+                  display_name: orderField === 'category' ? order : undefined,
                 },
               },
             ],
       });
-
+  
       if (count <= 0) {
         throw new Error('Not found 404');
       }
-
+  
       result.data.data = res;
-
+  
       result.data.pagination = paginate({
         pageNumber: safePageNumber,
         limitNumber: safeLimitNumber,
         totalData: count,
       });
-
+  
       result.ok = true;
       result.message = 'Query Success';
     } catch (error) {
@@ -137,47 +135,55 @@ class ProductRepository {
       }
       result.message = 'Error';
     }
+  
     return result;
   }
-
+  
   async getSingleProduct({
     slug,
     token,
     citiId,
-    latitude=null,
-    longitude=null
+    latitude = null,
+    longitude = null,
   }: {
     slug: string;
     token?: string;
     citiId?: number;
-    latitude?: number|null|string
-    longitude?:number|null|string
+    latitude?: number | null | string;
+    longitude?: number | null | string;
   }): Promise<CommonResultInterface<Product>> {
     const result: CommonResultInterface<Product> = {
       ok: false,
     };
-
+  
     const tokenRes = tokenValidation(token).data!;
-
+    let theCityName: string | null = null;
+  
     if (tokenRes) {
-      citiId = 152; //Jakarta Pusat
-      if (latitude&&longitude) {
-        const cityName = await getCityByGeoIndo(latitude,longitude)
-        console.log('citiy name', cityName);
-        
+      if (latitude && longitude) {
+        // If latitude and longitude are provided, get the city name
+        const cityName = await getCityByGeoIndo(latitude, longitude);
+        console.log('City name:', cityName);
+  
         if (cityName) {
-          const cityFromDB= await prisma.city.findFirst({where:{city_name:cityName}})
-        console.log('citiy db', cityFromDB);
-
+          // Clean the city name to remove "Kabupaten/kabupaten/Kota/kota"
+          theCityName = cityName.replace(/(Kabupaten|kabupaten|Kota|kota)/gi, '').trim();
+  
+          const cityFromDB = await prisma.city.findFirst({ where: { city_name: theCityName } });
+          console.log('City from DB:', cityFromDB);
+  
           if (cityFromDB) {
-            citiId = cityFromDB.id
+            citiId = cityFromDB.id; // Use the city ID from the database
           } else {
-            citiId = undefined
+            citiId = undefined; // If city not found in DB, set to undefined
           }
         }
+      } else {
+        // Default to Jakarta Pusat if no latitude/longitude
+        citiId = 152; // Jakarta Pusat
       }
-    } 
-
+    }
+  
     try {
       const res = await prisma.product.findFirst({
         where: {
@@ -185,31 +191,29 @@ class ProductRepository {
         },
         include: {
           product_category: true,
-          StoreHasProduct: citiId? {
-            where:{
-              store : {
-                city_id : citiId,
-                store_type : !latitude&&!longitude&&tokenRes?'central':undefined
-              }
+          StoreHasProduct: citiId ? {
+            where: {
+              store: {
+                city_id: citiId,
+                store_type: !latitude && !longitude && tokenRes ? 'central' : undefined,
+              },
             },
             include: {
               store: {
-                include:{
-                  city : true
-                }
-              }
+                include: {
+                  city: true,
+                },
+              },
             },
-          }: false
+          } : false,
         },
       });
-      // console.log('resss product single');
-      
-      // console.log(res);
-      
+  
       if (!res) {
         result.error = 'not found';
         return result;
       }
+      
       result.data = res;
       result.ok = true;
       result.message = 'Query Success';
@@ -217,8 +221,10 @@ class ProductRepository {
       result.error = error;
       result.message = 'Error';
     }
+  
     return result;
   }
+  
 
   async getSingleProductAdmin({
     slug,

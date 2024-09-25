@@ -23,7 +23,7 @@ export default function ({
       if (quantity < maximumQty) {
         
         setQuantity((prev) => (prev += 1));
-        console.log(quantity);
+        // console.log(quantity);
       }
     }
   }

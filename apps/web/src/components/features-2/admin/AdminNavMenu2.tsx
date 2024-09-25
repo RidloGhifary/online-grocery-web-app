@@ -1,7 +1,9 @@
 'use client'
 import { getAdmin } from "@/actions/user";
+import LogoutButton from "@/components/navbar/LogoutButton";
 import { queryKeys } from "@/constants/queryKeys";
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 
 export default function () {
   const {data, isLoading, error} = useQuery({
@@ -44,10 +46,11 @@ export default function () {
               className="avatar btn btn-circle btn-ghost"
             >
               <div className="w-10 rounded-full">
-                <img
+                {/* <img
                   alt="Tailwind CSS Navbar component"
                   src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                />
+                /> */}
+                <Image src={data?.data?.image||"https://cdn-icons-png.flaticon.com/512/10412/10412383.png"} height={20} width={20} quality={20} alt={data?.data?.username!} />
               </div>
             </div>
             <ul
@@ -55,16 +58,8 @@ export default function () {
               className="menu dropdown-content menu-sm z-[1] mt-3 w-52 rounded-box bg-base-100 p-2 shadow"
             >
               <li>
-                <a className="justify-between">
-                  Profile
-                  <span className="badge">New</span>
-                </a>
-              </li>
-              <li>
-                <a>Settings</a>
-              </li>
-              <li>
-                <a>Logout</a>
+                {/* <a>Logout</a> */}
+                <LogoutButton/>
               </li>
             </ul>
           </div>

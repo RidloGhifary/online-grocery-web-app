@@ -29,7 +29,7 @@ const adminSchema = z.object({
   id: z.number().positive("ID should be in valid format"),
   username: z.string().min(1, { message: "Username is required" }).optional(),
   email: z.string().email({ message: "Invalid email address" }),
-  phone_number: z.string().nullable().optional().optional().refine((value) => value && /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(value),'Not valid phone number'),
+  phone_number: z.string().nullable().optional().refine((value) => !value  || /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(value),'Not valid phone number'),
   first_name: z
     .string()
     .min(1, { message: "First name is required" })
@@ -271,6 +271,9 @@ export default function AdminUpdateForm() {
       };
       queryClient.invalidateQueries({
         queryKey: [queryKeys.adminList, { ...params }],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.adminInfo],
       });
       const updatedData = (
         queryClient.getQueryData([

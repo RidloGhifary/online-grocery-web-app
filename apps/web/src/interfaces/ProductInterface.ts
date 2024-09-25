@@ -66,3 +66,20 @@ export interface UpdateProductInputInterface {
   image?: string | null;
   unit_in_gram?: number ;
 }
+
+
+export interface ProductCartItem {
+  id: number;
+  product_id: number;
+  qty: number;
+  user_id: number;
+  store_id: number;
+  totalPrice: number;
+  product: {
+    name: string;
+    unit_in_gram: number;
+    price: number;
+    image: string;
+    description: string;
+  };
+}

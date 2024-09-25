@@ -3,6 +3,7 @@
 import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import {
+  ProductCartItem,
   ProductCompleteInterface,
   ProductRecordInterface,
   UpdateProductInputInterface,
@@ -34,10 +35,10 @@ export async function getProductListWithFilter({
     ok: false,
   } as unknown as CommonPaginatedResultInterface<ProductCompleteInterface[]>;
   const token = await getCookies("token");
-  const header:HeadersInit = {
+  const header: HeadersInit = {
     "Content-type": "application/json",
     Authorization: `Bearer ${token}`,
-  } 
+  };
   try {
     const response = await fetch(
       createQueryParams({
@@ -49,12 +50,13 @@ export async function getProductListWithFilter({
           order_field: orderField,
           page,
           limit,
-          latitude, 
-          longitude
+          latitude,
+          longitude,
         },
-      }), {headers:header}
+      }),
+      { headers: header },
     );
-    
+
     if (!response.ok) {
       result.error = `Failed to fetch product list: ${response.statusText}`;
       return result;
@@ -94,26 +96,29 @@ export async function getSingleProduct({
     result.error = "Slug is empty";
     return result;
   }
-  
+
   try {
     const url = `${process.env.BACKEND_URL}/products/${slug}`;
     const token = await getCookies("token");
-    const header:HeadersInit = {
+    const header: HeadersInit = {
       "Content-type": "application/json",
       Authorization: `Bearer ${token}`,
-    } 
-    console.log(createQueryParams({
-      url: url,
-      params: { latitude, longitude },
-    }));
-    
+    };
+    console.log(
+      createQueryParams({
+        url: url,
+        params: { latitude, longitude },
+      }),
+    );
+
     const response = await fetch(
       createQueryParams({
         url: url,
         params: { latitude, longitude },
-      }),{
-        headers : header
-      }
+      }),
+      {
+        headers: header,
+      },
     );
 
     if (!response.ok) {
@@ -235,6 +240,40 @@ export async function deleteProduct(
     res.ok = true;
   } catch (error) {
     throw new Error((error as Error).message);
+  }
+  return result;
+}
+
+export async function addProductItemToCart({
+  productId,
+  quantity,
+  storeId,
+}: {
+  productId?: number;
+  quantity?: number;
+  storeId?: number;
+}): Promise<ProductCartItem | null | undefined | string> {
+  const url = `${process.env.BACKEND_URL}/cart/items`;
+  const token = await getCookies("token");
+  const header: HeadersInit = {
+    "Content-type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+  let result: ProductCartItem | null | undefined | string = null;
+  console.log(JSON.stringify({ productId, quantity, storeId }));
+  
+  try {
+    const prep = await fetch(url, {
+      method: "POST",
+      headers: header,
+      body: JSON.stringify({ productId, quantity, storeId }),
+    });
+    const response = (await prep.json()) as ProductCartItem;
+    result = response;
+  } catch (error) {
+    result = (error as Error).message as string
+    throw new Error(result);
+    
   }
   return result;
 }

@@ -43,8 +43,8 @@ class ProductRepository {
     } as unknown as CommonPaginatedResultInterface<Product[]>;
     const tokenRes = tokenValidation(token).data!;
 
+    citiId = 152; //Jakarta Pusat
     if (tokenRes) {
-      citiId = 152; //Jakarta Pusat
       if (latitude&&longitude) {
         const cityName = await getCityByGeoIndo(latitude,longitude)
         console.log('citiy name', cityName);
@@ -188,7 +188,8 @@ class ProductRepository {
           StoreHasProduct: citiId? {
             where:{
               store : {
-                city_id : citiId
+                city_id : citiId,
+                store_type : !latitude&&!longitude&&tokenRes?'central':undefined
               }
             },
             include: {

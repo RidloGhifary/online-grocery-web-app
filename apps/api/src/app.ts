@@ -23,6 +23,7 @@ import { AdminRouter } from './routers/admin.router';
 import { CheckoutRouter } from './routers/checkout.router';
 import { OrderRouter } from './routers/order.router';
 import { WarehouseRouter } from './routers/warehouse.router';
+import { MutationRouter } from './routers/mutation.router';
 
 export default class App {
   private app: Express;
@@ -80,6 +81,7 @@ export default class App {
     const checkoutRouter = new CheckoutRouter();
     const orderRouter = new OrderRouter();
     const warehouseRouter = new WarehouseRouter();
+    const mutationRouter = new MutationRouter();
 
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, Purwadhika Student API!`);
@@ -97,6 +99,7 @@ export default class App {
     this.app.use('/api/orders', orderRouter.getRouter());
     this.app.use('/api/admins', adminRouter.getRouter());
     this.app.use('/api/warehouse', warehouseRouter.getRouter());
+    this.app.use('/api/mutations', mutationRouter.getRouter());
   }
 
   public start(): void {

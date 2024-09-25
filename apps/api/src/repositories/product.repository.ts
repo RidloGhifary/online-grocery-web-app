@@ -8,6 +8,7 @@ import { Product } from '@prisma/client';
 import tokenValidation from '@/utils/tokenValidation';
 import { userRepository } from './user.repository';
 import { UpdateProductInputInterface } from '@/interfaces/ProductInterface';
+import getCityByGeoIndo from '@/utils/getCityByGeoIndo';
 
 class ProductRepository {
   async publicProductList({
@@ -17,6 +18,10 @@ class ProductRepository {
     orderField = 'product_name',
     limitNumber = 20,
     pageNumber = 1,
+    token,
+    citiId,
+    latitude=null,
+    longitude=null
   }: {
     category?: string;
     search?: string;
@@ -24,6 +29,10 @@ class ProductRepository {
     orderField?: 'product_name' | 'category';
     pageNumber?: number;
     limitNumber?: number;
+    latitude?: number|null|string
+    longitude?:number|null|string
+    token?: string;
+    citiId?: number;
   }): Promise<CommonPaginatedResultInterface<Product[]>> {
     let result = {
       ok: false,
@@ -32,6 +41,26 @@ class ProductRepository {
         pagination: null,
       },
     } as unknown as CommonPaginatedResultInterface<Product[]>;
+    const tokenRes = tokenValidation(token).data!;
+
+    if (tokenRes) {
+      citiId = 152; //Jakarta Pusat
+      if (latitude&&longitude) {
+        const cityName = await getCityByGeoIndo(latitude,longitude)
+        console.log('citiy name', cityName);
+        
+        if (cityName) {
+          const cityFromDB= await prisma.city.findFirst({where:{city_name:cityName}})
+        console.log('citiy db', cityFromDB);
+
+          if (cityFromDB) {
+            citiId = cityFromDB.id
+          } else {
+            citiId = undefined
+          }
+        }
+      }
+    } 
     try {
       const count = await prisma.product.count({
         where: {
@@ -49,7 +78,20 @@ class ProductRepository {
         take: safeLimitNumber,
         include: {
           product_category: true,
-          StoreHasProduct: true,
+          StoreHasProduct: citiId? {
+            where:{
+              store : {
+                city_id : citiId
+              }
+            },
+            include: {
+              store: {
+                include:{
+                  city : true
+                }
+              }
+            },
+          }: false
         },
         orderBy: !order
           ? undefined
@@ -102,37 +144,39 @@ class ProductRepository {
     slug,
     token,
     citiId,
+    latitude=null,
+    longitude=null
   }: {
     slug: string;
     token?: string;
     citiId?: number;
+    latitude?: number|null|string
+    longitude?:number|null|string
   }): Promise<CommonResultInterface<Product>> {
     const result: CommonResultInterface<Product> = {
       ok: false,
     };
 
-    const userLoggedIn =
-      await userRepository.getUserWithRoleAndPermission(token);
-    let userId: number | undefined = undefined;
-    if (userLoggedIn.ok && !userLoggedIn.error && userLoggedIn.data) {
-      userId = userLoggedIn.data.id;
-    }
-
     const tokenRes = tokenValidation(token).data!;
-    if (!tokenRes) {
-      citiId = 152; //Jakarta Pusat
-    }
-    const isSuper =
-      userLoggedIn.data?.role[0].role?.roles_permissions.filter(
-        (e) =>
-          e.permission.name == 'super' ||
-          userLoggedIn.data?.role[0].role?.name == 'super_admin',
-      )[0].permission.name == 'super';
 
-    const isAdmin =
-      userLoggedIn.data?.role[0].role?.roles_permissions.filter(
-        (e) => e.permission.name == 'admin_access',
-      )[0].permission.name == 'admin_access';
+    if (tokenRes) {
+      citiId = 152; //Jakarta Pusat
+      if (latitude&&longitude) {
+        const cityName = await getCityByGeoIndo(latitude,longitude)
+        console.log('citiy name', cityName);
+        
+        if (cityName) {
+          const cityFromDB= await prisma.city.findFirst({where:{city_name:cityName}})
+        console.log('citiy db', cityFromDB);
+
+          if (cityFromDB) {
+            citiId = cityFromDB.id
+          } else {
+            citiId = undefined
+          }
+        }
+      }
+    } 
 
     try {
       const res = await prisma.product.findFirst({
@@ -141,22 +185,26 @@ class ProductRepository {
         },
         include: {
           product_category: true,
-          StoreHasProduct: {
-            include: {
-              store: isSuper
-                ? true
-                : {
-                    where: {
-                      city_id: citiId,
-                    },
-                    include: {
-                      city: true,
-                    },
-                  },
+          StoreHasProduct: citiId? {
+            where:{
+              store : {
+                city_id : citiId
+              }
             },
-          },
+            include: {
+              store: {
+                include:{
+                  city : true
+                }
+              }
+            },
+          }: false
         },
       });
+      // console.log('resss product single');
+      
+      // console.log(res);
+      
       if (!res) {
         result.error = 'not found';
         return result;
@@ -206,7 +254,8 @@ class ProductRepository {
       userLoggedIn.data?.role[0].role?.roles_permissions.filter(
         (e) => e.permission.name == 'admin_access',
       )[0].permission.name == 'admin_access';
-
+      console.log('product repooo');
+      
     try {
       const res = await prisma.product.findFirst({
         where: {

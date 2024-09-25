@@ -39,16 +39,16 @@ export default function ({
               currency: "IDR",
             }).format(price)}
           </p>
-          <p className="truncate text-xs text-slate-500">
+          {/* <p className="truncate text-xs text-slate-500">
             <s>Rp. 2.000.000</s>
             <b className="ml-1 text-rose-500">50%</b>
-          </p>
+          </p> */}
         </div>
         <div className="flex items-center gap-1">
           <RiGitBranchFill size={15} />
           <span className="text-sm text-primary">{city}</span>
         </div>
-        <p className="badge-base-100 badge">2rb Sold</p>
+        {/* <p className="badge-base-100 badge">2rb Sold</p> */}
       </div>
     </Link>
   );

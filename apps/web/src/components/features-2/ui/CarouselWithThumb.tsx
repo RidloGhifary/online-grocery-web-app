@@ -62,6 +62,7 @@ const CarouselWithThumb: React.FC<{ images?: string[] | null }> = ({
         thumbs={{ swiper: thumbsSwiper }}
         modules={[FreeMode, Navigation, Thumbs]}
         className="mySwiper2 h-80 rounded-lg"
+        
       >
         {usedImg.map((src, index) => (
           <SwiperSlide key={index}>

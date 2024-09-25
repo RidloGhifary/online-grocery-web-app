@@ -82,6 +82,7 @@ export default class App {
     const orderRouter = new OrderRouter();
     const roleRouter = new RoleRouter();
     const warehouseRouter = new WarehouseRouter();
+    const stockRouter = new StoreRouter()
 
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, Purwadhika Student API!`);
@@ -100,6 +101,7 @@ export default class App {
     this.app.use('/api/admins', adminRouter.getRouter());
     this.app.use('/api/roles', roleRouter.getRouter());
     this.app.use('/api/warehouse', warehouseRouter.getRouter());
+    this.app.use('/api/stocks', stockRouter.getRouter)
   }
 
   public start(): void {

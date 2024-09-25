@@ -39,6 +39,7 @@ export default function PublicProductDetailV2({
       });
     });
   }
+  
 
   function handleStockSelect(
     e: SingleValue<{
@@ -150,7 +151,7 @@ export default function PublicProductDetailV2({
             </>
           ) : (
             <>
-              {data && data.ok ? (
+              {data && data.ok && product&& product.StoreHasProduct&&product.StoreHasProduct?.length>0  ? (
                 <form onSubmit={handleForm}>
                   <div className="flex w-full max-w-full p-3 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)]">
                     <div className="flex w-full flex-col items-center rounded">

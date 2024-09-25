@@ -1,6 +1,6 @@
 import React from "react";
 import { IconType } from "react-icons";
-import { FaHome, FaShoppingBag, FaUser, FaUserFriends } from "react-icons/fa";
+import { FaBoxes, FaHome, FaShoppingBag, FaUser, FaUserFriends } from "react-icons/fa";
 import { FaShop } from "react-icons/fa6";
 import { IoIosSettings } from "react-icons/io";
 import { GiFruitBowl } from "react-icons/gi";
@@ -56,6 +56,13 @@ const adminSideMenuDatas: {
         //   permission: "super",
         // },
       ],
+    },
+    {
+      name: "admin.stock.menu",
+      displayName: "Stock Management",
+      icon: <FaBoxes />,
+      href: "/stocks",
+      permission: "admin_stock_access",
     },
     {
       name: "admin.products.menu",

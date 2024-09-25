@@ -20,7 +20,7 @@ export default function CategoryFilter() {
     } else {
       params.set("category", selectedCategory);
     }
-
+    params.set("page", '1');
     router.replace(`${pathname}?${params.toString()}`);
   };
 

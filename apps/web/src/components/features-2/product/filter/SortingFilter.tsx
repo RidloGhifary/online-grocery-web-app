@@ -20,12 +20,14 @@ export default function SortingFilter() {
   const handleFilterChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
     const params = new URLSearchParams(queryParams.toString());
     params.set("orderField", e.currentTarget.value);
+    params.set("page", '1');
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const handleOrderChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
     const params = new URLSearchParams(queryParams.toString());
     params.set("order", e.currentTarget.value);
+    params.set("page", '1');
     router.replace(`${pathname}?${params.toString()}`);
   };
 

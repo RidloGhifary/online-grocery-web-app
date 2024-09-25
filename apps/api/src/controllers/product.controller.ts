@@ -4,7 +4,7 @@ import searchFriendlyForLikeQuery from '@/utils/searchFriendlyForLikeQuery';
 import prisma from '@/prisma';
 import { productRepository } from '@/repositories/product.repository';
 import getCityFromCoordinates from '@/utils/getCityFromCoordinates';
-import { Product } from '@prisma/client';
+import { Prisma, Product } from '@prisma/client';
 import { Request, Response } from 'express';
 
 export class ProductController {
@@ -334,13 +334,18 @@ export class ProductController {
   async productList(req: Request, res: Response) {
     const { category, search, order, order_field } = req.query;
     const { page = 1, limit = 20 } = req.query;
+    const {latitude , longitude} = req.query
+    const token = req.headers['authorization']
     const result = await productRepository.publicProductList({
       category: category as string,
       search: search as string,
       order: order as 'asc' | 'desc',
       orderField: order_field as 'product_name' | 'category',
       pageNumber : page as number,
-      limitNumber : limit as number
+      limitNumber : limit as number,
+      latitude: latitude as string,
+      longitude: longitude as string,
+      token
     });
     if (!result.ok) {
       return res.status(400).send(result);
@@ -352,8 +357,8 @@ export class ProductController {
     req: Request,
     res: Response,
   ): Promise<void | Response> {
-    const { slug } = req.params;
-    
+    const { slug,  } = req.params;
+    const {latitude , longitude} = req.query
     const token = req.headers['authorization']
     if (!slug || slug === '') {
       const response: CommonResultInterface<null> = {
@@ -365,6 +370,9 @@ export class ProductController {
 
     const result = await productRepository.getSingleProduct({
       slug: slug as string,
+      latitude: latitude as string,
+      longitude: longitude as string,
+      token
     });
     if (!result.ok) {
       if (!result.data) {

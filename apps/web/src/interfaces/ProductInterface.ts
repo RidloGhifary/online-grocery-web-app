@@ -1,4 +1,5 @@
 import { CategoryCompleteInterface } from "./CategoryInterface";
+import { ProductDiscount } from "./product";
 import { StoreInterface } from "./store";
 
 export interface ProductCompleteInterface {
@@ -16,6 +17,7 @@ export interface ProductCompleteInterface {
   updatedAt: Date | string | null;
   deletedAt: Date | string | null;
   store_id: number | null;
+  product_discounts: ProductDiscount[];
   product_category?: CategoryCompleteInterface;
   StoreHasProduct?: StoreHasProductInterface[]
 }

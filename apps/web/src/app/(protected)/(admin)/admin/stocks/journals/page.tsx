@@ -1,6 +1,6 @@
 import StockJournalsPage from "./_components/AdminStockJournalPage";
 
-export default function () {
+export default function Page() {
   return<>
   <StockJournalsPage/>
   </>

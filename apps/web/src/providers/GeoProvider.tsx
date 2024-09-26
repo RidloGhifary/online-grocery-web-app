@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 import { ReactNode, useEffect } from "react";
 import { toast } from "react-toastify";
 
-export default function ({children}:{children?:ReactNode}) {
+export default function GeoProvider({children}:{children?:ReactNode}) {
   const [, setGeoLocation] = useAtom(geoAtom)
   const [, setGeoPermission] = useAtom(geoPermissionAtom)
   const [, setGeoReady] = useAtom(geoReadyAtom)

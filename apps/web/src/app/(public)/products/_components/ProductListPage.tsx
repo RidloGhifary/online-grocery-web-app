@@ -14,7 +14,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChangeEventHandler, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-export default function () {
+export default function ProductListPage() {
   const [modalActive, setModalActive] = useState<boolean>(false);
   const [isDebouncing, setIsDebouncing] = useState<boolean>(false);
   const [geoLocation] = useAtom(geoAtom);

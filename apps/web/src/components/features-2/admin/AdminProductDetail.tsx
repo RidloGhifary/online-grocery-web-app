@@ -4,7 +4,7 @@ import {
 } from "@/stores/productStores";
 import { useAtom } from "jotai";
 
-export default function () {
+export default function AdminProductDetail() {
   const [currentProduct] = useAtom(currentDetailProductsAtom);
 
   const product = currentProduct;

@@ -13,7 +13,7 @@ interface ProductCategoryTableProps {
   categories?: CategoryInterface[]; // Made categories optional
 }
 
-export default function ({ categories = [] }: ProductCategoryTableProps) {
+export default function AdminCategoryTable({ categories = [] }: ProductCategoryTableProps) {
   // Default to empty array
   // console.log(categories);
 

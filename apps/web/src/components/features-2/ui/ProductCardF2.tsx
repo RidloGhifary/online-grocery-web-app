@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { RiGitBranchFill } from "react-icons/ri";
 
-export default function ({
+export default function ProductCardF2({
   name = "lorem",
   price = 10000,
   city = "Jakarta",

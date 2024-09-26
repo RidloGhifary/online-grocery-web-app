@@ -2,7 +2,7 @@
 import { ChangeEvent, MouseEvent, useState } from "react";
 import './css/quantityBox.css'
 
-export default function ({
+export default function QuantityBoxV2({
   qty = 0,
   minimumQty = 0,
   maximumQty,

@@ -4,7 +4,7 @@ import AdminSideMenu from "@/components/features-2/admin/AdminSideMenu";
 import AdminSidePanel from "@/components/features-2/admin/AdminSidePanel";
 import { ReactNode } from "react";
 
-export default function ({ children }: { children: ReactNode }) {
+export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <AdminDrawer

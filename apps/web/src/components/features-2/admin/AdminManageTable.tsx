@@ -13,7 +13,7 @@ import {
   currentDetailAdminAtom,
 } from "@/stores/adminStores";
 
-export default function ({ admins }: { admins: UserInterface[] }) {
+export default function AdminManageTable({ admins }: { admins: UserInterface[] }) {
   const [, setCurrentAdminData] = useAtom(currentDetailAdminAtom);
   const [, setAdminDataOperation] = useAtom(currentAdminOperationAtom);
   function handleDetail(e: MouseEvent) {

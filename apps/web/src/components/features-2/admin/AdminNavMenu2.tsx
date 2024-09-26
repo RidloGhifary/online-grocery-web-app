@@ -5,7 +5,7 @@ import { queryKeys } from "@/constants/queryKeys";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 
-export default function () {
+export default function AdminNavMenu2() {
   const {data, isLoading, error} = useQuery({
     queryKey: [queryKeys.adminInfo],
     queryFn: ()=> getAdmin(),

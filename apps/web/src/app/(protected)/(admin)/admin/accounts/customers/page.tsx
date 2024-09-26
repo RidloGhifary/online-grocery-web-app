@@ -14,7 +14,7 @@ import { FaPlus } from "react-icons/fa";
 import { ToastContainer } from "react-toastify";
 import { useDebouncedCallback } from "use-debounce";
 
-export default function () {
+export default function Page () {
   const [operation, setOperation] = useState<
     "edit" | "detail" | "delete" | "add" | "filter"
   >();

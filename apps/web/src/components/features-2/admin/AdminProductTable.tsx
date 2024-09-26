@@ -14,7 +14,7 @@ import {
 } from "@/stores/productStores";
 import PermissionWrapper from "../auth/PermissionWrapper";
 
-export default function ({
+export default function AdminProductTable({
   products,
 }: {
   products: ProductCompleteInterface[];

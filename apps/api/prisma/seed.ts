@@ -1,4 +1,5 @@
 import {
+  DiscountType,
   Prisma,
   PrismaClient,
   Product,
@@ -12,6 +13,102 @@ import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
+
+async function seedProductDiscounts() {
+  // Sample discounts data to seed
+  const discounts = [
+    {
+      discount: 10, // percentage
+      started_at: new Date('2024-01-01'),
+      end_at: new Date('2024-12-31'),
+      product_id: 1,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 15, // percentage
+      started_at: new Date('2024-06-01'),
+      end_at: new Date('2024-11-30'),
+      product_id: 2,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 5000, // nominal
+      started_at: new Date('2024-03-01'),
+      end_at: new Date('2024-09-30'),
+      product_id: 3,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 20, // percentage
+      started_at: new Date('2024-05-01'),
+      end_at: new Date('2024-12-31'),
+      product_id: 4,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 2500, // nominal
+      started_at: new Date('2024-07-01'),
+      end_at: new Date('2024-10-31'),
+      product_id: 5,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 30, // percentage
+      started_at: new Date('2024-08-01'),
+      end_at: new Date('2024-11-30'),
+      product_id: 6,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 3500, // nominal
+      started_at: new Date('2024-09-01'),
+      end_at: new Date('2024-12-31'),
+      product_id: 7,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 5, // percentage
+      started_at: new Date('2024-01-15'),
+      end_at: new Date('2024-06-30'),
+      product_id: 8,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 2000, // nominal
+      started_at: new Date('2024-02-01'),
+      end_at: new Date('2024-08-31'),
+      product_id: 9,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 12, // percentage
+      started_at: new Date('2024-04-01'),
+      end_at: new Date('2024-10-31'),
+      product_id: 10,
+      discount_type: DiscountType.percentage,
+    },
+  ];
+
+  for (const discount of discounts) {
+    await prisma.productDiscount.upsert({
+      where: {
+        id: discount.product_id,
+      },
+      update: {},
+      create: {
+        discount: discount.discount,
+        started_at: discount.started_at,
+        end_at: discount.end_at,
+        product: {
+          connect: { id: discount.product_id },
+        },
+        discount_type: discount.discount_type,
+      },
+    });
+  }
+
+  console.log('Product discounts seeding completed!');
+}
 
 function generateProducts() {
   const categories = [1, 2, 3]; // Assuming 3 product categories: dairy, vegetable, fruit
@@ -521,6 +618,9 @@ async function main() {
       storeSeed,
     ]);
     console.log(stage2);
+
+    console.log(await seedProductDiscounts());
+    
 
     const [productData, storeData] = await Promise.allSettled([
       await prisma.product.findMany(),

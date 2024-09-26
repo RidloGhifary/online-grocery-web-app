@@ -66,8 +66,8 @@ export default function FormLogin() {
         router.push("/admin");
         router.refresh();
       } else {
-        router.push("/");
-        router.refresh();
+        // router.push("/");
+        // router.refresh();
       }
 
       router.refresh();

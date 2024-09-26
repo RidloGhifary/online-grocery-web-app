@@ -30,6 +30,22 @@ const adminSideMenuDatas: {
       permission: "admin_dashboard_access",
     },
     {
+      name: "admin.stock.menu",
+      displayName: "Stock Management",
+      icon: <FaBoxes />,
+      href: "/stocks",
+      permission: "admin_stock_access",
+      subMenu : [
+        {
+          name: "admin.stock.journals",
+          displayName: "Journals",
+          icon: <FaJournalWhills />,
+          href: "/stocks/journals",
+          permission: "admin_stock_access",
+        },
+      ]
+    },
+    {
       name: "admin.user.menu",
       displayName:'Account',
       icon: <FaUserFriends />,

@@ -35,8 +35,8 @@ export default function ProductBasedDiscount({
   if (products?.data?.length === 0)
     return (
       <ErrorInfo
-        error="Ups, There is no product discount for now"
-        className="mt-8"
+        error="Ups, There is no product discount for now."
+        className="mt-8 bg-green-100"
       />
     );
 

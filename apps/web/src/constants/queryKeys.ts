@@ -4,7 +4,8 @@ export const queryKeys = {
   adminInfo : 'adminInfo',
   adminList : 'adminList',
   roles : 'roles',
-  customers : 'customers'
+  customers : 'customers',
+  stockJournals : 'stockJournals'
 };
 // export const adminQueryKey = {
 //   adminProducts: 'adminProducts',

@@ -80,8 +80,15 @@ export interface UserInterface {
   updated_at: Date | null;
   deleted_at: Date | null;
   role ?: UserHasRole[]
+  store_admins?: StoreAdminInterface[]
 }
 
+export interface StoreAdminInterface {
+  id?:number
+  store_id?: number
+  user_id?:number
+  assignee_id?:number
+}
 
 export interface UserInputInterface {
   username: string;

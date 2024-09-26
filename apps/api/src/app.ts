@@ -24,6 +24,7 @@ import { CheckoutRouter } from './routers/checkout.router';
 import { OrderRouter } from './routers/order.router';
 import { RoleRouter } from './routers/role.router';
 import { WarehouseRouter } from './routers/warehouse.router';
+import { StockRouter } from './routers/stock.router';
 
 export default class App {
   private app: Express;
@@ -82,7 +83,7 @@ export default class App {
     const orderRouter = new OrderRouter();
     const roleRouter = new RoleRouter();
     const warehouseRouter = new WarehouseRouter();
-    const stockRouter = new StoreRouter()
+    const stockRouter = new StockRouter()
 
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, Purwadhika Student API!`);
@@ -101,7 +102,7 @@ export default class App {
     this.app.use('/api/admins', adminRouter.getRouter());
     this.app.use('/api/roles', roleRouter.getRouter());
     this.app.use('/api/warehouse', warehouseRouter.getRouter());
-    this.app.use('/api/stocks', stockRouter.getRouter)
+    this.app.use('/api/stocks', stockRouter.getRouter())
   }
 
   public start(): void {

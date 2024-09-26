@@ -268,8 +268,13 @@ export async function addProductItemToCart({
       headers: header,
       body: JSON.stringify({ productId, quantity, storeId }),
     });
-    const response = (await prep.json()) as ProductCartItem;
-    result = response;
+    const response = await prep.json() ;
+    result = response as ProductCartItem;
+    if (!prep.ok) {
+      console.log(response);
+      
+      throw new Error(response);
+    }
   } catch (error) {
     result = (error as Error).message as string
     throw new Error(result);

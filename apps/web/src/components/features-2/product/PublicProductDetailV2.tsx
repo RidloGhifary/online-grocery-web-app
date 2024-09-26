@@ -84,7 +84,7 @@ export default function PublicProductDetailV2({
       });
     },
     onError: (err) => {
-      toast.error(`error : ${err.message}`, {
+      toast.error(`You maybe not set your address`, {
         position: "top-right",
         autoClose: 2000,
         hideProgressBar: false,

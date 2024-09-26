@@ -251,6 +251,11 @@ async function main() {
           name: 'admin_role_list',
           display_name: 'Admin Role List',
         },
+        {
+          id: 26,
+          name: 'admin_stock_access',
+          display_name: 'Admin Stock Access',
+        },
       ],
     });
 
@@ -328,35 +333,39 @@ async function main() {
             data: [
               {
                 permission_id: 2,
-                id:2
+                id: 2,
               },
               {
                 permission_id: 3,
-                id:3
+                id: 3,
               },
               {
                 permission_id: 4,
-                id:4
+                id: 4,
               },
               {
                 permission_id: 5,
-                id:5
+                id: 5,
               },
               {
                 permission_id: 9,
-                id:6
+                id: 6,
               },
               {
                 permission_id: 10,
-                id:7
+                id: 7,
               },
               {
                 permission_id: 15,
-                id:8
+                id: 8,
               },
               {
                 permission_id: 16,
-                id:9
+                id: 9,
+              },
+              {
+                permission_id: 26,
+                id: 10,
               },
             ],
             // itterate
@@ -389,15 +398,15 @@ async function main() {
     });
     const stores: Store[] = [
       {
-        created_by: 1, 
+        created_by: 1,
         name: 'JKT Ogro Central',
         store_type: 'central',
-        city_id: 152, 
+        city_id: 152,
         address: '123 Main St',
         kecamatan: 'Downtown',
         kelurahan: 'Central',
         image: 'https://placehold.co/600x400.svg',
-        latitude: new Prisma.Decimal(-6.200000),
+        latitude: new Prisma.Decimal(-6.2),
         longtitude: new Prisma.Decimal(106.816666),
         id: 1,
         createdAt: new Date(),
@@ -441,6 +450,50 @@ async function main() {
       },
     ];
 
+    const expedition = prisma.expedition.createMany({
+      data: [
+        { id: 1, name: 'jne', display_name: 'JNE' },
+        { id: 2, name: 'pos', display_name: 'Pos Indonesia' },
+        { id: 3, name: 'tiki', display_name: 'TIKI' },
+      ],
+      skipDuplicates: true,
+    });
+    const orderStatuses = prisma.orderStatus.createMany({
+      data: [
+        {
+          id: 1,
+          status: 'waiting for payment',
+          createdAt: new Date('2024-09-11T21:03:41.472Z'),
+        },
+        {
+          id: 2,
+          status: 'waiting payment confirmation',
+          createdAt: new Date('2024-09-11T21:03:41.472Z'),
+        },
+        {
+          id: 3,
+          status: 'processing',
+          createdAt: new Date('2024-09-11T21:03:41.472Z'),
+        },
+        {
+          id: 4,
+          status: 'delivered',
+          createdAt: new Date('2024-09-11T21:03:41.472Z'),
+        },
+        {
+          id: 5,
+          status: 'completed',
+          createdAt: new Date('2024-09-11T21:03:41.473Z'),
+        },
+        {
+          id: 6,
+          status: 'cancelled',
+          createdAt: new Date('2024-09-11T21:03:41.473Z'),
+        },
+      ],
+      skipDuplicates: true,
+    });
+
     // Seed provinces and cities
     await seedProvinces();
     await seedCities();
@@ -456,17 +509,19 @@ async function main() {
       superAdminUser,
       storeAdminUser,
       productCategory,
-    ])
+      expedition,
+      orderStatuses,
+    ]);
     console.log(stage1);
 
     const stage2 = await Promise.allSettled([
       products,
       storeAdminRole,
       superRole,
-      storeSeed
-    ])
+      storeSeed,
+    ]);
     console.log(stage2);
-  
+
     const [productData, storeData] = await Promise.allSettled([
       await prisma.product.findMany(),
       await prisma.store.findMany(),
@@ -485,7 +540,9 @@ async function main() {
       productSettled,
       storeSettled,
     );
-    const recentStoreHasProduct = await prisma.storeHasProduct.findMany({include:{product:true, store:true}})
+    const recentStoreHasProduct = await prisma.storeHasProduct.findMany({
+      include: { product: true, store: true },
+    });
     const stockAdjustmentData: Prisma.StocksAdjustmentCreateManyInput[] =
       recentStoreHasProduct.map((data) => ({
         managed_by_id: 1, // Adjust as necessary
@@ -502,42 +559,244 @@ async function main() {
 
     const seedStockAdjusment = await prisma.stocksAdjustment.createMany({
       data: [...stockAdjustmentData],
-      skipDuplicates: true
+      skipDuplicates: true,
     });
 
-    const storeHasAdminGenerate : Prisma.StoreHasAdminCreateManyInput[] = [] 
+    const storeHasAdminGenerate: Prisma.StoreHasAdminCreateManyInput[] = [];
     const admin = await prisma.user.findMany({
       where: {
         role: {
           some: {
-            role_id: {
-              not: null
-            }
-          }
-        }
-      }
+            AND: [
+              {
+                role_id: {
+                  not: null,
+                },
+              },
+              {
+                role_id: {
+                  not: 1,
+                },
+              },
+            ],
+          },
+        },
+      },
     });
 
     const storeFromDb = await prisma.store.findMany();
     admin.forEach((adminUser) => {
       storeFromDb.forEach((store) => {
         storeHasAdminGenerate.push({
-          store_id: store.id,  
+          store_id: store.id,
           user_id: adminUser.id,
-          assignee_id: 1
+          assignee_id: 1,
         });
       });
     });
-    
+
     // Now you can use `storeHasAdminGenerate` in a Prisma `createMany` query to bulk insert
     await prisma.storeHasAdmin.createMany({
       data: storeHasAdminGenerate,
-      skipDuplicates:true
+      skipDuplicates: true,
     });
 
-    
+    const customer = await prisma.user.create({
+      data: {
+        id: 3,
+        email: 'user.test@test.gmail',
+        first_name: 'test',
+        last_name: 'test',
+        username: 'testtest',
+        image: 'https://cdn-icons-png.flaticon.com/512/10412/10412383.png',
+        validated_at: new Date().toISOString(),
+        validation_sent_at: new Date().toISOString(),
+        referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
+        addresses: {
+          create: {
+            id: 1,
+            address: faker.location.streetAddress(),
+            is_primary: true,
+            kecamatan: 'dasda',
+            kelurahan: 'dasdas',
+            postal_code: '155789',
+            city_id: 455,
+            latitude: new Prisma.Decimal(-6.16667),
+            longtitude: new Prisma.Decimal(106.48333),
+          },
+        },
+        gender: 'male',
+        phone_number: faker.phone.number({ style: 'national' }),
+        password: await bcrypt.hash(
+          process.env.SUPERUSER_PASSWORD!,
+          await bcrypt.genSalt(),
+        ),
+      },
+      include: {
+        addresses: true,
+      },
+    });
+
+    const order = await prisma.order.createMany({
+      data: [
+        {
+          id: 1,
+          invoice: faker.commerce.isbn(),
+          customer_id: customer.id,
+          address_id: customer.addresses.find((e) => e.is_primary === true)
+            ?.id!,
+          store_id: 3,
+          expedition_id: 1,
+          managed_by_id: 1,
+          order_status_id: 3,
+          payment_proof: 'https://placehold.co/600x400.svg',
+        },
+      ],
+      skipDuplicates: true,
+    });
+    console.log(order);
+
+    const orderDetail = await prisma.orderDetail.createMany({
+      data: [
+        {
+          qty: 11,
+          price: 10000,
+          sub_total: 20000,
+          store_id: 3,
+          product_id: 1,
+          order_id: 1,
+          id:1
+        },
+        {
+          qty: 5,
+          price: 10000,
+          sub_total: 20000,
+          store_id: 3,
+          product_id: 2,
+          order_id: 1,
+          id:2
+        },
+      ],
+      skipDuplicates: true,
+    });
+
+    console.log(orderDetail);
+
+    const stockAdjusmentUser = await prisma.stocksAdjustment.createMany({
+      data: [
+        {
+          id: 181,
+          type: 'checkout',
+          detail: 'eltest',
+          destinied_store_id: 3,
+          qty_change: -11,
+          product_id: 1,
+          managed_by_id: 1,
+          order_detail_id: 1
+        },
+        {
+          id: 182,
+          type: 'checkout',
+          detail: 'eltest',
+          destinied_store_id: 3,
+          qty_change: -5,
+          product_id: 2,
+          managed_by_id: 1,
+          order_detail_id: 2
+        },
+        // {
+        //   id: 182,
+        //   type: 'manual',
+        //   detail: 'eltest',
+        //   mutation_type: 'pending',
+        //   from_store_id: 3,
+        //   destinied_store_id: 2,
+        //   qty_change: -2,
+        //   product_id: 1,
+        //   managed_by_id: 1,
+        //   adjustment_related_id: 1,
+        // },
+        // {
+        //   id:183,
+        //   type:'manual',
+        //   detail :'eltest',
+        //   mutation_type:'complete',
+        //   from_store_id:2,
+        //   destinied_store_id : 3,
+        //   qty_change : 2,
+        //   product_id : 1,
+        //   managed_by_id : 1,
+        //   adjustment_related_id: 1,
+        // },
+      ],
+      skipDuplicates: true,
+    });
+    const stockAdjusmentUser2 = await prisma.stocksAdjustment.createMany({
+      data: [
+        {
+          id: 183,
+          type: 'checkout',
+          detail: 'eltest',
+          mutation_type: 'pending',
+          from_store_id: 2,
+          destinied_store_id: 3,
+          qty_change: -2,
+          product_id: 1,
+          managed_by_id: 1,
+          adjustment_related_id: 181,
+          // order_detail_id : null
+        },
+        {
+          id: 184,
+          type: 'manual',
+          detail: 'eltest',
+          mutation_type: 'pending',
+          from_store_id: 3,
+          destinied_store_id: 2,
+          qty_change: -4,
+          product_id: 1,
+          managed_by_id: 1,
+          adjustment_related_id: 181,
+          // order_detail_id : null
+        },
+        // {
+        //   id: 184,
+        //   type: 'checkout',
+        //   detail: 'eltest',
+        //   mutation_type: 'complete',
+        //   from_store_id: 2,
+        //   destinied_store_id: 3,
+        //   qty_change: 0,
+        //   product_id: 1,
+        //   managed_by_id: 1,
+        //   adjustment_related_id: 183,
+        //   // order_detail_id : null
+        // },
+      ],
+      skipDuplicates: true,
+    });
+
+    const storeProduct = await prisma.storeHasProduct.findFirst({
+      where: { product_id: 1, store_id: 3 },
+    });
+
+    const storeProductDecreaseAfterCheckout =
+      await prisma.storeHasProduct.update({
+        where: {
+          id: storeProduct?.id,
+        },
+        data: {
+          qty: -1,
+        },
+      });
+
     console.log(generateStoreHasProductData);
     console.log(seedStockAdjusment);
+    console.log(stockAdjusmentUser);
+    console.log(stockAdjusmentUser2);
+    console.log(storeProductDecreaseAfterCheckout);
+
+    // console.log(order);
   } catch (error) {
     console.error(error);
   } finally {

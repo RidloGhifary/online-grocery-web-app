@@ -2,7 +2,7 @@ import CommonPaginatedResultInterface from '@/interfaces/CommonPaginatedResultIn
 import prisma from '@/prisma';
 import paginate, { numberization } from '@/utils/paginate';
 import { productAdminWhereInput } from '@/utils/products/productWhereInput';
-import { Prisma, Product, User } from '@prisma/client';
+import { Prisma, Product, StocksAdjustment, User } from '@prisma/client';
 
 class StockRepository {
   async getAdminProductStockList({
@@ -136,6 +136,111 @@ class StockRepository {
         result.error = error.message;
       }
       result.message = 'Error';
+    }
+    return result;
+  }
+
+  async getStockJournal({
+    storeId,
+    limitNumber = 20,
+    pageNumber = 1,
+  }: {
+    storeId?: number;
+    pageNumber?: number;
+    limitNumber?: number;
+  }): Promise<CommonPaginatedResultInterface<StocksAdjustment[]>> {
+    let result: CommonPaginatedResultInterface<StocksAdjustment[]> = {
+      ok: false,
+      data: {
+        data: null,
+        pagination: null,
+      },
+    };
+    const safePageNumber = numberization(pageNumber);
+    const safeLimitNumber = numberization(limitNumber);
+    try {
+      const data = prisma.stocksAdjustment.findMany({
+        skip: (safePageNumber - 1) * safeLimitNumber,
+        take: safeLimitNumber,
+        where: {
+          OR: [
+            {
+              from_store_id: storeId,
+            },
+            {
+              destinied_store_id: storeId,
+            },
+          ],
+        },
+        include: {
+          order_detail: {
+            include: {
+              order: {
+                include:{
+                  order_details: true
+                }
+              },
+            },
+          },
+          product: true,
+          from_store: true,
+          destinied_store: true,
+          adjustment_related_end: true,
+          adjustment_related : {
+            include:{
+              adjustment_related_end : {
+                orderBy: {
+                  createdAt:{
+                    sort : 'desc'
+                  }
+                }
+              }
+            }
+          }
+        },
+        orderBy :{
+          createdAt : {
+            sort : 'desc'
+          }
+        }
+      });
+      const count = prisma.stocksAdjustment.count({
+        where: {
+          OR: [
+            {
+              from_store_id: storeId,
+            },
+            {
+              destinied_store_id: storeId,
+            },
+          ],
+        },
+      });
+
+      const [dataResult, countResult] = await Promise.allSettled([data, count]);
+      const dataSettled =
+        dataResult.status === 'fulfilled' ? dataResult.value : null;
+      const countSettled =
+        countResult.status === 'fulfilled' ? countResult.value : null;
+
+      if (countSettled === null || countSettled <= 0) {
+        throw new Error('Not found 404');
+      }
+
+      result.data.pagination = paginate({
+        pageNumber: safePageNumber,
+        limitNumber: safeLimitNumber,
+        totalData: countSettled || 0,
+      });
+
+      result.ok = true;
+      result.data.data = dataSettled;
+    } catch (error) {
+      if (error instanceof Error) {
+        result.error = error.message;
+      }
+      result.message = 'Error';
+      return result;
     }
     return result;
   }

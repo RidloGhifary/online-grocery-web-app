@@ -1,12 +1,6 @@
 import { StockController } from '@/controllers/stock.controller';
-import validateRequestVerbose from '@/middlewares/validateRequestVerbose';
 import { verifyPermission } from '@/middlewares/verifyPermission';
 import { verifyToken } from '@/middlewares/verifyToken';
-import {
-  createProductCategorySchema,
-  deleteProductCategorySchema,
-  updateProductCategorySchema,
-} from '@/validations/category';
 import { Router } from 'express';
 
 export class StockRouter {
@@ -25,6 +19,17 @@ export class StockRouter {
       verifyToken,
       verifyPermission('admin_stock_access'),
       this.stockController.getProductAndStock,
+    );
+
+    this.router.get(
+      '/store-list',
+      verifyToken,
+      this.stockController.getStoreForStock,
+    );
+    this.router.get(
+      '/journals',
+      verifyToken,
+      this.stockController.getJournals,
     );
    
   }

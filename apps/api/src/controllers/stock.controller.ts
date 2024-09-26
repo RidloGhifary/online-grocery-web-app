@@ -1,5 +1,6 @@
 import prisma from '@/prisma';
 import { stockRepository } from '@/repositories/stock.repository';
+import { storeRepository } from '@/repositories/store.repository';
 import { Request, Response } from 'express';
 
 export class StockController {
@@ -17,6 +18,33 @@ export class StockController {
       pageNumber : page as number,
       limitNumber : limit as number,
       adminId : userId,
+      storeId : Number(store_id)
+    })
+    if (!result.ok) {
+      return res.status(400).send(result)
+    }
+    return res.status(200).send(result);
+  }
+
+  async getStoreForStock(req: Request, res: Response) :Promise<Response|void>{
+    const result = await storeRepository.getAllStoreNoPaginate()
+    if (!result.ok) {
+      return res.status(400).send(result)
+    }
+    return res.status(200).send(result);
+  }
+
+  public async getJournals (req: Request, res: Response): Promise<void | Response> {
+    const { page = 1, limit = 20,store_id } = req.query;
+    console.log({
+      pageNumber : page as number,
+      limitNumber : limit as number,
+      storeId : Number(store_id) 
+    });
+    
+    const result = await stockRepository.getStockJournal({
+      pageNumber : page as number,
+      limitNumber : limit as number,
       storeId : Number(store_id)
     })
     if (!result.ok) {

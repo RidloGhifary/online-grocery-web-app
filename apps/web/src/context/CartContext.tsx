@@ -14,6 +14,7 @@ interface CartItem {
     price: number;
     image: string;
     description: string;
+    unit_in_gram: number;
   };
 }
 

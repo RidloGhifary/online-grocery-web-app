@@ -46,7 +46,8 @@ interface FindNearestStoreResponse {
 
 interface Voucher {
   id: number;
-  voucher: string;
+  vouchers: string;
+  code: string;
   voucher_type: string;
   product_discount?: {
     discount: number;
@@ -59,23 +60,12 @@ interface Voucher {
   };
 }
 
-interface VoucherByIdResponse {
-  voucher: {
-    id: string;
-    code: string;
-    discount_amount: number;
-    discount_type: "percentage" | "fixed";
-    valid_until: Date;
-    minimum_purchase: number;
-  };
-}
-
 function getToken(): string | undefined {
   return Cookies.get("token");
 }
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api",
   headers: {
     Authorization: `Bearer ${getToken()}`,
   },
@@ -129,6 +119,7 @@ export const createOrder = async (
       "Error creating order: ",
       error.response ? error.response.data : error.message,
     );
+    throw error;
   }
 };
 
@@ -140,16 +131,4 @@ export const getVouchers = async (): Promise<AxiosResponse<Voucher>> => {
     },
   });
   return response;
-};
-
-export const getVoucherById = async (
-  voucherId: string,
-): Promise<VoucherByIdResponse> => {
-  const token = getToken();
-  const response = await api.get(`/checkout/get-voucher-id/${voucherId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data;
 };

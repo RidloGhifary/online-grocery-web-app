@@ -1,6 +1,7 @@
 import React from "react";
 import { IconType } from "react-icons";
 import { FaHome, FaShoppingBag, FaUserFriends } from "react-icons/fa";
+import { GrTransaction } from "react-icons/gr";
 
 export interface AdminSideMenuInterface {
   name?: string;
@@ -26,8 +27,8 @@ const adminSideMenuDatas: {
     },
     {
       name: "admin.users.menu",
-      displayName:'User',
-      icon: <FaUserFriends size={'1.5em'} />,
+      displayName: "User",
+      icon: <FaUserFriends size={"1.5em"} />,
       permission: "admin_users_access",
       subMenu: [
         {
@@ -47,6 +48,20 @@ const adminSideMenuDatas: {
           displayName: "Permissions",
           href: "/permissions",
           permission: "admin_users_permissions_list",
+        },
+      ],
+    },
+    {
+      name: "admin.manage.menu",
+      displayName: "Manage",
+      icon: <GrTransaction size={"1.5em"} />,
+      permission: "admin_users_access",
+      subMenu: [
+        {
+          name: "admin.orders.list",
+          displayName: "Orders",
+          href: "/manage/orders",
+          permission: "admin_access",
         },
       ],
     },

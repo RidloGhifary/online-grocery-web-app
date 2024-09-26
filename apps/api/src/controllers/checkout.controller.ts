@@ -3,10 +3,7 @@ import prisma from '@/prisma';
 import calculateDistance from '@/utils/calculateDistance';
 import { checkoutSchema } from '@/validations/checkout';
 import { stockMutationSchema } from '@/validations/checkout';
-import { createOrderSchema } from '@/validations/order';
-import { getVouchersSchema } from '@/validations/checkout';
-import { getVoucherByIdSchema } from '@/validations/checkout';
-import nodeSchedule from 'node-schedule';
+import { createOrderSchema } from '@/validations/checkout';
 import { ZodError } from 'zod';
 
 export interface CustomRequest extends Request {
@@ -571,90 +568,4 @@ export class CheckoutController {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
   };
-  getVoucherById = async (req: CustomRequest, res: Response) => {
-    try {
-      const voucherId = parseInt(req.params.voucherId, 10);
-
-      const currentUser = req.currentUser;
-      if (!currentUser) {
-        return res.status(401).json({ error: 'User not authenticated' });
-      }
-
-      const voucher = await prisma.voucher.findFirst({
-        where: {
-          id: voucherId,
-          OR: [{ is_all_get: true }, { product_id: { not: null } }],
-          started_at: {
-            lte: new Date(),
-          },
-          end_at: {
-            gte: new Date(),
-          },
-        },
-        include: {
-          product_discount: true,
-        },
-      });
-
-      if (!voucher) {
-        return res.status(404).json({ error: 'Voucher not found' });
-      }
-
-      return res.status(200).json({ voucher });
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res
-          .status(400)
-          .json({ message: 'Validation Error', errors: error.errors });
-      }
-      console.error(error);
-      return res.status(500).json({ message: 'Internal Server Error' });
-    }
-  };
 }
-
-// if (deliveryVoucherId) {
-//   const finalDeliveryCost = selectedCourierPrice;
-
-//   const totalProductSubTotal = orderDetails.reduce(
-//     (sum, detail) => sum + detail.sub_total,
-//     0,
-//   );
-
-//   const updatedOrderDetails = orderDetails.map((detail) => {
-//     const itemDeliveryCost =
-//       (detail.sub_total / totalProductSubTotal) * finalDeliveryCost;
-
-//     const newSubTotal = detail.sub_total + itemDeliveryCost;
-
-//     return {
-//       id: detail.id,
-//       sub_total: newSubTotal,
-//     };
-//   });
-
-//   const updatePromises = updatedOrderDetails.map((detail) =>
-//     prisma.orderDetail.update({
-//       where: { id: detail.id },
-//       data: { sub_total: detail.sub_total },
-//     }),
-//   );
-
-//   await Promise.all(updatePromises);
-
-//   await prisma.usersVoucher.create({
-//     data: {
-//       user_id: currentUser.id,
-//       voucher_id: deliveryVoucherId,
-//       used_at: new Date(),
-//     },
-//   });
-
-//   await prisma.orderHasVoucher.create({
-//     data: {
-//       order_id: newOrder.id,
-//       voucher_id: deliveryVoucherId,
-//       nominal: finalDeliveryCost,
-//     },
-//   });
-// }

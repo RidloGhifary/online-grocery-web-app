@@ -17,26 +17,33 @@ import ErrorInfo from "@/components/ErrorInfo";
 import { getNearestStore } from "@/api/checkout/route";
 import { createOrder } from "@/api/checkout/route";
 import { useRouter } from "next/navigation";
-import { Modal } from "@/components/Modal";
+import { Modal } from "@/components/features-2/ui/Modal";
 import MainButton from "@/components/MainButton";
 
 interface Props {
   user: UserProps | null;
 }
 
-type SelectedVoucher = {
-  id: number;
-  discountAmount: number;
-  discountType: string;
-  type: "product" | "delivery";
-};
-
 interface Voucher {
   id: string;
-  code: string;
+  voucher: string;
+  code?: string;
   voucher_type: string;
   discount_type: string;
-  discount_amount: number;
+  product_discount?: {
+    discount: number;
+    discount_type: string;
+  };
+  type: "product" | "delivery";
+  discountAmount: number;
+  discountType: "percentage" | "nominal";
+  delivery_discount?: number;
+  is_delivery_free?: boolean;
+  discount_amount?: number;
+  product?: {
+    name: string;
+  };
+  description?: string;
 }
 
 const CheckOutContent: React.FC<Props> = ({ user }) => {
@@ -52,9 +59,9 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
   const [deliveryService, setDeliveryService] = useState<number>(0);
   const [deliveryNotes, setDeliveryNotes] = useState("");
   const [selectedProductVoucher, setSelectedProductVoucher] =
-    useState<SelectedVoucher | null>(null);
+    useState<Voucher | null>(null);
   const [selectedDeliveryVoucher, setSelectedDeliveryVoucher] =
-    useState<SelectedVoucher | null>(null);
+    useState<Voucher | null>(null);
   const [subtotal, setSubtotal] = useState<number>(0);
   const [deliveryTotal, setDeliveryTotal] = useState<number>(0);
 
@@ -76,8 +83,6 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
         )
       : 10;
   const router = useRouter();
-
-  console.log(checkoutItems);
 
   const { data: nearestStoreData, error: nearestStoreError } = useQuery({
     queryKey: ["nearestStore", selectedAddress?.id],
@@ -135,10 +140,33 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     const fetchVouchers = async () => {
       try {
         const response = await getVouchers();
-        if (response.data && response.data.vouchers) {
-          const allVouchers = response.data.vouchers;
-          console.log(allVouchers);
+        if (response.data && Array.isArray(response.data.vouchers)) {
+          const allVouchers = response.data.vouchers.map(
+            (v: any): Voucher => ({
+              id: v.id,
+              voucher: v.voucher,
+              voucher_type: v.voucher_type,
+              discount_type: v.discount_type,
+              product_discount: v.product_discount
+                ? {
+                    discount: v.product_discount.discount,
+                    discount_type: v.product_discount.discount_type,
+                  }
+                : undefined,
+              type: v.type,
+              discountAmount: v.discountAmount,
+              discountType: v.discountType,
+              delivery_discount: v.delivery_discount,
+              is_delivery_free: v.is_delivery_free,
+              discount_amount: v.discount_amount,
+              product: v.product ? { name: v.product.name } : undefined,
+              description: v.description,
+            }),
+          );
+
           setVouchers(allVouchers);
+        } else {
+          console.error("Invalid voucher data format", response.data);
         }
       } catch (error) {
         console.error("Error fetching vouchers", error);
@@ -148,15 +176,12 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     fetchVouchers();
   }, []);
 
-  console.log(vouchers);
-
   useEffect(() => {
     if (checkoutItems) {
       const initialSubtotal = checkoutItems.reduce(
         (acc, item) => acc + item.qty * item.product.price,
         0,
       );
-      console.log("Initial Subtotal:", initialSubtotal);
       setSubtotal(initialSubtotal);
     }
   }, [checkoutItems]);
@@ -165,7 +190,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const selectedVoucher = vouchers.find(
-      (voucher) => voucher.id == e.target.value,
+      (voucher) => voucher.id.toString() == e.target.value,
     );
 
     if (selectedVoucher) {
@@ -187,7 +212,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const selectedVoucher = vouchers.find(
-      (voucher) => voucher.id == e.target.value,
+      (voucher) => voucher.id.toString() == e.target.value,
     );
 
     if (selectedVoucher) {
@@ -208,43 +233,32 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     if (selectedProductVoucher && checkoutItems) {
-      console.log(checkoutItems);
       let newSubtotal = checkoutItems.reduce(
         (acc, item) => acc + item.qty * item.product.price,
         0,
       );
-      console.log(`the pre-calculation subtotal is: ${newSubtotal}`);
-      const discount = parseInt(selectedProductVoucher?.discountAmount) || 0;
-      console.log(discount);
+      const discount = selectedProductVoucher?.discountAmount || 0;
       const discountType = selectedProductVoucher?.discountType || "nominal";
-      console.log(discountType);
       if (discountType === "percentage") {
         newSubtotal = newSubtotal * ((100 - discount) / 100);
       } else if (discountType === "nominal") {
         newSubtotal = Math.max(0, newSubtotal - discount);
       }
-      console.log(`post-calculation subtotal is: ${newSubtotal}`);
       setSubtotal(newSubtotal);
     }
   }, [selectedProductVoucher, checkoutItems]);
 
   useEffect(() => {
     if (selectedDeliveryVoucher && selectedCourierPrice > 0) {
-      console.log("Selected Delivery Voucher:", selectedDeliveryVoucher);
-
-      const discount = parseInt(selectedDeliveryVoucher?.discountAmount) || 0;
+      const discount = selectedDeliveryVoucher?.discountAmount || 0;
       const discountType =
         selectedDeliveryVoucher?.discountType || "percentage";
-      console.log(`Delivery discount: ${discount}, Type: ${discountType}`);
 
       if (discountType === "free") {
         setDeliveryTotal(0);
       } else if (discountType === "percentage") {
         const discountedDelivery = selectedCourierPrice * (1 - discount / 100);
         setDeliveryTotal(Math.max(0, discountedDelivery));
-        console.log(
-          `Post-calculation delivery total is: ${discountedDelivery}`,
-        );
       }
     } else if (selectedCourierPrice > 0) {
       setDeliveryTotal(selectedCourierPrice);
@@ -272,14 +286,13 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
           ? selectedDeliveryVoucher.id
           : null,
       };
-      console.log("Order Data:", orderData);
 
       const response = await createOrder(orderData);
 
       if (response.status === 200) {
         router.push(`/user/orders`);
       } else {
-        console.log("Failed to create order: ", response.data);
+        console.error("Failed to create order: ", response.data);
       }
     } catch (error: any) {
       console.error("Error creating order: ", error);
@@ -296,7 +309,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
   };
 
   return (
-    <div className="container mx-auto mb-20 h-screen p-4">
+    <div className="container mx-auto mb-20 h-[150vh] lg:h-screen p-4">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <div className="lg:col-span-3">
           {nearestStoreData && nearestStoreData.data && (
@@ -407,13 +420,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
             <span className="uppercase">{selectedCourier}</span>
           </p>
           <p>
-            <strong>Subtotal:</strong>{" "}
-            {convertRupiah(
-              checkoutItems.reduce(
-                (acc, item) => acc + item.qty * item.product.price,
-                0,
-              ),
-            )}
+            <strong>Subtotal:</strong> {convertRupiah(subtotal)}
           </p>
           <p>
             <strong>Delivery Price:</strong>{" "}
@@ -421,17 +428,14 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
           </p>
           <p>
             <strong>Total:</strong>{" "}
-            {convertRupiah(
-              checkoutItems.reduce(
-                (acc, item) => acc + item.qty * item.product.price,
-                0,
-              ) + selectedCourierPrice,
-            )}
+            {convertRupiah(subtotal + selectedCourierPrice)}
           </p>
         </div>
         <div className="modal-action flex justify-center">
           <MainButton
-            onClick={() => setIsModalOpen(false)}
+            onClick={() => {
+              setIsModalOpen(false);
+            }}
             text="Cancel"
             variant="danger"
           />

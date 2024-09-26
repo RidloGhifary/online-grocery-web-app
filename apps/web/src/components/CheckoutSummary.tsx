@@ -28,18 +28,20 @@ interface CheckoutSummaryProps {
   items: CartItem[];
   selectedProductVoucher: Voucher | null;
   selectedDeliveryVoucher: Voucher | null;
-  onProductVoucherSelect: (voucher: Voucher) => void;
-  onDeliveryVoucherSelect: (voucher: Voucher) => void;
+  onProductVoucherSelect?: (voucher: Voucher) => void;
+  onDeliveryVoucherSelect?: (voucher: Voucher) => void;
   buttonText: string;
   showDeliveryPrice?: boolean;
   deliveryPrice?: number;
   subtotal: number;
   deliveryTotal: number;
   disableButton?: boolean;
-  productVouchers: Voucher[];
-  deliveryVouchers: Voucher[];
+  productVouchers?: Voucher[];
+  deliveryVouchers?: Voucher[];
   onCheckout: () => void;
   showVoucherButton?: boolean;
+  customSubtotalCalculator?: () => number;
+  showTotal?: boolean;
 }
 
 const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
@@ -51,13 +53,15 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
   buttonText,
   showDeliveryPrice = true,
   deliveryPrice,
-  subtotal, // already passed from CheckoutContent
+  subtotal,
   deliveryTotal,
   disableButton = false,
   onCheckout,
-  productVouchers,
-  deliveryVouchers,
+  productVouchers = [],
+  deliveryVouchers = [],
   showVoucherButton = true,
+  customSubtotalCalculator,
+  showTotal = true,
 }) => {
   const [selectedProductVoucherId, setSelectedProductVoucherId] = useState<
     string | null
@@ -76,29 +80,22 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
     if (voucher.discountType === "percentage") {
       return (voucher.discountAmount / 100) * total;
     }
-    console.log(voucher.discountAmount);
     return voucher.discountAmount;
   };
 
-  const productDiscount = calculateDiscount(selectedProductVoucher, subtotal);
-  const deliveryDiscount = calculateDiscount(
-    selectedDeliveryVoucher,
-    deliveryTotal,
-  );
+  const effectiveSubtotal = customSubtotalCalculator
+    ? customSubtotalCalculator()
+    : subtotal;
 
-  const discountedSubtotal = subtotal - productDiscount;
-  const discountedDelivery = deliveryTotal - deliveryDiscount;
   const finalTotal = subtotal + deliveryTotal;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 rounded-lg bg-white p-6 shadow-lg lg:static lg:mt-6 lg:shadow-none">
+    <div className="fixed bottom-0 left-0 right-0 rounded-lg bg-white p-4 shadow-lg lg:static lg:mt-6 lg:shadow-none">
       <h2 className="mb-4 text-xl font-bold">Order Summary</h2>
-
       <div className="mb-2 flex justify-between">
         <span>Subtotal:</span>
-        <span>{convertToRupiah(subtotal)}</span>
+        <span>{convertToRupiah(effectiveSubtotal)}</span>
       </div>
-
       {showDeliveryPrice && (
         <div className="mb-2 flex justify-between">
           <span>Delivery:</span>
@@ -106,54 +103,50 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
             {convertToRupiah(isNaN(deliveryTotal) ? 0 : deliveryTotal)}
           </span>
         </div>
+      )}{" "}
+      {showTotal && (
+        <div className="mb-2 flex justify-between border-t pt-4">
+          <span>Total:</span>
+          <span>{convertToRupiah(finalTotal)}</span>
+        </div>
       )}
-
-      <div className="mb-4 flex justify-between border-t pt-4">
-        <span>Total:</span>
-        <span>{convertToRupiah(finalTotal)}</span>
-      </div>
-
       {showVoucherButton && (
         <>
-          <label>Product Voucher</label>
+          <label className="mb-1 block font-semibold">Product Voucher</label>
           <select
             value={selectedProductVoucherId || ""}
             onChange={onProductVoucherSelect}
+            className="mb-4 block w-full rounded-lg border-2 border-primary text-base hover:border-secondary focus:outline-none"
           >
             <option value="">Select Product Voucher</option>
             {productVouchers.map((voucher) => (
               <option key={voucher.id} value={voucher.id}>
-                {voucher.voucher} -
-                {voucher.discountType === "percentage"
-                  ? `${voucher.discountAmount}% off`
-                  : `Rp. ${voucher.discountAmount}`}
+                {voucher.voucher}
               </option>
             ))}
           </select>
 
-          <label>Delivery Voucher</label>
+          <label className="mb-1 block font-semibold">Delivery Voucher</label>
           <select
             value={selectedDeliveryVoucherId || ""}
             onChange={onDeliveryVoucherSelect}
+            className="block w-full rounded-lg border-2 border-primary text-base hover:border-secondary focus:outline-none"
           >
             <option value="">Select Delivery Voucher</option>
             {deliveryVouchers.map((voucher) => (
               <option key={voucher.id} value={voucher.id}>
-                {voucher.voucher} -
-                {voucher.discountType === "percentage"
-                  ? `${voucher.discountAmount}% off`
-                  : `Rp. ${voucher.discountAmount}`}
+                {voucher.voucher}
               </option>
             ))}
           </select>
         </>
       )}
-
       <MainButton
         text={buttonText}
         onClick={onCheckout}
         variant="secondary"
         disabled={disableButton}
+        className="mt-6"
         fullWidth
       />
     </div>
@@ -161,129 +154,3 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
 };
 
 export default CheckoutSummary;
-
-{
-  /* {selectedProductVoucher && (
-        <div className="mb-2 flex flex-col">
-          <div className="flex justify-between">
-            <span>Product Voucher ({selectedProductVoucher.voucher}):</span>
-            <span>-{convertToRupiah(productDiscount)}</span>
-          </div>
-          <small>{selectedProductVoucher.description}</small>
-        </div>
-      )}
-
-      {selectedDeliveryVoucher && (
-        <div className="mb-2 flex flex-col">
-          <div className="flex justify-between">
-            <span>Delivery Voucher ({selectedDeliveryVoucher.voucher}):</span>
-            <span>-{convertToRupiah(deliveryDiscount)}</span>
-          </div>
-          <small>{selectedDeliveryVoucher.description}</small>
-        </div>
-      )} */
-}
-
-// import React from "react";
-// import VoucherButton from "@/components/VoucherButton";
-// import MainButton from "@/components/MainButton";
-// import convertToRupiah from "@/utils/convertRupiah";
-
-// interface Product {
-//   name: string;
-//   price: number;
-//   image: string | null;
-//   description: string;
-// }
-
-// interface CartItem {
-//   id: number;
-//   qty: number;
-//   product: Product;
-// }
-
-// interface CheckoutSummaryProps {
-//   items: CartItem[];
-//   selectedVoucher: string | null;
-//   onVoucherSelect: (voucher: string) => void;
-//   buttonText: string;
-//   showDeliveryPrice?: boolean;
-//   deliveryPrice?: number;
-//   disableButton?: boolean;
-//   onCheckout: () => void;
-//   showVoucherButton?: boolean;
-//   showSubtotal?: boolean;
-// }
-
-// const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
-//   items,
-//   selectedVoucher,
-//   onVoucherSelect,
-//   buttonText,
-//   showDeliveryPrice = true,
-//   deliveryPrice,
-//   disableButton = false,
-//   onCheckout,
-//   showVoucherButton = true,
-//   showSubtotal = true,
-// }) => {
-//   const totalPrice = items.reduce(
-//     (total, item) => total + item.qty * item.product?.price,
-//     0,
-//   );
-
-//   return (
-//     <div className="fixed bottom-0 left-0 right-0 rounded-lg bg-white p-6 shadow-lg lg:static lg:mt-6 lg:shadow-none">
-//       <h2 className="mb-4 text-xl font-bold">Order Summary</h2>
-
-//       {showSubtotal && (
-//         <div className="mb-2 flex justify-between">
-//           <span>Subtotal:</span>
-//           <span>{convertToRupiah(totalPrice)}</span>
-//         </div>
-//       )}
-
-//       {showDeliveryPrice && (
-//         <div className="mb-2 flex justify-between">
-//           <span>Delivery:</span>
-//           <span>{convertToRupiah(deliveryPrice)}</span>
-//         </div>
-//       )}
-
-//       {selectedVoucher && (
-//         <div className="mb-2 flex justify-between">
-//           <span>Discount ({selectedVoucher}):</span>
-//           <span>-{convertToRupiah(5.0)}</span> {/* Sample discount value */}
-//         </div>
-//       )}
-
-//       <div className="mb-4 flex justify-between border-t pt-4">
-//         <span>Total:</span>
-//         <span>
-//           {convertToRupiah(
-//             totalPrice +
-//               (showDeliveryPrice ? deliveryPrice : 0) -
-//               (selectedVoucher ? 5.0 : 0),
-//           )}
-//         </span>
-//       </div>
-
-//       {showVoucherButton && (
-//         <VoucherButton
-//           selectedVoucher={selectedVoucher}
-//           onVoucherSelect={onVoucherSelect}
-//         />
-//       )}
-
-//       <MainButton
-//         text={buttonText}
-//         onClick={onCheckout}
-//         variant="secondary"
-//         disabled={disableButton}
-//         fullWidth
-//       />
-//     </div>
-//   );
-// };
-
-// export default CheckoutSummary;

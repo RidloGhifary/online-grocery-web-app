@@ -18,10 +18,8 @@ export async function registerAuth(formData: RegisterFormData) {
     });
 
     const responseData = await response.json();
-    result.ok = responseData.ok || true;
-    result.message =
-      responseData.message ||
-      "Registered successfully, Check your email to verify your account";
+    result.ok = responseData.ok;
+    result.message = responseData.message;
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to register";
@@ -49,7 +47,7 @@ export async function loginAuth(formData: LoginFormData) {
     });
 
     const responseData = await response.json();
-    result.ok = responseData.ok || true;
+    result.ok = responseData.ok;
     result.message = responseData.message || "Logged in successfully";
     result.token = responseData.token;
     result.data = responseData.data;
@@ -85,8 +83,8 @@ export async function verifyAccount({
     );
 
     const responseData = await response.json();
-    result.ok = responseData.ok || true;
-    result.message = responseData.message || "Verified successfully";
+    result.ok = responseData.ok;
+    result.message = responseData.message;
   } catch (error) {
     result.error = error instanceof Error ? error.message : "Failed to verify";
   }

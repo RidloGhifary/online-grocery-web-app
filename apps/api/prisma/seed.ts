@@ -130,8 +130,8 @@ function generateProducts() {
       price,
       sku,
       unit,
-      product_category_id: randomCategory,
       image: imageUrl,
+      product_category_id: randomCategory,
       description,
       slug: faker.helpers.slugify(name).toLowerCase(),
       unit_in_gram: unitInGram,
@@ -153,7 +153,7 @@ async function generateStoreHasProduct(products: Product[], stores: Store[]) {
         update: {},
         create: {
           product_id: product.id,
-          qty: 10,
+          qty: faker.number.int({ min: 1, max: 50 }),
           store_id: store.id,
         },
       });
@@ -357,7 +357,6 @@ async function main() {
     });
 
     // Seeding super admin user
-    // Seeding super admin user
     const superAdminUser = prisma.user.upsert({
       where: { id: 1 },
       update: {},
@@ -376,6 +375,25 @@ async function main() {
         referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
       },
     });
+
+    // const storeAdminUser = prisma.user.upsert({
+    //   where: { id: 2 },
+    //   update: {},
+    //   create: {
+    //     id: 2,
+    //     email: 'windah.admin@ogro.com', // Random email
+    //     first_name: 'Windah',
+    //     last_name: 'Basudara',
+    //     username: 'Windah Basudara', // Random username
+    //     password: await bcrypt.hash(
+    //       process.env.SUPERUSER_PASSWORD!, // Set the password here
+    //       await bcrypt.genSalt(),
+    //     ),
+    //     validated_at: new Date().toISOString(),
+    //     validation_sent_at: new Date().toISOString(),
+    //     referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
+    //   },
+    // });
 
     // Seeding super admin role and permissions
     const superRole = prisma.role.upsert({
@@ -898,13 +916,13 @@ async function main() {
 
     // console.log(order);
   } catch (error) {
-    console.error(error);
+    console.error('Error during seeding:', error);
   } finally {
     await prisma.$disconnect();
   }
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error('Error during seeding:', error);
   process.exit(1);
 });

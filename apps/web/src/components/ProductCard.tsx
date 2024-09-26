@@ -7,22 +7,36 @@ import Link from "next/link";
 import { RiGitBranchFill } from "react-icons/ri";
 import { FaStore } from "react-icons/fa6";
 import calculatedDiscount from "@/utils/calculateDiscount";
+import parseImage from "@/utils/parseImage";
+import { StoreProps } from "@/interfaces/store";
 
 interface ProductCardProps {
   product: ProductProps;
+  geoLocation?: boolean;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  geoLocation,
+}: ProductCardProps) {
+  const imageSrc = product?.image
+    ? parseImage(product?.image as string)[0]
+    : "/default-image.jpeg";
+
+  const findStoreBranch = product?.StoreHasProduct?.filter(
+    (store) => store?.store?.store_type === "branch",
+  );
+
   return (
     <Link
-      href={`/products/${product?.id}?name=${product?.name}`}
+      href={`/products/${product?.slug}`}
       className="card h-[300px] w-44 bg-white shadow md:h-[340px] md:w-56"
     >
       <figure>
         <Image
           width={300}
           height={300}
-          src={product?.image || "/default-image.jpeg"}
+          src={imageSrc}
           alt="Placeholder"
           className="aspect-square max-h-[140px] w-full object-cover md:max-h-[180px]"
           loading="lazy"
@@ -58,11 +72,15 @@ export default function ProductCard({ product }: ProductCardProps) {
             <RiGitBranchFill size={15} />
           )}
           <span className="text-sm text-primary">
-            {product?.StoreHasProduct[0]?.store?.city?.city_name}
+            {geoLocation
+              ? findStoreBranch[0]?.store?.city?.city_name
+              : product?.StoreHasProduct[0]?.store?.city?.city_name}
           </span>
         </div>
         <p className="badge-base-100 badge">
-          {product?.StoreHasProduct[0]?.store?.name}
+          {geoLocation
+            ? findStoreBranch[0]?.store?.name
+            : product?.StoreHasProduct[0]?.store?.name}
         </p>
       </div>
     </Link>

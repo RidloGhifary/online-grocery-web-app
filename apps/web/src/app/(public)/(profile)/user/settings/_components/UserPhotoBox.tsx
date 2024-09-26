@@ -93,7 +93,7 @@ export default function UserPhotoBox({
           }}
         />
         <button
-          className="btn btn-error btn-sm text-white"
+          className={`btn btn-error btn-sm text-white ${!userImage && "hidden"}`}
           disabled={mutationIsLoading || !userImage}
           onClick={() => {
             mutate({ image: null });

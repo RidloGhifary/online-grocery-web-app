@@ -6,7 +6,7 @@ export interface UserProps {
   first_name: string;
   last_name: string;
   email: string;
-  password: string;
+  password?: string;
   middle_name: string | null;
   gender: "male" | "female";
   phone_number: string;
@@ -124,5 +124,5 @@ export interface UserHasRole {
   createdAt: Date | null;
   updatedAt: Date | null;
   deletedAt: Date | null;
-  role?: RoleInterface
+  role?: RoleInterface;
 }

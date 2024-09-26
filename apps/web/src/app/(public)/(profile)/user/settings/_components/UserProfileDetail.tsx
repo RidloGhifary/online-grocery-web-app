@@ -6,11 +6,13 @@ import { toast } from "react-toastify";
 type UserProfileDetailProps = {
   label: string;
   value: string | undefined;
+  is_goggle_linked?: boolean;
 };
 
 export default function UserProfileDetail({
   label,
   value,
+  is_goggle_linked,
 }: UserProfileDetailProps) {
   const router = useRouter();
 
@@ -32,7 +34,7 @@ export default function UserProfileDetail({
         </button>
       ) : (
         <button
-          className="btn btn-link btn-sm"
+          className={`btn btn-link btn-sm ${is_goggle_linked && "hidden"}`}
           onClick={() =>
             router.push(`/user/settings?action=edit-${label.toLowerCase()}`)
           }

@@ -6,6 +6,7 @@ import { IoIosSettings } from "react-icons/io";
 import { GiFruitBowl } from "react-icons/gi";
 import { MdAdminPanelSettings, MdCategory } from "react-icons/md";
 import { GrTransaction } from "react-icons/gr";
+import { FaStore } from "react-icons/fa6";
 
 export interface AdminSideMenuInterface {
   name?: string;
@@ -125,12 +126,6 @@ const adminSideMenuDatas: {
           name: "admin.stores.list",
           displayName: "Stores",
           href: "/stores",
-          permission: "super",
-        },
-        {
-          name: "admin.stores.admin",
-          displayName: "Admins",
-          href: "/admins",
           permission: "super",
         },
       ],

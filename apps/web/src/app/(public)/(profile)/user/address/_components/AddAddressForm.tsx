@@ -7,10 +7,9 @@ import { z } from "zod";
 import InputField from "./Input";
 import { Cities, Provinces } from "@/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCookies } from "@/actions/cookies";
-import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
+import { addAddress } from "@/actions/address";
 
 const schema = z.object({
   label: z.string().min(1, { message: "Label is required" }),
@@ -22,7 +21,7 @@ const schema = z.object({
   is_primary: z.boolean(),
 });
 
-type FormData = {
+export type CreateAddressFormData = {
   label: string;
   address: string;
   village: string;
@@ -32,7 +31,7 @@ type FormData = {
   is_primary: boolean;
 };
 
-export default function AddAddressForm({ api_url }: { api_url: string }) {
+export default function AddAddressForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -43,7 +42,7 @@ export default function AddAddressForm({ api_url }: { api_url: string }) {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<FormData>({
+  } = useForm<CreateAddressFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       label: "",
@@ -67,17 +66,7 @@ export default function AddAddressForm({ api_url }: { api_url: string }) {
   });
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async (data: FormData) => {
-      const cookie = await getCookies("token");
-      if (!cookie) return;
-      const response = await axios.post(`${api_url}/users/addresses`, data, {
-        headers: {
-          Authorization: `Bearer ${cookie}`,
-        },
-      });
-
-      return response.data;
-    },
+    mutationFn: async (data: CreateAddressFormData) => addAddress(data),
     onSuccess: (res) => {
       if (res.ok) {
         toast.success(res.message || "Success create address!");
@@ -88,6 +77,7 @@ export default function AddAddressForm({ api_url }: { api_url: string }) {
           return;
         }
         router.push("/user/address");
+        router.refresh();
       } else {
         toast.error(res.message || "Something went wrong!");
       }
@@ -97,7 +87,7 @@ export default function AddAddressForm({ api_url }: { api_url: string }) {
     },
   });
 
-  const onSubmit: SubmitHandler<FormData> = (data) => {
+  const onSubmit: SubmitHandler<CreateAddressFormData> = (data) => {
     const [city_id, city] = data.city.split(",");
     const [province_id, province] = data.province.split(",");
 

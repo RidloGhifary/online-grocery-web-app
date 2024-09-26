@@ -5,9 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
-import { getCookies } from "@/actions/cookies";
 import { toast } from "react-toastify";
+import { changeEmail } from "@/actions/credential";
+import { useEffect } from "react";
 
 const schema = z.object({
   email: z.string().min(1, "Name is required").max(50, "Name is too long"),
@@ -15,10 +15,21 @@ const schema = z.object({
 
 interface ChangeNameProps {
   email: string | undefined;
+  is_goggle_linked?: boolean;
 }
 
-export default function ChangeEmail({ email }: ChangeNameProps) {
+export default function ChangeEmail({
+  email,
+  is_goggle_linked,
+}: ChangeNameProps) {
   const router = useRouter();
+
+  useEffect(() => {
+    if (is_goggle_linked) {
+      router.push("/user/settings");
+      toast.error("You don't have permission to change email!");
+    }
+  }, []);
 
   const {
     register,
@@ -35,21 +46,8 @@ export default function ChangeEmail({ email }: ChangeNameProps) {
   const watchedEmail = watch("email");
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async (data: { email: string }) => {
-      const cookie = await getCookies("token");
-
-      const response = await axios.post(
-        "http://localhost:8000/api/credentials/change-email",
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${cookie}`,
-          },
-        },
-      );
-
-      return response.data;
-    },
+    mutationFn: async (data: { email: string }) =>
+      changeEmail({ email: data.email }),
     onSuccess: (res) => {
       if (res.ok) {
         toast.success(res.message || "Email verification sent!");
@@ -96,7 +94,7 @@ export default function ChangeEmail({ email }: ChangeNameProps) {
 
       <div className="space-x-2">
         <button
-          disabled={isLoading || !isEmailChanged || isSubmitting}
+          disabled={isLoading || isSubmitting}
           type="button"
           className="btn btn-error btn-sm text-white"
           onClick={() => router.back()}

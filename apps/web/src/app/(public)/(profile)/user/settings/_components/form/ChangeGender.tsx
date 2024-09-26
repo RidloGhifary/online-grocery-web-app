@@ -4,10 +4,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import { getCookies } from "@/actions/cookies";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { updateProfile } from "@/actions/user";
 
 const schema = z.object({
   gender: z.enum(["male", "female"]),
@@ -32,20 +31,8 @@ export default function ChangeGender({ gender }: ChangeGenderProps) {
   });
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: async (data: { gender: string }) => {
-      const cookie = await getCookies("token");
-      const response = await axios.patch(
-        "http://localhost:8000/api/users/biodata?field=gender",
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${cookie}`,
-          },
-        },
-      );
-
-      return response.data;
-    },
+    mutationFn: async (data: { gender: string }) =>
+      updateProfile({ gender: data.gender }),
     onSuccess: (res) => {
       if (res.ok) {
         toast.success(res.message || "Gender updated!");

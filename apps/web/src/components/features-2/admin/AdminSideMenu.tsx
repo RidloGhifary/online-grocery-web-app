@@ -1,5 +1,8 @@
-'use client';
-import { AdminSideMenuInterface, adminSideMenuDatas } from "@/constants/adminSideMenuData";
+"use client";
+import {
+  AdminSideMenuInterface,
+  adminSideMenuDatas,
+} from "@/constants/adminSideMenuData";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { ReactNode } from "react";
@@ -12,25 +15,32 @@ export default function AdminSideMenu() {
   const { baseUrlGroup, menu } = adminSideMenuDatas;
   const pathname = usePathname();
 
-  const { data: adminData, isLoading, error } = useQuery({
+  const {
+    data: adminData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: [queryKeys.adminInfo],
-    queryFn: ()=>getAdmin(),
+    queryFn: () => getAdmin(),
   });
 
   const hasPermission = (permission: string) => {
     const roles = adminData?.data?.role;
     // Check if admin has 'super' permission or 'super_admin' role
-    if (roles?.some(role => role.role?.name === 'super_admin')) {
+    if (roles?.some((role) => role.role?.name === "super_admin")) {
       return true;
     }
     // Check if admin has the required permission
-    return roles?.some(role => 
-      role.role?.roles_permissions?.some(rp => rp.permission?.name === permission || rp.permission?.name === 'super')
+    return roles?.some((role) =>
+      role.role?.roles_permissions?.some(
+        (rp) =>
+          rp.permission?.name === permission || rp.permission?.name === "super",
+      ),
     );
   };
 
   const isAnyChildActive = (items: AdminSideMenuInterface[]): boolean => {
-    return items.some(item => {
+    return items.some((item) => {
       const isActive = `${baseUrlGroup}${item.href}` === pathname;
       if (isActive) return true;
       if (item.subMenu && item.subMenu.length > 0) {
@@ -40,14 +50,16 @@ export default function AdminSideMenu() {
     });
   };
 
-  const renderDisplayName = (displayName: string | React.ReactNode | IconType) => {
+  const renderDisplayName = (
+    displayName: string | React.ReactNode | IconType,
+  ) => {
     if (typeof displayName === "string") {
       return displayName;
     } else if (React.isValidElement(displayName)) {
       return displayName;
     } else if (typeof displayName === "function") {
       const IconComponent = displayName as IconType;
-      return <IconComponent className="inline-block mr-2" />;
+      return <IconComponent className="mr-2 inline-block" />;
     }
     return null;
   };
@@ -55,12 +67,13 @@ export default function AdminSideMenu() {
   const renderMenuItems = (items: AdminSideMenuInterface[]) => {
     return items.map((item) => {
       // Skip rendering menu items that the admin doesn't have permission to access
-      if (!hasPermission(item.permission || '')) {
+      if (!hasPermission(item.permission || "")) {
         return null;
       }
 
       const isActive = `${baseUrlGroup}${item.href}` === pathname;
-      const shouldOpen = isActive || (item.subMenu && isAnyChildActive(item.subMenu));
+      const shouldOpen =
+        isActive || (item.subMenu && isAnyChildActive(item.subMenu));
 
       if (item.subMenu && item.subMenu.length > 0) {
         return (
@@ -92,7 +105,7 @@ export default function AdminSideMenu() {
   }
 
   return (
-    <ul className="menu bg-base-100 min-h-full w-64 p-4">
+    <ul className="menu min-h-full w-64 bg-base-100 p-4">
       {renderMenuItems(menu)}
     </ul>
   );

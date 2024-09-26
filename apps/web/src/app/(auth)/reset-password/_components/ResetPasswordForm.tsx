@@ -10,6 +10,7 @@ import { GetCaptchaToken } from "@/utils/captcha";
 import VerifyCaptchaToken from "@/actions/verifyCaptcha";
 import axios from "axios";
 import AuthHeader from "../../_components/AuthHeader";
+import { changePassword } from "@/actions/credential";
 
 const passwordResetSchema = z
   .object({
@@ -34,7 +35,7 @@ type EmailFormData = {
   email: string;
 };
 
-export default function ForgotPasswordForm({ api_url }: { api_url: string }) {
+export default function ForgotPasswordForm() {
   const searchParams = useSearchParams();
 
   const key = searchParams.get("key");
@@ -62,8 +63,12 @@ export default function ForgotPasswordForm({ api_url }: { api_url: string }) {
       const endpoint = key
         ? `/credentials/reset-password?key=${key}`
         : "/credentials/reset-password";
-      const response = await axios.post(`${api_url}${endpoint}`, data);
-      return response.data;
+      const response = await changePassword({
+        endpoint,
+        email: data.email,
+        password: data.password,
+      });
+      return response;
     },
     onSuccess: (res) => {
       if (!res.ok) {

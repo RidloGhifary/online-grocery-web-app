@@ -20,7 +20,6 @@ export async function getCurrentUser() {
     });
     return response.data.user as UserProps;
   } catch (error) {
-    console.error("Error fetching current user:", error);
     throw new Error("Failed to fetch current user");
   }
 }

@@ -68,77 +68,63 @@ export class ProductController {
     }
   }
 
-  // async getDiscountProduct(req: Request, res: Response) {
-  //   try {
-  //     const now = new Date();
+  async getDiscountProduct(req: Request, res: Response) {
+    try {
+      const now = new Date();
 
-  //     const products = await prisma.product.findMany({
-  //       where: {
-  //         product_discounts: {
-  //           some: {
-  //             started_at: {
-  //               lte: now,
-  //             },
-  //             end_at: {
-  //               gte: now,
-  //             },
-  //           },
-  //         },
-  //         StoreHasProduct: {
-  //           some: {
-  //             qty: {
-  //               gt: 0,
-  //             },
-  //           },
-  //         StoreHasProduct: {
-  //           some: {
-  //             qty: {
-  //               gt: 0,
-  //             },
-  //           },
-  //         },
-  //       },
-  //       include: {
-  //         product_discounts: {
-  //           where: {
-  //             started_at: {
-  //               lte: now,
-  //             },
-  //             end_at: {
-  //               gte: now,
-  //             },
-  //           },
-  //         },
-  //         StoreHasProduct: {
-  //           include: {
-  //             store: {
-  //               include: {
-  //                 city: true,
-  //                 province: true,
-  //               },
-  //             },
-  //         StoreHasProduct: {
-  //           include: {
-  //             store: {
-  //               include: {
-  //                 city: true,
-  //                 province: true,
-  //               },
-  //             },
-  //           },
-  //         },
-  //       },
-  //     })
+      const products = await prisma.product.findMany({
+        where: {
+          product_discounts: {
+            some: {
+              started_at: {
+                lte: now,
+              },
+              end_at: {
+                gte: now,
+              },
+            },
+          },
+          StoreHasProduct: {
+            some: {
+              qty: {
+                gt: 0,
+              },
+            },
+          },
+        },
+        include: {
+          product_discounts: {
+            where: {
+              started_at: {
+                lte: now,
+              },
+              end_at: {
+                gte: now,
+              },
+            },
+          },
+          StoreHasProduct: {
+            include: {
+              store: {
+                include: {
+                  city: true,
+                  province: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-  //     res.status(200).json({
-  //       ok: true,
-  //       message: 'Success get discount product',
-  //       data: products,
-  //     });
-  //   } catch {
-  //     res.status(500).json({ ok: false, message: 'Internal server error' });
-  //   }
-  // }
+      res.status(200).json({
+        ok: true,
+        message: 'Success get discount product',
+        data: products,
+      });
+    } catch {
+      res.status(500).json({ ok: false, message: 'Internal server error' });
+    }
+  }
 
   getTotalStockAcrossStores = async (req: Request, res: Response) => {
     const productId = parseInt(req.params.productId, 10);
@@ -180,7 +166,7 @@ export class ProductController {
           .json({ ok: false, message: 'Invalid page or limit' });
       }
 
-      let products : Product[];
+      let products: Product[];
 
       if (latitude && longitude) {
         const userLatitude = parseFloat(latitude as string);
@@ -204,15 +190,8 @@ export class ProductController {
           });
         }
 
-        const getProducts = await prisma.product.findMany({
+        products = await prisma.product.findMany({
           where: {
-            // current_stock: { gt: 0 },
-
-            // store: {
-            //   city: {
-            //     city_name: userCity,
-            //   },
-            // },
             StoreHasProduct: {
               some: {
                 qty: {
@@ -225,108 +204,90 @@ export class ProductController {
                 },
               },
             },
-            // current_stock: { gt: 0 },
-            
-            // store: {
-            //   city: {
-            //     city_name: userCity,
-            //   },
-            // },
-            // StoreHasProduct :{
-            //   some :{
-            //     qty : {
-            //       gt : 0
-            //     },
-            //     store :{
-            //       city :{
-            //         city_name : userCity
-            //       }
-            //     }
-            //   }
-            // }
           },
           include: {
             product_discounts: true,
-            // store: {
-            //   include: { city: true, province: true },
-            // },
-            StoreHasProduct :{
-              include :{
-                store :{
-                  include :{
-                    city :true
-                  }
-                }
-              }
-            }
-          },
-          skip: (pageNumber - 1) * limitNumber,
-          take: limitNumber,
-        });
-
-        products = getProducts.map((product) => {
-          return {
-            ...product,
-            StoreHasProduct: product.StoreHasProduct.filter(
-              (store) => store.store?.city.city_name === userCity,
-            ),
-          };
-        });
-      } else {
-        // No coordinates provided, get products from the central store
-        products = await prisma.product.findMany({
-          
-          where: {
-            // current_stock: { gt: 0 },
-            // store: {
-            //   store_type: 'central',
-            // },
-            StoreHasProduct :{
-              some :{
-                qty :{
-                  gt : 0
-                },
-                store :{
-                  store_type : 'central'
-                }
-              }
-            }
-            
-            // current_stock: { gt: 0 },
-            // store: {
-            //   store_type: 'central',
-            // },
-          },
-          include: {
-            product_discounts: true,
-            // store: {
-            //   include: { city: true, province: true },
-            // },
+            product_category: true,
             StoreHasProduct: {
-              select: {
-                qty: true,
-                // store :
+              include: {
+                store: {
+                  include: {
+                    city: true,
+                    province: true,
+                  },
+                },
               },
             },
           },
           skip: (pageNumber - 1) * limitNumber,
           take: limitNumber,
         });
+
+        // products = getProducts.map((product) => {
+        //   return {
+        //     ...product,
+        //     StoreHasProduct: product.StoreHasProduct.filter(
+        //       (store) => store.store?.city.city_name === userCity,
+        //     )[0],
+        //   };
+        // });
+      } else {
+        // No coordinates provided, get products from the central store
+        products = await prisma.product.findMany({
+          where: {
+            StoreHasProduct: {
+              some: {
+                qty: {
+                  gt: 0,
+                },
+                store: {
+                  store_type: 'central',
+                },
+              },
+            },
+          },
+          include: {
+            product_discounts: true,
+            product_category: true,
+            StoreHasProduct: {
+              include: {
+                store: {
+                  include: {
+                    city: true,
+                    province: true,
+                  },
+                },
+              },
+            },
+          },
+          skip: (pageNumber - 1) * limitNumber,
+          take: limitNumber,
+        });
+
+        // products = getProducts.map((product) => {
+        //   return {
+        //     ...product,
+        //     StoreHasProduct: product.StoreHasProduct.filter(
+        //       (store) => store.store?.store_type === 'central',
+        //     )[0],
+        //   };
+        // });
       }
 
-      if (products.length === 0) {
-        return res
-          .status(404)
-          .json({ ok: false, message: 'No products found' });
-      }
+      const pagination = {
+        currentPage: pageNumber,
+        totalPages: Math.ceil(products.length / limitNumber),
+        next: pageNumber + 1,
+        previous: pageNumber - 1,
+      };
 
       res.status(200).json({
         ok: true,
         message: 'Successfully retrieved products based on your location.',
         data: products,
+        pagination,
       });
     } catch (error) {
-      console.error('Error retrieving products:', error);
       res.status(500).json({ ok: false, message: 'Internal server error' });
     }
   }
@@ -396,7 +357,7 @@ export class ProductController {
     }
     return res.status(201).send(newData);
   }
-  
+
   public async updateProduct(
     req: Request,
     res: Response,
@@ -432,8 +393,7 @@ export class ProductController {
       {
         // field product,
         // StoreHasProduct : {
-        
-      // }
+        // }
         //
       }
       {
@@ -454,9 +414,9 @@ export class ProductController {
         //   price: true,
         //   image: true,
         // },
-        include :{
-          StoreHasProduct : true
-        }
+        include: {
+          StoreHasProduct: true,
+        },
       });
 
       if (!product) {

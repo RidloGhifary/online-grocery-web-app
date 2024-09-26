@@ -4,22 +4,36 @@ import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import { getCookies } from "./cookies";
 import { DetailStoreProps, StoreProps } from "@/interfaces/store";
 
-export async function getStores(): Promise<
-  CommonResultInterface<StoreProps[]>
-> {
+export interface GetStoresResponse extends CommonResultInterface<StoreProps[]> {
+  pagination?: {
+    current_page: number;
+    next: number | null;
+    back: number | null;
+    total_page: number;
+  };
+}
+
+export async function getStores({
+  page = 1,
+}: {
+  page: number;
+}): Promise<GetStoresResponse> {
   const result = {
     ok: false,
-  } as CommonResultInterface<StoreProps[]>;
+  } as GetStoresResponse;
 
   try {
     const token = await getCookies("token");
     if (!token) return result;
 
-    const response = await fetch(`${process.env.BACKEND_URL}/stores`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/stores?page=${page}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       result.error = `Failed to stores: ${response.statusText}`;
@@ -28,13 +42,12 @@ export async function getStores(): Promise<
 
     const data = await response.json();
     result.data = data.data as StoreProps[];
-    result.ok = true;
-    result.message = "Got the Stores";
+    result.ok = data.ok || true;
+    result.message = data.message || "Got the Stores";
+    result.pagination = data.pagination || null;
     return result;
   } catch (error) {
-    result.error =
-      error instanceof Error ? error.message : "Failed to stores";
-    console.log(error);
+    result.error = error instanceof Error ? error.message : "Failed to stores";
   }
 
   return result;
@@ -69,13 +82,12 @@ export async function getDetailStores({
 
     const data = await response.json();
     result.data = data.data as DetailStoreProps;
-    result.ok = true;
-    result.message = "Got the Detail Store";
+    result.ok = data.ok || true;
+    result.message = data.message || "Got the Detail Store";
     return result;
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to store detail";
-    console.log(error);
   }
 
   return result;
@@ -122,13 +134,12 @@ export async function createStore({
 
     const data = await response.json();
     result.data = data.data;
-    result.ok = true;
-    result.message = "Store created successfully";
+    result.ok = data.ok || true;
+    result.message = data.message || "Store created successfully";
     return result;
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to create store";
-    console.log(error);
   }
 
   return result;
@@ -168,13 +179,12 @@ export async function editStore({
 
     const data = await response.json();
     result.data = data.data;
-    result.ok = true;
-    result.message = "Store updated successfully";
+    result.ok = data.ok || true;
+    result.message = data.message || "Store updated successfully";
     return result;
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to update store";
-    console.log(error);
   }
 
   return result;
@@ -184,10 +194,10 @@ export async function deleteStore({
   storeId,
 }: {
   storeId: number;
-}): Promise<CommonResultInterface<any>> {
+}): Promise<CommonResultInterface<{}>> {
   const result = {
     ok: false,
-  } as CommonResultInterface<any>;
+  } as CommonResultInterface<{}>;
 
   try {
     const token = await getCookies("token");
@@ -209,13 +219,12 @@ export async function deleteStore({
     }
 
     const data = await response.json();
-    result.ok = true;
-    result.message = data.message|| "Store deleted successfully";
+    result.ok = data.ok || true;
+    result.message = data.message || "Store deleted successfully";
     return result;
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to delete store";
-    console.log(error);
   }
 
   return result;

@@ -111,13 +111,27 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
       checkoutItems,
       totalWeight,
     ],
+    queryKey: [
+      "deliveryData",
+      selectedCourier,
+      selectedAddress?.city_id,
+      storeCityId,
+      checkoutItems,
+      totalWeight,
+    ],
     queryFn: () =>
       getDeliveryOptions({
         origin: storeCityId ? storeCityId.toString() : "154",
         destination: selectedAddress?.city_id!!,
         weight: totalWeight,
+        weight: totalWeight,
         courier: selectedCourier,
       }),
+    enabled:
+      !!checkoutItems &&
+      !!selectedCourier &&
+      !!selectedAddress?.city_id &&
+      !!totalWeight,
     enabled:
       !!checkoutItems &&
       !!selectedCourier &&

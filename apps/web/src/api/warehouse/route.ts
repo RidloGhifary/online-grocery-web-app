@@ -2,10 +2,12 @@ import axios, { AxiosResponse } from "axios";
 import Cookies from "js-cookie";
 
 export interface OrderItem {
+  id: number;
   product_id: number;
   quantity: number;
   price: number;
   sub_total: number;
+  qty: number;
   createdAt: string;
   product: {
     name: string;
@@ -14,14 +16,18 @@ export interface OrderItem {
 }
 
 export interface OrderDetailResponse {
+  isStoreAdminOfOrder: any;
   id: number;
   invoice: string;
+  payment_proof: string;
   customer_id: number;
   store_id: number;
   expedition_id: number;
   order_status_id: number;
   address_id: number;
-  order_status: string;
+  order_status: {
+    id: number;
+  };
   createdAt: string;
   totalProductPrice: number;
   deliveryPrice: number;
@@ -76,12 +82,13 @@ export interface OrderResponse {
   managed_by_id: number;
   store_id: number;
   expedition_id: number;
-  order_status_id: number;
+  order_status: {
+    id: string;
+  };
   address_id: number;
   order_details: OrderItem[];
   totalProductPrice: number;
   deliveryPrice: number;
-  order_status: string;
   createdAt: string;
   customer: {
     username: string;
@@ -127,7 +134,7 @@ function getToken(): string | undefined {
 }
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api",
   //   headers: {
   //     "Content-Type": "application/json",
   //   },

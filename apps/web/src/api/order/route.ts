@@ -19,31 +19,33 @@ interface PaginationInfo {
   totalPages: number;
 }
 
-interface CreateOrderRequest {
-  userId: number;
-  checkoutItems: OrderItem[];
-  selectedAddressId: number;
-  storeId: number;
-  selectedCourier: string;
-  selectedCourierPrice: number;
-  note?: string;
-}
-
-interface CreateOrderResponse {
-  invoice: string;
-  customer_id: number;
-  managed_by_id: number;
-  store_id: number;
-  expedition_id: number;
-  order_status_id: number;
-  address_id: number;
-  order_details: OrderItem[];
-}
-
 export interface OrderResponse {
   id: number;
   invoice: string;
   customer_id: number;
+  order_status: {
+    status: string;
+  };
+  customer: {
+    first_name: string;
+    last_name: string;
+  };
+  address: {
+    address: string;
+    city: {
+      city_name: string;
+    };
+  };
+  expedition: {
+    display_name: string;
+  };
+  store: {
+    name: string;
+    address: string;
+    city: {
+      city_name: string;
+    };
+  };
   managed_by_id: number;
   store_id: number;
   expedition_id: number;
@@ -52,7 +54,6 @@ export interface OrderResponse {
   order_details: OrderItem[];
   totalProductPrice: number;
   deliveryPrice: number;
-  order_status: string;
 }
 
 interface OrdersByUserResponse {
@@ -76,47 +77,11 @@ const api = axios.create({
 });
 
 const uploadApi = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
-
-export const createOrder = async (
-  orderData: CreateOrderRequest,
-): Promise<AxiosResponse<CreateOrderResponse>> => {
-  const token = getToken();
-
-  if (!token) {
-    throw new Error("User is not authenticated");
-  }
-
-  try {
-    console.log("Sending order data to API:", orderData);
-
-    const response = await api.post<CreateOrderResponse>(
-      "/orders/create-order",
-      orderData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-
-    console.log("API response received:", response.data);
-    return response;
-  } catch (error: any) {
-    if (error.response) {
-      console.error("API call error:", error.response.data);
-      throw new Error(
-        `Failed to create order: ${error.response.data.message || error.message}`,
-      );
-    }
-    console.error("Unknown error:", error.message);
-    throw new Error("An unknown error occurred while creating the order.");
-  }
-};
 
 export const getOrdersByUser = async (
   filter: "all" | "ongoing" | "completed" | "cancelled" = "all",

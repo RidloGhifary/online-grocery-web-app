@@ -13,7 +13,7 @@ import RequestedItemsTable from "./RequestedItemsTable";
 import { useParams } from "next/navigation";
 import { OrderDetailResponse } from "@/api/warehouse/route";
 import { UserProps } from "@/interfaces/user";
-import { Modal } from "@/components/features-2/ui/Modal";
+import { Modal } from "@/components/Modal";
 
 interface Props {
   user: UserProps | null;
@@ -33,7 +33,7 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
         setOrder(orderData.data);
 
         if (user) {
-          const isSuperAdmin = user?.role?.includes("super_admin");
+          const isSuperAdmin = user.role.includes("super_admin");
           const isStoreAdminOfOrder = orderData.data.isStoreAdminOfOrder;
 
           if (isSuperAdmin || isStoreAdminOfOrder) {
@@ -61,7 +61,6 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
       try {
         await handlePaymentProof(Number(id), action);
         await fetchOrder();
-        setShowPaymentModal(false);
       } catch (error) {
         console.error("Error updating payment status:", error);
       }
@@ -73,7 +72,6 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
       try {
         await deliverProduct(Number(id));
         await fetchOrder();
-        setShowDeliveryModal(false);
       } catch (error) {
         console.error("Error delivering product:", error);
       }
@@ -91,19 +89,10 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
     }
   };
 
-  if (!order)
-    return (
-      <div className="text-primary font-semibold text-center mb-8">
-        Loading...
-      </div>
-    );
+  if (!order) return <div>Loading...</div>;
 
   if (!isAuthorized)
-    return (
-      <div className="text-red-600 font-semibold text-center mb-8">
-        You are not authorized to view this order.
-      </div>
-    );
+    return <div>You are not authorized to view this order.</div>;
 
   return (
     <div className="p-4">
@@ -124,11 +113,7 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
           </button>
         </div>
       )}
-      <Modal
-        closeButton={false}
-        show={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-      >
+      <Modal show={showPaymentModal} onClose={() => setShowPaymentModal(false)}>
         <div className="text-center">
           <p className="mb-12 text-lg font-semibold">
             Handle Customer Payment Proof
@@ -166,7 +151,6 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
         </div>
       )}
       <Modal
-        closeButton={false}
         show={showDeliveryModal}
         onClose={() => setShowDeliveryModal(false)}
       >
@@ -179,6 +163,7 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
               <p>
                 User's request: {item.qty} X {item.product.name}
               </p>
+              <p>In Store warehouse: {item.store_qty}</p>
             </div>
           ))}
           <div className="flex justify-center space-x-4">
@@ -199,7 +184,7 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
       </Modal>
       <div className="mt-12">
         <p className="mb-8 text-center text-xl font-semibold">
-          Costumer's Requested Items:
+          Costumer's Requested Items
         </p>
         <RequestedItemsTable items={order.order_details} />
       </div>

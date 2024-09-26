@@ -29,10 +29,10 @@ interface CartItemProps {
   onCheckboxChange?: (id: number) => void;
   onQuantityChange?: (id: number, quantity: number) => void;
   onRemoveItem?: (id: number) => void;
-  setModalContent: (content: string) => void;
-  setActionToConfirm: (action: () => void) => void;
-  setModalVisible: (visible: boolean) => void;
-  setIsSortModal: (isSortModal: boolean) => void;
+  setModalContent?: (content: string) => void;
+  setActionToConfirm?: (action: () => void) => void;
+  setModalVisible?: (visible: boolean) => void;
+  setIsSortModal?: (isSortModal: boolean) => void;
 }
 
 const CartItem: React.FC<CartItemProps> = ({
@@ -66,12 +66,23 @@ const CartItem: React.FC<CartItemProps> = ({
   };
 
   const handleRemoveClick = () => {
-    setModalContent(`Do you want to delete ${item.product.name}?`);
-    setActionToConfirm(
-      () => () => onRemoveItem && onRemoveItem(item.product_id),
-    );
-    setModalVisible(true);
-    setIsSortModal(false);
+    if (setModalContent) {
+      setModalContent(`Do you want to delete ${item.product.name}?`);
+    }
+
+    if (setActionToConfirm) {
+      setActionToConfirm(
+        () => () => onRemoveItem && onRemoveItem(item.product_id),
+      );
+    }
+
+    if (setModalVisible) {
+      setModalVisible(true);
+    }
+
+    if (setIsSortModal) {
+      setIsSortModal(false);
+    }
   };
 
   return (

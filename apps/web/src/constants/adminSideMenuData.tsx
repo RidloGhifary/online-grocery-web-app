@@ -5,6 +5,7 @@ import { FaShop } from "react-icons/fa6";
 import { IoIosSettings } from "react-icons/io";
 import { GiFruitBowl } from "react-icons/gi";
 import { MdAdminPanelSettings, MdCategory } from "react-icons/md";
+import { GrTransaction } from "react-icons/gr";
 
 export interface AdminSideMenuInterface {
   name?: string;
@@ -49,29 +50,32 @@ const adminSideMenuDatas: {
           permission: "super",
         },
         // {
-        //   name: "admin.user.roles.list",
+        //   name: "admin.users.roles.list",
         //   displayName: "Roles",
         //   href: "/roles",
-        //   icon: <IoIosSettings /> ,
-        //   permission: "super",
+        //   permission: "admin_users_roles_list",
         // },
-      ],
+        // {
+        //   name: "admin.users.permissions.list",
+        //   displayName: "Permissions",
+        //   href: "/permissions",
+        //   permission: "admin_users_permissions_list",
+        // },
+      ]
     },
     {
-      name: "admin.stock.menu",
-      displayName: "Stock Management",
-      icon: <FaBoxes />,
-      href: "/stocks",
-      permission: "admin_stock_access",
-      subMenu : [
+      name: "admin.manage.menu",
+      displayName: "Manage",
+      icon: <GrTransaction size={"1.5em"} />,
+      permission: "admin_users_access",
+      subMenu: [
         {
-          name: "admin.stock.journals",
-          displayName: "Journals",
-          icon: <FaJournalWhills />,
-          href: "/stocks/journals",
-          permission: "admin_stock_access",
+          name: "admin.orders.list",
+          displayName: "Orders",
+          href: "/manage/orders",
+          permission: "admin_access",
         },
-      ]
+      ],
     },
     {
       name: "admin.products.menu",

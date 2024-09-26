@@ -7,11 +7,13 @@ interface Address {
 
 interface Store {
   name: string;
+  address: string;
   city: { city_name: string };
 }
 
 interface Expedition {
   name: string;
+  display_name: string;
 }
 
 interface DeliveryInformationBoxProps {

@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import Cookies from "js-cookie";
 import { useCart } from "@/context/CartContext";
 
-interface CartItem {
+export interface CartItemProps {
   id: number;
   product_id: number;
   qty: number;
@@ -19,18 +19,18 @@ interface CartItem {
 }
 
 interface GetCartItemsResponse {
-  data: CartItem[];
+  data: CartItemProps[];
   totalItems: number;
   totalPages: number;
   currentPage: number;
 }
 
 interface AddItemResponse {
-  data: CartItem;
+  data: CartItemProps;
 }
 
 interface UpdateQuantityResponse {
-  data: CartItem;
+  data: CartItemProps;
 }
 
 interface RemoveItemResponse {
@@ -40,11 +40,11 @@ interface RemoveItemResponse {
 }
 
 interface GetCartItemsResponse {
-  data: CartItem[];
+  data: CartItemProps[];
 }
 
 interface SelectForCheckoutResponse {
-  data: CartItem[];
+  data: CartItemProps[];
 }
 
 function getToken(): string | undefined {
@@ -52,7 +52,7 @@ function getToken(): string | undefined {
 }
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api",
   headers: {
     Authorization: `Bearer ${getToken()}`,
   },

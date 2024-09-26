@@ -5,6 +5,8 @@ interface TransactionItem {
   id: number;
   name: string;
   price: number;
+  product: { name: string; image: string };
+  qty: number;
   quantity: number;
   image: string;
 }

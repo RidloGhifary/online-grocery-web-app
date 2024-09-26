@@ -12,7 +12,7 @@ import PermissionWrapper from "../auth/PermissionWrapper";
 import { UserInterface } from "@/interfaces/user";
 import { currentCustomerOperation, currentDetailCustomerAtom } from "@/stores/customerStores";
 
-export default function ({ customers }: { customers: UserInterface[] }) {
+export default function AdminCustomerTable({ customers }: { customers: UserInterface[] }) {
   const [, setCurrenctCustomer] = useAtom(currentDetailCustomerAtom);
   const [, setCustomerOperation] = useAtom(currentCustomerOperation);
   function handleDetail(e: MouseEvent) {

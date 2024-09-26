@@ -11,7 +11,7 @@ import PermissionWrapper from "../auth/PermissionWrapper";
 import Button from "../ui/ButtonWithAction";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
-export default function () {
+export default function AdminManageDetailWithImage() {
   const [currentAdmin] = useAtom(currentDetailAdminAtom);
 
   const [, setAdminOperation] = useAtom(currentAdminOperationAtom);

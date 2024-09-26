@@ -16,7 +16,7 @@ export interface GetStoresResponse extends CommonResultInterface<StoreProps[]> {
 export async function getStores({
   page = 1,
 }: {
-  page: number;
+  page?: number;
 }): Promise<GetStoresResponse> {
   const result = {
     ok: false,

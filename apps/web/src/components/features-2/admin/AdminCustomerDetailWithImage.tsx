@@ -8,7 +8,7 @@ import {
 import Image from "next/image";
 import AdminCustomerDetail from "./AdminCustomerDetail";
 
-export default function () {
+export default function AdminCustomerDetailWithImage() {
   const [currentCustomer] = useAtom(currentDetailCustomerAtom);
 
   if (!currentCustomer) {

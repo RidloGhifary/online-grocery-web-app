@@ -6,7 +6,7 @@ import debounce from "lodash.debounce";
 import AdminOrderItems from "./OrderItemsAdmin";
 import { OrderResponse } from "@/api/warehouse/route";
 import { UserProps } from "@/interfaces/user";
-import { getStores } from "@/actions/stores";
+import { getStores, GetStoresResponse } from "@/actions/stores";
 
 interface Props {
   user: UserProps | null;
@@ -33,12 +33,12 @@ const OrdersContentAdmin: React.FC<Props> = ({ user }) => {
   const [limit] = useState(6);
   const [hasMore, setHasMore] = useState(true);
   const [storeId, setStoreId] = useState<number | "all">("all");
-  const [stores, setStores] = useState<OrderResponse[]>([]);
+  const [stores, setStores] = useState<GetStoresResponse[]>([]);
 
   useEffect(() => {
     if (role === "super_admin") {
       const fetchStores = async () => {
-        const response = await getStores();
+        const response = await getStores({});
         setStores(response.data);
       };
       fetchStores();

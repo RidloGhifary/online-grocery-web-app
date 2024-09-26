@@ -11,7 +11,7 @@ import Button from "../ui/ButtonWithAction";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import PermissionWrapper from "../auth/PermissionWrapper";
 
-export default function () {
+export default function AdminProductDetailWithImage() {
   const [currentProduct] = useAtom(currentDetailProductsAtom);
   const [, setProductOperation] = useAtom(currentProductOperation);
   function handleEdit(e: MouseEvent) {

@@ -2,7 +2,7 @@
 import { currentDetailCustomerAtom } from "@/stores/customerStores";
 import { useAtom } from "jotai";
 
-export default function () {
+export default function AdminCustomerDetail() {
   const [currentCustomer] = useAtom(currentDetailCustomerAtom);
 
   const customer = currentCustomer;

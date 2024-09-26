@@ -2,7 +2,7 @@
 import { currentDetailAdminAtom } from "@/stores/adminStores";
 import { useAtom } from "jotai";
 
-export default function () {
+export default function AdminManageDetail() {
   const [currentAdminData] = useAtom(currentDetailAdminAtom);
 
   const admin = currentAdminData;

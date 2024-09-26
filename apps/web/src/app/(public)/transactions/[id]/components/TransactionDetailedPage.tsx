@@ -132,6 +132,9 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     if (!transactionDetails) return null;
     const completionAtTime = new Date(transactionDetails.completeAt);
     return completionAtTime.toLocaleTimeString([], {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "Asia/Jakarta",
@@ -142,6 +145,9 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     if (!transactionDetails) return null;
     const cancelAtTime = new Date(transactionDetails.cancelAt);
     return cancelAtTime.toLocaleTimeString([], {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "Asia/Jakarta",
@@ -202,7 +208,6 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     }
   };
 
-  console.log(transactionDetails?.order_status.status);
   const currentStageIndex = paymentStages.findIndex(
     (stage) => stage.label === transactionDetails?.order_status.status,
   );

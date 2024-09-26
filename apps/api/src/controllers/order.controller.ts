@@ -62,11 +62,11 @@ export class OrderController {
 
       if (search) {
         whereClause.OR = [
-          { invoice: { contains: search, mode: 'insensitive' } },
+          { invoice: { contains: search || '' } },
           {
             order_details: {
               some: {
-                product: { name: { contains: search, mode: 'insensitive' } },
+                product: { name: { contains: search || '' } },
               },
             },
           },
@@ -351,7 +351,7 @@ export class OrderController {
       }
 
       if (order.order_status_id === 1 && !order.cancelAt) {
-        const cancelationTime = new Date(Date.now() + 3 * 60 * 1000);
+        const cancelationTime = new Date(Date.now() + 48 * 60 * 60 * 1000);
         await prisma.order.update({
           where: { id: Number(orderId) },
           data: { cancelAt: cancelationTime },
@@ -378,7 +378,7 @@ export class OrderController {
       }
 
       if (order.order_status_id === 4 && !order.completeAt) {
-        const completionTime = new Date(Date.now() + 3 * 60 * 1000);
+        const completionTime = new Date(Date.now() + 48 * 60 * 60 * 1000);
         await prisma.order.update({
           where: { id: Number(orderId) },
           data: { completeAt: completionTime },
@@ -598,7 +598,7 @@ export class OrderController {
   autoConfirmDelivery = (orderId: number) => {
     nodeSchedule.scheduleJob(
       orderId.toString(),
-      new Date(Date.now() + 1 * 60 * 1000),
+      new Date(Date.now() + 48 * 60 * 60 * 1000),
       async () => {
         const order = await prisma.order.findUnique({ where: { id: orderId } });
 

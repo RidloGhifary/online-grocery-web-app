@@ -62,11 +62,11 @@ export class OrderController {
 
       if (search) {
         whereClause.OR = [
-          { invoice: { contains: search, mode: 'insensitive' } },
+          { invoice: { contains: search || '' } },
           {
             order_details: {
               some: {
-                product: { name: { contains: search, mode: 'insensitive' } },
+                product: { name: { contains: search || '' } },
               },
             },
           },

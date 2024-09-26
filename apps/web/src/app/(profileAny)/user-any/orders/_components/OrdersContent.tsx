@@ -81,14 +81,14 @@ const OrdersContent = () => {
           />
         ))}
       </div>
-      {/* <div className="mb-4 flex justify-center">
+      <div className="mb-4 flex justify-center">
         <input
           type="text"
           placeholder="Search orders"
           onChange={(e) => handleSearchChange(e.target.value)}
           className="w-full rounded-md border p-2 lg:w-1/3"
         />
-      </div> */}
+      </div>
       <div className="mb-4 flex justify-center">
         <input
           type="date"

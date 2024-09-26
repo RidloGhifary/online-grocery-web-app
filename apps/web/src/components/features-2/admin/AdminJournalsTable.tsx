@@ -36,24 +36,27 @@ export default function AdminJournalsTable({
   // Helper function to check if action buttons should be shown
   const shouldShowActions = (adjustment: StockAdjustment) => {
     const { from_store_id, mutation_type, adjustment_related_end } = adjustment;
-
+  
     // Ensure the store matches the selected store
     const isStoreMatching = from_store_id === selectedStoreStock?.id;
     const isPending = mutation_type === "pending";
     const hasNoEndRecordAfterPending = !adjustment_related_end || adjustment_related_end.length === 0;
-
-    const shouldShow = isStoreMatching && isPending && hasNoEndRecordAfterPending;
-    // if (adjustment.id==184) {
-    //   console.log("from_store_id:", from_store_id);
-    // console.log("selectedStoreStock id:", selectedStoreStock?.id);
-    // console.log("shouldShowActions:", shouldShow);
-    // }
+  
+    // Check if adjustment_related_end has "purchase" or "abort" type
+    const hasPurchaseOrAbort = adjustment_related_end?.some(
+      (end) => end.type === "purchase" || end.type === "abort"
+    );
+  
+    // Ensure that actions are not shown if "purchase" or "abort" type exists
+    const shouldShow = isStoreMatching && isPending && hasNoEndRecordAfterPending && !hasPurchaseOrAbort;
+  
     // console.log("from_store_id:", from_store_id);
     // console.log("selectedStoreStock id:", selectedStoreStock?.id);
     // console.log("shouldShowActions:", shouldShow);
-
+  
     return shouldShow;
   };
+  
 
   return (
     <div className="overflow-x-auto">

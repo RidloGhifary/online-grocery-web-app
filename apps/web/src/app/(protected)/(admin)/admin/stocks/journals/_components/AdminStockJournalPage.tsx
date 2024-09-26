@@ -19,14 +19,14 @@ import { currentStoreInStockAtom } from "@/stores/stockStores";
 import { Store } from "@/interfaces/StockInterface";
 
 export default function StockJournalsPage() {
-  const [operation, setOperation] = useState<
-    "edit" | "detail" | "delete" | "add" | "filter"
-  >();
+  const [operation, setOperation] = useState<"edit" | "detail" | "delete" | "add" | "filter">();
   const [isDebouncing, setIsDebouncing] = useState<boolean>(false);
   const queryParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const[, setSelectedStoreStock] = useAtom(currentStoreInStockAtom)
+  const [, setSelectedStoreStock] = useAtom(currentStoreInStockAtom);
+  const [selectedStore, setSelectedStore] = useState<Store | null>(null); // Local state for selected store
+
   const {
     isLoading: isLoadingStores,
     error: storeError,
@@ -34,7 +34,7 @@ export default function StockJournalsPage() {
     isError: isStoreError,
   } = useQuery({
     queryKey: [queryKeys.stockJournals],
-    queryFn: () => getStoreForStock(),
+    queryFn: ()=>getStoreForStock(),
   }); // Fetch the store list here
 
   const [currentAdmin] = useAtom(currentAdminAtom);
@@ -42,47 +42,50 @@ export default function StockJournalsPage() {
     value: store.id,
     label: store.name,
   }));
-  let filteredStoreDataFull : Store|null=null
-  
+  let filteredStoreDataFull: Store | null = null;
+
   if (
     currentAdmin?.role &&
-    !currentAdmin?.role.find(role=>role.role?.name.includes('super'))
+    !currentAdmin?.role.find((role) => role.role?.name.includes("super"))
   ) {
     filteredStoreData = storeData?.data
       ?.map((store) => ({ value: store.id, label: store.name }))
       .filter((e) =>
         currentAdmin.store_admins?.find(
-          (adminHasStore) => e.value === adminHasStore.store_id,
-        ),
+          (adminHasStore) => e.value === adminHasStore.store_id
+        )
       );
-      filteredStoreDataFull = storeData?.data
-      ?.find((e) =>
-        currentAdmin.store_admins?.find(
-          (adminHasStore) => e.id === adminHasStore.store_id,
-        ))!;
+    filteredStoreDataFull = storeData?.data?.find((e) =>
+      currentAdmin.store_admins?.find(
+        (adminHasStore) => e.id === adminHasStore.store_id
+      )
+    )!;
   }
+
+  // Set the initial selected store based on the filtered data
   useEffect(() => {
     if (filteredStoreDataFull) {
+      setSelectedStore(filteredStoreDataFull);
       setSelectedStoreStock(filteredStoreDataFull);
     } else if (filteredStoreData && filteredStoreData.length > 0) {
       const defaultStore = storeData?.data?.find(
-        (e) => e.id === filteredStoreData[0].value,
+        (e) => e.id === filteredStoreData[0].value
       );
-      setSelectedStoreStock(defaultStore! || null); // Fallback to first store if no admin-specific store is found
+      setSelectedStore(defaultStore || null); // Set the default selected store
+      setSelectedStoreStock(defaultStore!); // Fallback to first store if no admin-specific store is found
     }
-  }, [filteredStoreDataFull, filteredStoreData, setSelectedStoreStock]);
+  }, []);
+
   const {
     isLoading: isLoadingJournals,
     error,
     data, // Stock adjustment data
     isError,
   } = useJournalsWithFilter({
-    store_id: filteredStoreData&&filteredStoreData[0].value, // Use a dynamic store ID if needed
+    store_id: selectedStore?.id, // Use the currently selected store's ID
     page: Number(queryParams.get("page")) || 1,
     limit: Number(queryParams.get("limit")) || 20,
   });
-
-  
 
   const debounced = useDebouncedCallback(
     (value) => {
@@ -98,7 +101,7 @@ export default function StockJournalsPage() {
       setIsDebouncing(false);
     },
     1000,
-    { leading: true },
+    { leading: true }
   );
 
   const onSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -145,12 +148,13 @@ export default function StockJournalsPage() {
                 isLoading={isLoadingStores}
                 placeholder="Select a store..."
                 onChange={(selectedOption) => {
-                  // Handle store selection
-                  // console.log(selectedOption);
-                  setSelectedStoreStock(filteredStoreDataFull!)
-
+                  const selectedStore = storeData?.data?.find(
+                    (store) => store.id === selectedOption?.value
+                  );
+                  setSelectedStore(selectedStore || null);
+                  setSelectedStoreStock(selectedStore!);
                 }}
-                defaultValue={filteredStoreData&&filteredStoreData[0]}
+                value={filteredStoreData?.find((option) => option.value === selectedStore?.id) || null}
               />
             )}
           </div>
@@ -164,10 +168,7 @@ export default function StockJournalsPage() {
           <div className="flex w-full justify-center py-5">
             <span className="loading loading-spinner loading-lg text-primary"></span>
           </div>
-        ) : data &&
-          data?.data &&
-          data.data.data &&
-          data.data.data.length > 0 ? (
+        ) : data && data?.data && data.data.data && data.data.data.length > 0 ? (
           <>
             <div className="p-5">
               <AdminJournalsTable stockAdjustments={data?.data.data} />

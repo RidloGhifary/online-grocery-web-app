@@ -51,7 +51,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
   const selectedAddressActive = user?.addresses?.find(
     (address) => address?.is_primary,
   );
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [storeCityId, setStoreCityId] = useState<number | null>(null);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [selectedCourierPrice, setSelectedCourierPrice] = useState<number>(0);
@@ -181,9 +181,11 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
           setVouchers(allVouchers);
         } else {
           console.error("Invalid voucher data format", response.data);
+          setErrorMessage("Invalid voucher data format.");
         }
       } catch (error) {
         console.error("Error fetching vouchers", error);
+        setErrorMessage("Error fetching vouchers. Please try again later.");
       }
     };
 
@@ -307,9 +309,14 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
         router.push(`/user/orders`);
       } else {
         console.error("Failed to create order: ", response.data);
+        setErrorMessage("Failed to create order. Please try again.");
       }
     } catch (error: any) {
       console.error("Error creating order: ", error);
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Error creating order. Please try again.",
+      );
     }
   };
 
@@ -460,6 +467,11 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
           />
         </div>
       </Modal>
+      {errorMessage && (
+        <div className="mt-auto mb-4 text-center text-red-600 font-semibold">
+          <p>{errorMessage}</p>
+        </div>
+      )}
     </div>
   );
 };

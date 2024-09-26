@@ -26,6 +26,7 @@ const CartPage: React.FC = () => {
   const [selectedForCheckout, setSelectedForCheckout] = useState<
     { product_id: number; qty: number }[]
   >([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [sort, setSort] = useState<string>("name");
   const [order, setOrder] = useState<string>("asc");
@@ -54,6 +55,7 @@ const CartPage: React.FC = () => {
         }
       } catch (error) {
         console.error("Error fetching cart items:", error);
+        setErrorMessage("Error fetching cart items");
       }
     };
 
@@ -108,6 +110,7 @@ const CartPage: React.FC = () => {
     try {
       if (selectedForCheckout.length === 0) {
         console.error("No items selected for checkout");
+        setErrorMessage("No items selected for checkout");
         return;
       }
 
@@ -157,6 +160,7 @@ const CartPage: React.FC = () => {
       router.push("/cart/checkout");
     } catch (error) {
       console.error("Error selecting items for checkout:", error);
+      setErrorMessage("Error selecting items for checkout");
     }
   };
 
@@ -189,6 +193,7 @@ const CartPage: React.FC = () => {
       refreshCart();
     } catch (error) {
       console.error("Error removing item from cart:", error);
+      setErrorMessage("Error removing item from cart");
     }
   };
 
@@ -415,6 +420,11 @@ const CartPage: React.FC = () => {
         >
           <p>{modalContent}</p>
         </Modal>
+      )}
+      {errorMessage && (
+        <div className="mt-auto mb-4 text-center text-red-600 font-semibold">
+          {errorMessage}
+        </div>
       )}
     </div>
   );

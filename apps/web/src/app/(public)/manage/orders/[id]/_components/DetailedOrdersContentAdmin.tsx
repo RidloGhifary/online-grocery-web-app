@@ -25,6 +25,7 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchOrder = async () => {
     if (id) {
@@ -41,13 +42,16 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
           } else {
             setIsAuthorized(false);
             console.error("Unauthorized access - Role or Store mismatch");
+            setErrorMessage("Unauthorized access - Role or Store mismatch");
           }
         } else {
           setIsAuthorized(false);
           console.error("No user detected");
+          setErrorMessage("No user detected");
         }
       } catch (error) {
         console.error("Error fetching order:", error);
+        setErrorMessage("Error fetching order");
       }
     }
   };
@@ -64,6 +68,7 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
         setShowPaymentModal(false);
       } catch (error) {
         console.error("Error updating payment status:", error);
+        setErrorMessage("Error updating payment status");
       }
     }
   };
@@ -76,6 +81,8 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
         setShowDeliveryModal(false);
       } catch (error) {
         console.error("Error delivering product:", error);
+        setErrorMessage("Error delivering product");
+        setErrorMessage("Error canceling order");
       }
     }
   };
@@ -203,6 +210,11 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
         </p>
         <RequestedItemsTable items={order.order_details} />
       </div>
+      {errorMessage && (
+        <div className="mt-8 text-center text-red-600 font-semibold">
+          {errorMessage}
+        </div>
+      )}
     </div>
   );
 };

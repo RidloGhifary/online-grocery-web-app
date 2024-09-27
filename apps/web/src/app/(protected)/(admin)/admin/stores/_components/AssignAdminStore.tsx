@@ -30,9 +30,9 @@ export default function AssignAdminStore({
         queryClient.invalidateQueries({
           queryKey: ["available-admin", "detail-store", store_id],
         });
-        toast.success("Admin assigned successfully");
+        toast.success(res.message || "Admin assigned successfully");
       } else {
-        toast.error(res.error || "Something went wrong!");
+        toast.error(res.message || res.error || "Something went wrong!");
       }
     },
     onError: (res) => {

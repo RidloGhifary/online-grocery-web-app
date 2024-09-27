@@ -14,6 +14,7 @@ import { GetCaptchaToken } from "@/utils/captcha";
 import VerifyCaptchaToken from "@/actions/verifyCaptcha";
 import FormEditStore from "./FormEditStore";
 import { editStore } from "@/actions/stores";
+import { MdOutlineKeyboardArrowLeft } from "react-icons/md";
 
 const schema = z.object({
   name: z
@@ -172,16 +173,29 @@ export default function EditStore({ id, store }: EditStoreProps) {
   };
 
   return (
-    <FormEditStore
-      onSubmit={onSubmit}
-      store={store}
-      handleSubmit={handleSubmit}
-      register={register}
-      errors={errors}
-      filteredCities={filteredCities}
-      isLoading={isUploadImageLoading || isLoading}
-      handleImage={handleImage}
-      image={image.length > 0 ? URL.createObjectURL(image[0]) : undefined}
-    />
+    <div className="grid w-full grid-cols-1 gap-3">
+      <button
+        onClick={() => router.back()}
+        disabled={isLoading || isUploadImageLoading}
+        type="button"
+        className="btn btn-secondary btn-sm w-fit normal-case"
+      >
+        <MdOutlineKeyboardArrowLeft />
+        Back
+      </button>
+      <div className="bg-white rounded-md p-5">
+        <FormEditStore
+          onSubmit={onSubmit}
+          store={store}
+          handleSubmit={handleSubmit}
+          register={register}
+          errors={errors}
+          filteredCities={filteredCities}
+          isLoading={isUploadImageLoading || isLoading}
+          handleImage={handleImage}
+          image={image.length > 0 ? URL.createObjectURL(image[0]) : undefined}
+        />
+      </div>
+    </div>
   );
 }

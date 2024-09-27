@@ -154,15 +154,11 @@ export default function StoreTable() {
   }
 
   if (actions === "create-store") {
-    return (
-      <div className="mx-auto max-w-[80%]">
-        <CreateStore api_url="halo" />
-      </div>
-    );
+    return <CreateStore />;
   }
 
   return (
-    <div className="max-h-[100vh] space-y-3 overflow-x-auto overflow-y-auto">
+    <div className="max-h-[100vh] space-y-3 overflow-x-auto overflow-y-auto bg-white rounded-md p-5">
       <div className="flex items-center justify-between gap-3 overflow-x-auto overflow-y-hidden p-2">
         <Link
           href="/admin/stores?actions=create-store"

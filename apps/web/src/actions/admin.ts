@@ -2,7 +2,12 @@
 
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import { getCookies } from "./cookies";
-import { UserInputInterface, UserInterface, UserProps, UserUpdateInputInterface } from "@/interfaces/user";
+import {
+  UserInputInterface,
+  UserInterface,
+  UserProps,
+  UserUpdateInputInterface,
+} from "@/interfaces/user";
 import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 import createQueryParams from "@/utils/createQueryParams";
 
@@ -33,8 +38,8 @@ export async function getAvailableAdmin(): Promise<
 
     const data = await response.json();
     result.data = data.data as UserProps[];
-    result.ok = data.ok || true;
-    result.message = data.message || "Got the available admin";
+    result.ok = data.ok;
+    result.message = data.message;
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to get available admin";
@@ -68,15 +73,10 @@ export async function assignAdmin({
       },
     );
 
-    if (!response.ok) {
-      result.error = `Failed to assign admin: ${response.statusText}`;
-      return result;
-    }
-
     const data = await response.json();
     // result.data = data.data;
-    result.ok = data?.ok || true;
-    result.message = data?.message || "Assigned admin";
+    result.ok = data?.ok;
+    result.message = data?.message;
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to assign admin";
@@ -127,7 +127,6 @@ export async function unAssignAdmin({
   return result;
 }
 
-
 export async function getAllCustomerList({
   order,
   search,
@@ -154,10 +153,10 @@ export async function getAllCustomerList({
       }),
       {
         headers: {
-          'Content-type': 'application/json',
-          'Authorization':`Bearer ${token}`
+          "Content-type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       },
-      }
     );
     if (!response.ok) {
       result.error = `Failed to fetch customer list: ${response.statusText}`;
@@ -171,9 +170,7 @@ export async function getAllCustomerList({
   } catch (error) {
     result.ok = false;
     result.error =
-      error instanceof Error
-        ? error.message
-        : "Failed to fetch customer list";
+      error instanceof Error ? error.message : "Failed to fetch customer list";
   }
   return result;
 }
@@ -204,14 +201,14 @@ export async function getAllAdminList({
       }),
       {
         headers: {
-          'Content-type': 'application/json',
-          'Authorization':`Bearer ${token}`
+          "Content-type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       },
-      }
     );
     if (!response.ok) {
       console.log(await response.json());
-      
+
       result.error = `Failed to fetch admin list: ${response.statusText}`;
       return result;
     }
@@ -223,81 +220,81 @@ export async function getAllAdminList({
   } catch (error) {
     result.ok = false;
     result.error =
-      error instanceof Error
-        ? error.message
-        : "Failed to fetch admin list";
+      error instanceof Error ? error.message : "Failed to fetch admin list";
   }
   return result;
 }
 
-
-export async function createAdmin(admin:UserInputInterface) : Promise<CommonResultInterface<UserInterface>> {
+export async function createAdmin(
+  admin: UserInputInterface,
+): Promise<CommonResultInterface<UserInterface>> {
   const result = {
     ok: false,
   } as CommonResultInterface<UserInterface>;
   try {
     const token = await getCookies("token");
     if (!token) throw new Error("403");
-    const prep = await fetch( `${process.env.BACKEND_URL}/admins/manage-admin`,
-      {
-        method : "POST",
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization':`Bearer ${token}`
+    const prep = await fetch(`${process.env.BACKEND_URL}/admins/manage-admin`, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
-        body: JSON.stringify(admin),
-      }
-    );
-    const response = await prep.json() as CommonResultInterface<UserInterface>
+      body: JSON.stringify(admin),
+    });
+    const response =
+      (await prep.json()) as CommonResultInterface<UserInterface>;
     console.log(response);
-    
+
     if (!response.ok) {
       result.error = ` ${response.error}`;
       throw new Error(JSON.stringify(response));
     }
-    result.data = response.data as UserInterface
-    result.ok = true
-    result.message = 'Data created'
+    result.data = response.data as UserInterface;
+    result.ok = true;
+    result.message = "Data created";
   } catch (error) {
-    throw new Error(JSON.stringify((error as Error).message))
+    throw new Error(JSON.stringify((error as Error).message));
   }
-  return result
+  return result;
 }
 
-
-export async function updateAdmin(admin:UserUpdateInputInterface) : Promise<CommonResultInterface<UserInterface>> {
+export async function updateAdmin(
+  admin: UserUpdateInputInterface,
+): Promise<CommonResultInterface<UserInterface>> {
   const result = {
     ok: false,
   } as CommonResultInterface<UserInterface>;
   try {
     const token = await getCookies("token");
     if (!token) throw new Error("403");
-    const prep = await fetch( `${process.env.BACKEND_URL}/admins/manage-admin/update`,
+    const prep = await fetch(
+      `${process.env.BACKEND_URL}/admins/manage-admin/update`,
       {
-        method : "PATCH",
+        method: "PATCH",
         headers: {
-          'Content-type': 'application/json',
-          'Authorization':`Bearer ${token}`
-      },
+          "Content-type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(admin),
-      }
+      },
     );
-    const response = await prep.json() as CommonResultInterface<UserInterface>
+    const response =
+      (await prep.json()) as CommonResultInterface<UserInterface>;
     console.log(response);
-    
+
     if (!response.ok) {
       result.error = ` ${response.error}`;
       throw new Error(JSON.stringify(response));
     }
-    result.data = response.data as UserInterface
-    result.ok = true
-    result.message = 'Data updated'
+    result.data = response.data as UserInterface;
+    result.ok = true;
+    result.message = "Data updated";
   } catch (error) {
-    throw new Error(JSON.stringify((error as Error).message))
+    throw new Error(JSON.stringify((error as Error).message));
   }
-  return result
+  return result;
 }
-
 
 export async function deleteAdmin(
   id: number,

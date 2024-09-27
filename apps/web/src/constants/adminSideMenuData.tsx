@@ -1,6 +1,13 @@
 import React from "react";
 import { IconType } from "react-icons";
-import { FaBoxes, FaHome, FaJournalWhills, FaShoppingBag, FaUser, FaUserFriends } from "react-icons/fa";
+import {
+  FaBoxes,
+  FaHome,
+  FaJournalWhills,
+  FaShoppingBag,
+  FaUser,
+  FaUserFriends,
+} from "react-icons/fa";
 import { FaShop } from "react-icons/fa6";
 import { IoIosSettings } from "react-icons/io";
 import { GiFruitBowl } from "react-icons/gi";
@@ -36,7 +43,7 @@ const adminSideMenuDatas: {
       icon: <FaBoxes />,
       href: "/stocks",
       permission: "admin_stock_access",
-      subMenu : [
+      subMenu: [
         {
           name: "admin.stock.journals",
           displayName: "Journals",
@@ -44,25 +51,25 @@ const adminSideMenuDatas: {
           href: "/stocks/journals",
           permission: "admin_stock_access",
         },
-      ]
+      ],
     },
     {
       name: "admin.user.menu",
-      displayName:'Account',
+      displayName: "Account",
       icon: <FaUserFriends />,
       permission: "admin_user_access",
       subMenu: [
         {
           name: "admin.user.list",
           displayName: "Customer",
-          icon:<FaUser />,
+          icon: <FaUser />,
           href: "/accounts/customers",
           permission: "admin_user_list",
         },
         {
           name: "admin.user.list",
           displayName: "Admin",
-          icon:<MdAdminPanelSettings />,
+          icon: <MdAdminPanelSettings />,
           href: "/accounts/admin",
           permission: "super",
         },
@@ -78,7 +85,7 @@ const adminSideMenuDatas: {
         //   href: "/permissions",
         //   permission: "admin_users_permissions_list",
         // },
-      ]
+      ],
     },
     {
       name: "admin.manage.menu",
@@ -104,14 +111,14 @@ const adminSideMenuDatas: {
           name: "admin.products.list",
           displayName: "Products",
           href: "/products",
-          icon:<GiFruitBowl />,
+          icon: <GiFruitBowl />,
           permission: "admin_product_list",
         },
         {
           name: "admin.products.category",
           displayName: "Categories",
           href: "/categories",
-          icon:<MdCategory />,
+          icon: <MdCategory />,
           permission: "admin_product_category_list",
         },
       ],
@@ -126,6 +133,7 @@ const adminSideMenuDatas: {
           name: "admin.stores.list",
           displayName: "Stores",
           href: "/stores",
+          icon: <FaShop />,
           permission: "super",
         },
       ],

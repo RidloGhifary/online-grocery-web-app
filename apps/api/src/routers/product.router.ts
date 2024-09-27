@@ -2,7 +2,11 @@ import { ProductController } from '@/controllers/product.controller';
 import validateRequestVerbose from '@/middlewares/validateRequestVerbose';
 import { verifyPermission } from '@/middlewares/verifyPermission';
 import { verifyToken } from '@/middlewares/verifyToken';
-import { createProductSchema, deleteProductSchema, updateProductSchema } from '@/validations/product';
+import {
+  createProductSchema,
+  deleteProductSchema,
+  updateProductSchema,
+} from '@/validations/product';
 import { Router } from 'express';
 
 export class ProductRouter {
@@ -36,10 +40,10 @@ export class ProductRouter {
       '/delete/:id',
       verifyToken,
       verifyPermission('admin_product_delete'),
-      validateRequestVerbose(deleteProductSchema,'params'),
+      validateRequestVerbose(deleteProductSchema, 'params'),
       this.productController.deleteProduct,
     );
-    // this.router.get('/discounts', this.productController.getDiscountProduct);
+    this.router.get('/discounts', this.productController.getDiscountProduct);
     this.router.get(
       '/info/:productId/total-stock',
       this.productController.getTotalStockAcrossStores,

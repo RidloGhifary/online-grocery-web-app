@@ -33,7 +33,7 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
         setOrder(orderData.data);
 
         if (user) {
-          const isSuperAdmin = user.role.includes("super_admin");
+          const isSuperAdmin = user?.role?.includes("super_admin");
           const isStoreAdminOfOrder = orderData.data.isStoreAdminOfOrder;
 
           if (isSuperAdmin || isStoreAdminOfOrder) {

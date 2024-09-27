@@ -2,7 +2,9 @@ import CommonPaginatedResultInterface from '@/interfaces/CommonPaginatedResultIn
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import prisma from '@/prisma';
 import paginate, { numberization } from '@/utils/paginate';
-import productWhereInput, { productAdminWhereInput } from '@/utils/products/productWhereInput';
+import productWhereInput, {
+  productAdminWhereInput,
+} from '@/utils/products/productWhereInput';
 import slugify from '@/utils/slugify';
 import { Product } from '@prisma/client';
 import tokenValidation from '@/utils/tokenValidation';
@@ -40,35 +42,37 @@ class ProductRepository {
         pagination: null,
       },
     } as unknown as CommonPaginatedResultInterface<Product[]>;
-  
+
     const tokenRes = tokenValidation(token).data!;
     let theCityName: string | null = null;
-  
+
     if (latitude && longitude) {
       // If latitude and longitude are provided, get the city name
       const cityName = await getCityByGeoIndo(latitude, longitude);
       console.log('City name:', cityName);
       theCityName = cityName;
-  
+
       if (theCityName) {
         // Clean the city name to remove "Kabupaten/kabupaten/Kota/kota"
-        theCityName = theCityName.replace(/(Kabupaten|kabupaten|Kota|kota)/gi, '').trim();
+        theCityName = theCityName
+          .replace(/(Kabupaten|kabupaten|Kota|kota)/gi, '')
+          .trim();
       }
     } else {
       // Default to Jakarta Pusat if no latitude/longitude
       theCityName = 'Jakarta Pusat';
     }
-  
+
     try {
       const count = await prisma.product.count({
         where: {
           ...(await productWhereInput({ search: search, category: category })),
         },
       });
-  
+
       const safePageNumber = numberization(pageNumber);
       const safeLimitNumber = numberization(limitNumber);
-  
+
       const res = await prisma.product.findMany({
         where: {
           ...(await productWhereInput({ search: search, category: category })),
@@ -76,6 +80,7 @@ class ProductRepository {
         skip: (safePageNumber - 1) * safeLimitNumber,
         take: safeLimitNumber,
         include: {
+          product_discounts: true,
           product_category: true,
           StoreHasProduct: {
             where: {
@@ -114,19 +119,19 @@ class ProductRepository {
               },
             ],
       });
-  
+
       if (count <= 0) {
         throw new Error('Not found 404');
       }
-  
+
       result.data.data = res;
-  
+
       result.data.pagination = paginate({
         pageNumber: safePageNumber,
         limitNumber: safeLimitNumber,
         totalData: count,
       });
-  
+
       result.ok = true;
       result.message = 'Query Success';
     } catch (error) {
@@ -135,10 +140,10 @@ class ProductRepository {
       }
       result.message = 'Error';
     }
-  
+
     return result;
   }
-  
+
   async getSingleProduct({
     slug,
     token,
@@ -155,23 +160,27 @@ class ProductRepository {
     const result: CommonResultInterface<Product> = {
       ok: false,
     };
-  
+
     const tokenRes = tokenValidation(token).data!;
     let theCityName: string | null = null;
-  
+
     if (tokenRes) {
       if (latitude && longitude) {
         // If latitude and longitude are provided, get the city name
         const cityName = await getCityByGeoIndo(latitude, longitude);
         console.log('City name:', cityName);
-  
+
         if (cityName) {
           // Clean the city name to remove "Kabupaten/kabupaten/Kota/kota"
-          theCityName = cityName.replace(/(Kabupaten|kabupaten|Kota|kota)/gi, '').trim();
-  
-          const cityFromDB = await prisma.city.findFirst({ where: { city_name: theCityName } });
+          theCityName = cityName
+            .replace(/(Kabupaten|kabupaten|Kota|kota)/gi, '')
+            .trim();
+
+          const cityFromDB = await prisma.city.findFirst({
+            where: { city_name: theCityName },
+          });
           console.log('City from DB:', cityFromDB);
-  
+
           if (cityFromDB) {
             citiId = cityFromDB.id; // Use the city ID from the database
           } else {
@@ -183,7 +192,7 @@ class ProductRepository {
         citiId = 152; // Jakarta Pusat
       }
     }
-  
+
     try {
       const res = await prisma.product.findFirst({
         where: {
@@ -191,29 +200,34 @@ class ProductRepository {
         },
         include: {
           product_category: true,
-          StoreHasProduct: citiId ? {
-            where: {
-              store: {
-                city_id: citiId,
-                store_type: !latitude && !longitude && tokenRes ? 'central' : undefined,
-              },
-            },
-            include: {
-              store: {
-                include: {
-                  city: true,
+          StoreHasProduct: citiId
+            ? {
+                where: {
+                  store: {
+                    city_id: citiId,
+                    store_type:
+                      !latitude && !longitude && tokenRes
+                        ? 'central'
+                        : undefined,
+                  },
                 },
-              },
-            },
-          } : false,
+                include: {
+                  store: {
+                    include: {
+                      city: true,
+                    },
+                  },
+                },
+              }
+            : false,
         },
       });
-  
+
       if (!res) {
         result.error = 'not found';
         return result;
       }
-      
+
       result.data = res;
       result.ok = true;
       result.message = 'Query Success';
@@ -221,10 +235,9 @@ class ProductRepository {
       result.error = error;
       result.message = 'Error';
     }
-  
+
     return result;
   }
-  
 
   async getSingleProductAdmin({
     slug,
@@ -261,8 +274,8 @@ class ProductRepository {
       userLoggedIn.data?.role[0].role?.roles_permissions.filter(
         (e) => e.permission.name == 'admin_access',
       )[0].permission.name == 'admin_access';
-      console.log('product repooo');
-      
+    console.log('product repooo');
+
     try {
       const res = await prisma.product.findFirst({
         where: {
@@ -325,7 +338,7 @@ class ProductRepository {
           include: {
             product_category: true,
           },
-        })
+        }),
       ]);
       result.data = newData;
       result.ok = true;
@@ -359,10 +372,10 @@ class ProductRepository {
           },
           where: {
             id: product_id,
-            deletedAt:null
+            deletedAt: null,
           },
-        })
-      ])
+        }),
+      ]);
       if (!updatedData) {
         throw new Error('404 not found');
       }
@@ -383,7 +396,9 @@ class ProductRepository {
       ok: false,
     };
     try {
-      const [deleted] = await prisma.$transaction([prisma.product.delete({ where: { id: productId, deletedAt:null } })]);
+      const [deleted] = await prisma.$transaction([
+        prisma.product.delete({ where: { id: productId, deletedAt: null } }),
+      ]);
       if (!deleted) {
         throw new Error(JSON.stringify(deleted));
       }
@@ -416,7 +431,7 @@ class ProductRepository {
             roles_permissions: { some: { permission: { name: permission } } },
           },
         },
-        deletedAt:null
+        deletedAt: null,
       },
     }));
   }
@@ -426,13 +441,13 @@ class ProductRepository {
     excludeId?: number,
   ): Promise<boolean> {
     return !!(await prisma.product.findFirst({
-      where: { name, id: { not: excludeId },deletedAt:null },
+      where: { name, id: { not: excludeId }, deletedAt: null },
     }));
   }
 
   async isSKUExist(sku?: string, excludeId?: number): Promise<boolean> {
     return !!(await prisma.product.findFirst({
-      where: { sku, id: { not: excludeId },deletedAt:null },
+      where: { sku, id: { not: excludeId }, deletedAt: null },
     }));
   }
 
@@ -442,14 +457,14 @@ class ProductRepository {
     orderField = 'product_name',
     limitNumber = 20,
     pageNumber = 1,
-    adminId
+    adminId,
   }: {
     search?: string;
     order?: 'asc' | 'desc';
     orderField?: 'product_name' | 'category';
     pageNumber?: number;
     limitNumber?: number;
-    adminId?:number|null
+    adminId?: number | null;
   }): Promise<CommonPaginatedResultInterface<Product[]>> {
     let result = {
       ok: false,

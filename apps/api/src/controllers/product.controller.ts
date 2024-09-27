@@ -150,7 +150,7 @@ export class ProductController {
 
   async getProductByLocation(req: Request, res: Response) {
     try {
-      const { latitude, longitude, page = '1', limit = '10' } = req.query;
+      const { latitude, longitude, page = '1', limit = '20' } = req.query;
 
       const pageNumber = parseInt(page as string, 10);
       const limitNumber = parseInt(limit as string, 10);
@@ -169,116 +169,100 @@ export class ProductController {
       let products: Product[];
 
       if (latitude && longitude) {
-        const userLatitude = parseFloat(latitude as string);
-        const userLongitude = parseFloat(longitude as string);
-
-        if (isNaN(userLatitude) || isNaN(userLongitude)) {
-          return res
-            .status(400)
-            .json({ ok: false, message: 'Invalid latitude or longitude' });
-        }
-
-        const userCity = await getCityFromCoordinates(
-          userLatitude,
-          userLongitude,
-        );
-
-        if (!userCity) {
-          return res.status(404).json({
-            ok: false,
-            message: 'City not found for the given coordinates',
-          });
-        }
-
-        products = await prisma.product.findMany({
-          where: {
-            StoreHasProduct: {
-              some: {
-                qty: {
-                  gt: 0,
-                },
-                store: {
-                  city: {
-                    city_name: userCity,
-                  },
-                },
-              },
-            },
-          },
-          include: {
-            product_discounts: true,
-            product_category: true,
-            StoreHasProduct: {
-              include: {
-                store: {
-                  include: {
-                    city: true,
-                    province: true,
-                  },
-                },
-              },
-            },
-          },
-          skip: (pageNumber - 1) * limitNumber,
-          take: limitNumber,
+        const result = await productRepository.publicProductList({
+          latitude: latitude as string,
+          longitude: longitude as string,
         });
 
-        // products = getProducts.map((product) => {
-        //   return {
-        //     ...product,
-        //     StoreHasProduct: product.StoreHasProduct.filter(
-        //       (store) => store.store?.city.city_name === userCity,
-        //     )[0],
-        //   };
+        products = result?.data?.data as Product[];
+
+        // const userCity = await getCityFromCoordinates(
+        //   userLatitude,
+        //   userLongitude,
+        // );
+
+        // if (!userCity) {
+        //   return res.status(404).json({
+        //     ok: false,
+        //     message: 'City not found for the given coordinates',
+        //   });
+        // }
+
+        // products = await prisma.product.findMany({
+        //   where: {
+        //     StoreHasProduct: {
+        //       some: {
+        //         qty: {
+        //           gt: 0,
+        //         },
+        //         store: {
+        //           city: {
+        //             city_name: userCity,
+        //           },
+        //         },
+        //       },
+        //     },
+        //   },
+        //   include: {
+        //     product_discounts: true,
+        //     product_category: true,
+        //     StoreHasProduct: {
+        //       include: {
+        //         store: {
+        //           include: {
+        //             city: true,
+        //             province: true,
+        //           },
+        //         },
+        //       },
+        //     },
+        //   },
+        //   skip: (pageNumber - 1) * limitNumber,
+        //   take: limitNumber,
         // });
       } else {
         // No coordinates provided, get products from the central store
-        products = await prisma.product.findMany({
-          where: {
-            StoreHasProduct: {
-              some: {
-                qty: {
-                  gt: 0,
-                },
-                store: {
-                  store_type: 'central',
-                },
-              },
-            },
-          },
-          include: {
-            product_discounts: true,
-            product_category: true,
-            StoreHasProduct: {
-              include: {
-                store: {
-                  include: {
-                    city: true,
-                    province: true,
-                  },
-                },
-              },
-            },
-          },
-          skip: (pageNumber - 1) * limitNumber,
-          take: limitNumber,
-        });
-
-        // products = getProducts.map((product) => {
-        //   return {
-        //     ...product,
-        //     StoreHasProduct: product.StoreHasProduct.filter(
-        //       (store) => store.store?.store_type === 'central',
-        //     )[0],
-        //   };
+        // products = await prisma.product.findMany({
+        //   where: {
+        //     StoreHasProduct: {
+        //       some: {
+        //         qty: {
+        //           gt: 0,
+        //         },
+        //         store: {
+        //           store_type: 'central',
+        //         },
+        //       },
+        //     },
+        //   },
+        //   include: {
+        //     product_discounts: true,
+        //     product_category: true,
+        //     StoreHasProduct: {
+        //       include: {
+        //         store: {
+        //           include: {
+        //             city: true,
+        //             province: true,
+        //           },
+        //         },
+        //       },
+        //     },
+        //   },
+        //   skip: (pageNumber - 1) * limitNumber,
+        //   take: limitNumber,
         // });
+        const result = await productRepository.publicProductList({});
+        products = result?.data?.data as Product[];
       }
+
+      const totalPages = Math.ceil(products.length / limitNumber);
 
       const pagination = {
         currentPage: pageNumber,
-        totalPages: Math.ceil(products.length / limitNumber),
-        next: pageNumber + 1,
-        previous: pageNumber - 1,
+        totalPages,
+        next: pageNumber < totalPages ? pageNumber + 1 : null,
+        previous: pageNumber > 1 ? pageNumber - 1 : null,
       };
 
       res.status(200).json({
@@ -295,18 +279,18 @@ export class ProductController {
   async productList(req: Request, res: Response) {
     const { category, search, order, order_field } = req.query;
     const { page = 1, limit = 20 } = req.query;
-    const {latitude , longitude} = req.query
-    const token = req.headers['authorization']
+    const { latitude, longitude } = req.query;
+    const token = req.headers['authorization'];
     const result = await productRepository.publicProductList({
       category: category as string,
       search: search as string,
       order: order as 'asc' | 'desc',
       orderField: order_field as 'product_name' | 'category',
-      pageNumber : page as number,
-      limitNumber : limit as number,
+      pageNumber: page as number,
+      limitNumber: limit as number,
       latitude: latitude as string,
       longitude: longitude as string,
-      token
+      token,
     });
     if (!result.ok) {
       return res.status(400).send(result);
@@ -318,9 +302,9 @@ export class ProductController {
     req: Request,
     res: Response,
   ): Promise<void | Response> {
-    const { slug,  } = req.params;
-    const {latitude , longitude} = req.query
-    const token = req.headers['authorization']
+    const { slug } = req.params;
+    const { latitude, longitude } = req.query;
+    const token = req.headers['authorization'];
     if (!slug || slug === '') {
       const response: CommonResultInterface<null> = {
         ok: false,
@@ -333,7 +317,7 @@ export class ProductController {
       slug: slug as string,
       latitude: latitude as string,
       longitude: longitude as string,
-      token
+      token,
     });
     if (!result.ok) {
       if (!result.data) {
@@ -350,7 +334,7 @@ export class ProductController {
   ): Promise<void | Response> {
     const product: Product = req.body;
     // console.log(product);
-    
+
     const newData = await productRepository.createProduct(product);
     if (!newData.ok) {
       return res.status(400).send(newData);
@@ -364,7 +348,7 @@ export class ProductController {
   ): Promise<void | Response> {
     const product: UpdateProductInputInterface = req.body;
     // console.log(product);
-    
+
     const updatedData = await productRepository.updateProduct(product);
     if (!updatedData.ok) {
       return res.status(400).send(updatedData);
@@ -375,8 +359,8 @@ export class ProductController {
     req: Request,
     res: Response,
   ): Promise<void | Response> {
-    const {id}  = req.params
-    const deletedProduct = await productRepository.deleteProduct(Number(id))
+    const { id } = req.params;
+    const deletedProduct = await productRepository.deleteProduct(Number(id));
     if (!deletedProduct.ok) {
       return res.status(500).send(deletedProduct);
     }

@@ -8,7 +8,6 @@ import { RiGitBranchFill } from "react-icons/ri";
 import { FaStore } from "react-icons/fa6";
 import calculatedDiscount from "@/utils/calculateDiscount";
 import parseImage from "@/utils/parseImage";
-import { StoreProps } from "@/interfaces/store";
 
 interface ProductCardProps {
   product: ProductProps;
@@ -22,10 +21,6 @@ export default function ProductCard({
   const imageSrc = product?.image
     ? parseImage(product?.image as string)[0]
     : "/default-image.jpeg";
-
-  const findStoreBranch = product?.StoreHasProduct?.filter(
-    (store) => store?.store?.store_type === "branch",
-  );
 
   return (
     <Link
@@ -72,15 +67,11 @@ export default function ProductCard({
             <RiGitBranchFill size={15} />
           )}
           <span className="text-sm text-primary">
-            {geoLocation
-              ? findStoreBranch[0]?.store?.city?.city_name
-              : product?.StoreHasProduct[0]?.store?.city?.city_name}
+            {product?.StoreHasProduct[0]?.store?.city?.city_name}
           </span>
         </div>
         <p className="badge-base-100 badge">
-          {geoLocation
-            ? findStoreBranch[0]?.store?.name
-            : product?.StoreHasProduct[0]?.store?.name}
+          {product?.StoreHasProduct[0]?.store?.name}
         </p>
       </div>
     </Link>

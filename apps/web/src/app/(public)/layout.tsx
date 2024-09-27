@@ -15,7 +15,7 @@ export default async function PublicLayout({
   return (
     <>
       <GeoProvider>
-          <Navbar user={user as UserProps} />
+        <Navbar user={user as UserProps} />
         <main>{children}</main>
         <Footer />
       </GeoProvider>

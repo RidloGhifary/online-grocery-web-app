@@ -12,7 +12,12 @@ export default function Categories() {
     queryFn: () => getProductCategoryList({}),
   });
 
-  if (isLoading) return <p className="text-center text-sm">Loading...</p>;
+  if (isLoading)
+    return (
+      <div className={`flex items-center gap-3 justify-center`}>
+        <div className="skeleton h-14 w-32 md:w-40 lg:w-48"></div>
+      </div>
+    );
 
   if (!data) return null;
   return (

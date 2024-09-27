@@ -6,44 +6,26 @@ import ProductCard from "./ProductCard";
 import axios from "axios";
 import { ProductProps } from "@/interfaces/product";
 import CardProductSkeleton from "@/skeletons/CardProductSkeleton";
-import { useEffect, useState } from "react";
 import ErrorInfo from "./ErrorInfo";
-import { toast } from "react-toastify";
+// import { useEffect, useState } from "react";
+// import { toast } from "react-toastify";
+import { geoAtom, geoReadyAtom } from "@/stores/geoStores";
+import { useAtom } from "jotai";
+import { queryKeys } from "@/constants/queryKeys";
 
 interface Props {
   api_url: string;
 }
 
 export default function ProductsList({ api_url }: Props) {
-  const [locationReady, setLocationReady] = useState(false);
-  const [geoLocation, setGeoLocation] = useState<GeolocationPosition | null>(
-    null,
-  );
-  const observer = useRef<IntersectionObserver>();
+  const [geoLocation] = useAtom(geoAtom);
+  const [geoReady] = useAtom(geoReadyAtom);
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setGeoLocation(position);
-          localStorage.setItem("locationAccess", "granted");
-          setLocationReady(true); // Indicate that location is ready
-        },
-        () => {
-          localStorage.setItem("locationAccess", "denied");
-          setLocationReady(true); // Even if denied, we proceed without location
-        },
-        { enableHighAccuracy: true, timeout: 10000 },
-      );
-    } else {
-      toast.error("Your browser does not support geolocation");
-      setLocationReady(true); // Handle browsers without geolocation support
-    }
-  }, []);
+  const observer = useRef<IntersectionObserver>();
 
   const { data, error, fetchNextPage, hasNextPage, isFetching, isLoading } =
     useInfiniteQuery({
-      queryKey: ["products-locations"],
+      queryKey: [queryKeys.products, geoLocation],
       queryFn: async ({ pageParam = 1 }) => {
         const query = geoLocation
           ? `?latitude=${geoLocation?.coords.latitude}&longitude=${geoLocation?.coords.longitude}&page=${pageParam}`
@@ -55,7 +37,7 @@ export default function ProductsList({ api_url }: Props) {
       },
       getNextPageParam: (lastPage) => lastPage?.pagination?.next || null,
       initialPageParam: 1,
-      enabled: locationReady,
+      enabled: geoReady,
     });
 
   const lastElementRef = useCallback(
@@ -96,7 +78,12 @@ export default function ProductsList({ api_url }: Props) {
   }
 
   if (products?.length === 0) {
-    return <ErrorInfo error="Ups, no products found" className="mt-8" />;
+    return (
+      <ErrorInfo
+        error="Ups, There is no product discount for now."
+        className="mt-8 bg-green-100"
+      />
+    );
   }
 
   return (

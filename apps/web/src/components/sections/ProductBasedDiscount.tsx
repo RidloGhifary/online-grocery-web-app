@@ -8,6 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ProductProps } from "@/interfaces/product";
 import SectionSkeleton from "@/skeletons/SectionSkeleton";
 import ErrorInfo from "../ErrorInfo";
+import { geoAtom } from "@/stores/geoStores";
+import { useAtom } from "jotai";
 
 interface ProductBasedDiscountProps {
   api_url: string;
@@ -16,14 +18,19 @@ interface ProductBasedDiscountProps {
 export default function ProductBasedDiscount({
   api_url,
 }: ProductBasedDiscountProps) {
+  const [geoLocation] = useAtom(geoAtom);
+
   const {
     data: products,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["discount-products"],
+    queryKey: ["discount-products", geoLocation],
     queryFn: async () => {
-      const { data } = await axios.get(`${api_url}/products/discounts`);
+      const query = geoLocation
+        ? `?latitude=${geoLocation?.coords.latitude}&longitude=${geoLocation?.coords.longitude}`
+        : "";
+      const { data } = await axios.get(`${api_url}/products/discounts${query}`);
       return data;
     },
   });

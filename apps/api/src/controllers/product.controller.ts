@@ -1,11 +1,15 @@
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
 import { UpdateProductInputInterface } from '@/interfaces/ProductInterface';
-import searchFriendlyForLikeQuery from '@/utils/searchFriendlyForLikeQuery';
 import prisma from '@/prisma';
 import { productRepository } from '@/repositories/product.repository';
 import getCityFromCoordinates from '@/utils/getCityFromCoordinates';
-import { Prisma, Product } from '@prisma/client';
+// import { Prisma, Product } from '@prisma/client';
+import type { ProductDiscount, Product } from '@prisma/client';
 import { Request, Response } from 'express';
+
+interface ProductWithDiscounts extends Product {
+  product_discounts: ProductDiscount[];
+}
 
 export class ProductController {
   async getAllProducts(req: Request, res: Response) {
@@ -70,51 +74,67 @@ export class ProductController {
 
   async getDiscountProduct(req: Request, res: Response) {
     try {
-      const now = new Date();
+      const { latitude, longitude } = req.query;
 
-      const products = await prisma.product.findMany({
-        where: {
-          product_discounts: {
-            some: {
-              started_at: {
-                lte: now,
-              },
-              end_at: {
-                gte: now,
-              },
-            },
-          },
-          StoreHasProduct: {
-            some: {
-              qty: {
-                gt: 0,
-              },
-            },
-          },
-        },
-        include: {
-          product_discounts: {
-            where: {
-              started_at: {
-                lte: now,
-              },
-              end_at: {
-                gte: now,
-              },
-            },
-          },
-          StoreHasProduct: {
-            include: {
-              store: {
-                include: {
-                  city: true,
-                  province: true,
-                },
-              },
-            },
-          },
-        },
+      // const products = await prisma.product.findMany({
+      //   where: {
+      //     product_discounts: {
+      //       some: {
+      //         started_at: {
+      //           lte: now,
+      //         },
+      //         end_at: {
+      //           gte: now,
+      //         },
+      //       },
+      //     },
+      //     StoreHasProduct: {
+      //       some: {
+      //         qty: {
+      //           gt: 0,
+      //         },
+      //       },
+      //     },
+      //   },
+      //   include: {
+      //     product_discounts: {
+      //       where: {
+      //         started_at: {
+      //           lte: now,
+      //         },
+      //         end_at: {
+      //           gte: now,
+      //         },
+      //       },
+      //     },
+      //     StoreHasProduct: {
+      //       include: {
+      //         store: {
+      //           include: {
+      //             city: true,
+      //             province: true,
+      //           },
+      //         },
+      //       },
+      //     },
+      //   },
+      // });
+
+      const results = await productRepository.publicProductList({
+        latitude: latitude as string,
+        longitude: longitude as string,
       });
+
+      const products =
+        results?.data?.data &&
+        results?.data?.data.filter((product: any) => {
+          const now = new Date();
+          const discount = product.product_discounts.find(
+            (discount: { started_at: Date; end_at: Date }) =>
+              now >= discount.started_at && now <= discount.end_at,
+          );
+          return discount !== undefined;
+        });
 
       res.status(200).json({
         ok: true,

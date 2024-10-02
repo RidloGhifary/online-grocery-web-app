@@ -27,6 +27,7 @@ export interface OrderDetailResponse {
   address_id: number;
   order_status: {
     id: number;
+    status: string;
   };
   createdAt: string;
   totalProductPrice: number;
@@ -82,6 +83,7 @@ export interface OrderResponse {
   managed_by_id: number;
   store_id: number;
   expedition_id: number;
+  order_status_id: number;
   order_status: {
     id: string;
   };

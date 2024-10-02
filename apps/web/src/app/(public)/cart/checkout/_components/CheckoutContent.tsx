@@ -24,28 +24,6 @@ interface Props {
   user: UserProps | null;
 }
 
-interface Voucher {
-  id: string;
-  voucher: string;
-  code?: string;
-  voucher_type: string;
-  discount_type: string;
-  product_discount?: {
-    discount: number;
-    discount_type: string;
-  };
-  type: "product" | "delivery";
-  discountAmount: number;
-  discountType: "percentage" | "nominal";
-  delivery_discount?: number;
-  is_delivery_free?: boolean;
-  discount_amount?: number;
-  product?: {
-    name: string;
-  };
-  description?: string;
-}
-
 const CheckOutContent: React.FC<Props> = ({ user }) => {
   const { checkoutItems, refreshCart } = useCart();
   const selectedAddressActive = user?.addresses?.find(
@@ -53,15 +31,17 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [storeCityId, setStoreCityId] = useState<number | null>(null);
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const [vouchers, setVouchers] = useState<any[]>([]);
   const [selectedCourierPrice, setSelectedCourierPrice] = useState<number>(0);
   const [selectedCourier, setSelectedCourier] = useState<string>("jne");
   const [deliveryService, setDeliveryService] = useState<number>(0);
   const [deliveryNotes, setDeliveryNotes] = useState("");
-  const [selectedProductVoucher, setSelectedProductVoucher] =
-    useState<Voucher | null>(null);
-  const [selectedDeliveryVoucher, setSelectedDeliveryVoucher] =
-    useState<Voucher | null>(null);
+  const [selectedProductVoucher, setSelectedProductVoucher] = useState<
+    any | null
+  >(null);
+  const [selectedDeliveryVoucher, setSelectedDeliveryVoucher] = useState<
+    any | null
+  >(null);
   const [subtotal, setSubtotal] = useState<number>(0);
   const [deliveryTotal, setDeliveryTotal] = useState<number>(0);
 
@@ -141,28 +121,26 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
       try {
         const response = await getVouchers();
         if (response.data && Array.isArray(response.data.vouchers)) {
-          const allVouchers = response.data.vouchers.map(
-            (v: any): Voucher => ({
-              id: v.id,
-              voucher: v.voucher,
-              voucher_type: v.voucher_type,
-              discount_type: v.discount_type,
-              product_discount: v.product_discount
-                ? {
-                    discount: v.product_discount.discount,
-                    discount_type: v.product_discount.discount_type,
-                  }
-                : undefined,
-              type: v.type,
-              discountAmount: v.discountAmount,
-              discountType: v.discountType,
-              delivery_discount: v.delivery_discount,
-              is_delivery_free: v.is_delivery_free,
-              discount_amount: v.discount_amount,
-              product: v.product ? { name: v.product.name } : undefined,
-              description: v.description,
-            }),
-          );
+          const allVouchers = response.data.vouchers.map((v: any) => ({
+            id: v.id,
+            voucher: v.voucher,
+            voucher_type: v.voucher_type,
+            discount_type: v.discount_type,
+            product_discount: v.product_discount
+              ? {
+                  discount: v.product_discount.discount,
+                  discount_type: v.product_discount.discount_type,
+                }
+              : undefined,
+            type: v.type,
+            discountAmount: v.discountAmount,
+            discountType: v.discountType,
+            delivery_discount: v.delivery_discount,
+            is_delivery_free: v.is_delivery_free,
+            discount_amount: v.discount_amount,
+            product: v.product ? { name: v.product.name } : undefined,
+            description: v.description,
+          }));
 
           setVouchers(allVouchers);
         } else {
@@ -235,20 +213,44 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     if (selectedProductVoucher && checkoutItems) {
-      let newSubtotal = checkoutItems.reduce(
-        (acc, item) => acc + item.qty * item.product.price,
-        0,
-      );
-      const discount = selectedProductVoucher?.discountAmount || 0;
-      const discountType = selectedProductVoucher?.discountType || "nominal";
-      if (discountType === "percentage") {
-        newSubtotal = newSubtotal * ((100 - discount) / 100);
-      } else if (discountType === "nominal") {
-        newSubtotal = Math.max(0, newSubtotal - discount);
-      }
+      let newSubtotal = checkoutItems.reduce((acc, item) => {
+        let discountedPrice = item.product.price;
+
+        if (selectedProductVoucher) {
+          const discount = selectedProductVoucher?.discountAmount || 0;
+          const discountType =
+            selectedProductVoucher?.discountType || "nominal";
+
+          if (discountType === "percentage") {
+            discountedPrice = item.product.price * ((100 - discount) / 100);
+          } else if (discountType === "nominal") {
+            discountedPrice = Math.max(0, item.product.price - discount);
+          }
+        }
+
+        return acc + discountedPrice * item.qty;
+      }, 0);
+
       setSubtotal(newSubtotal);
     }
   }, [selectedProductVoucher, checkoutItems]);
+
+  // useEffect(() => {
+  //   if (selectedProductVoucher && checkoutItems) {
+  //     let newSubtotal = checkoutItems.reduce(
+  //       (acc, item) => acc + item.qty * item.product.price,
+  //       0,
+  //     );
+  //     const discount = selectedProductVoucher?.discountAmount || 0;
+  //     const discountType = selectedProductVoucher?.discountType || "nominal";
+  //     if (discountType === "percentage") {
+  //       newSubtotal = newSubtotal * ((100 - discount) / 100);
+  //     } else if (discountType === "nominal") {
+  //       newSubtotal = Math.max(0, newSubtotal - discount);
+  //     }
+  //     setSubtotal(newSubtotal);
+  //   }
+  // }, [selectedProductVoucher, checkoutItems]);
 
   useEffect(() => {
     if (selectedDeliveryVoucher && selectedCourierPrice > 0) {
@@ -463,3 +465,25 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
 };
 
 export default CheckOutContent;
+
+// interface Voucher {
+//   id: string;
+//   voucher: string;
+//   code?: string;
+//   voucher_type: string;
+//   discount_type: string;
+//   product_discount?: {
+//     discount: number;
+//     discount_type: string;
+//   };
+//   type: "product" | "delivery";
+//   discountAmount: number;
+//   discountType: "percentage" | "nominal";
+//   delivery_discount?: number;
+//   is_delivery_free?: boolean;
+//   discount_amount?: number;
+//   product?: {
+//     name: string;
+//   };
+//   description?: string;
+// }

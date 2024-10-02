@@ -4,7 +4,8 @@ import { getOrdersForAdmin } from "@/api/warehouse/route";
 import MainButton from "@/components/MainButton";
 import debounce from "lodash.debounce";
 import AdminOrderItems from "./OrderItemsAdmin";
-import { OrderResponse } from "@/api/warehouse/route";
+import { StoreProps } from "@/interfaces/store";
+// import { OrderResponse } from "@/api/warehouse/route";
 import { UserProps } from "@/interfaces/user";
 import { getStores } from "@/actions/stores";
 
@@ -15,8 +16,8 @@ interface Props {
 const OrdersContentAdmin: React.FC<Props> = ({ user }) => {
   const role = user?.role;
   console.log("User role:", role);
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string | undefined>(undefined);
+  const [endDate, setEndDate] = useState<string | undefined>(undefined);
   const [filter, setFilter] = useState<
     | "all"
     | "waiting_payment_confirmation"
@@ -26,20 +27,22 @@ const OrdersContentAdmin: React.FC<Props> = ({ user }) => {
     | "cancelled"
   >("all");
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("invoice");
-  const [order, setOrder] = useState("desc");
-  const [orders, setOrders] = useState<OrderResponse[]>([]);
+  const [sortBy, setSortBy] = useState<"createdAt" | "name" | undefined>(
+    "createdAt",
+  );
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
+  const [orders, setOrders] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [limit] = useState(6);
   const [hasMore, setHasMore] = useState(true);
   const [storeId, setStoreId] = useState<number | "all">("all");
-  const [stores, setStores] = useState<OrderResponse[]>([]);
+  const [stores, setStores] = useState<StoreProps[]>([]);
 
   useEffect(() => {
     if (role === "super_admin") {
       const fetchStores = async () => {
         const response = await getStores();
-        setStores(response.data);
+        setStores(response.data || []);
       };
       fetchStores();
     }
@@ -81,7 +84,7 @@ const OrdersContentAdmin: React.FC<Props> = ({ user }) => {
     setSearch(value);
   }, 1000);
 
-  const toggleSort = (field: "invoice" | "createdAt") => {
+  const toggleSort = (field: "createdAt" | "name") => {
     if (sortBy === field) {
       setOrder(order === "asc" ? "desc" : "asc");
     } else {
@@ -172,7 +175,7 @@ const OrdersContentAdmin: React.FC<Props> = ({ user }) => {
         />
         <MainButton
           text="Sort by Name"
-          onClick={() => toggleSort("invoice")}
+          onClick={() => toggleSort("name")}
           variant="static"
         />
       </div>
@@ -194,3 +197,55 @@ const OrdersContentAdmin: React.FC<Props> = ({ user }) => {
 };
 
 export default OrdersContentAdmin;
+
+// useEffect(() => {
+//   if (role === "super_admin") {
+//     const fetchStores = async () => {
+//       const response = await getStores();
+//       setStores(response.data);
+//     };
+//     fetchStores();
+//   }
+// }, [role]);
+
+// const fetchOrders = useCallback(async () => {
+//   try {
+//     const response = await getOrdersForAdmin(
+//       filter,
+//       search,
+//       sortBy,
+//       order,
+//       page,
+//       limit,
+//       storeId === "all" ? undefined : storeId,
+//       startDate,
+//       endDate,
+//     );
+//     if (page === 1) {
+//       setOrders(response.data.orders);
+//     } else {
+//       setOrders((prevOrders) => [...prevOrders, ...response.data.orders]);
+//     }
+//     if (response.data.orders.length < limit) {
+//       setHasMore(false);
+//     } else {
+//       setHasMore(true);
+//     }
+//   } catch (error) {
+//     console.error("Error fetching orders:", error);
+//   }
+// }, [filter, search, sortBy, order, page, storeId, limit, startDate, endDate]);
+
+// {stores.map((store) => (
+//   <option key={store.id} value={store.id}>
+//     {`${store.name} - ${store.city?.city_name}`}
+//   </option>
+// ))}
+
+{
+  /* <div className="grid grid-cols-1 gap-4">
+{orders.map((order) => (
+  <AdminOrderItems key={order.id} order={order} />
+))}
+</div> */
+}

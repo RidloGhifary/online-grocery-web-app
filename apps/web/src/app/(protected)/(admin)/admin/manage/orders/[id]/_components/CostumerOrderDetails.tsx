@@ -50,7 +50,7 @@ const CustomerOrderDetails: React.FC<Props> = ({ order }) => {
         </div>
         <div className="mx-auto mt-[-2rem]">
           <div>
-            <p className="mb-2 mt-4 font-bold">User's Payment Proof:</p>
+            <p className="mb-2 mt-4 font-bold">User&#39;s Payment Proof:</p>
           </div>
           <img
             src={order.payment_proof}

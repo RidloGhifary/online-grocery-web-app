@@ -432,12 +432,10 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
             <strong>Subtotal:</strong> {convertRupiah(subtotal)}
           </p>
           <p>
-            <strong>Delivery Price:</strong>{" "}
-            {convertRupiah(selectedCourierPrice)}
+            <strong>Delivery Price:</strong> {convertRupiah(deliveryTotal)}
           </p>
           <p>
-            <strong>Total:</strong>{" "}
-            {convertRupiah(subtotal + selectedCourierPrice)}
+            <strong>Total:</strong> {convertRupiah(subtotal + deliveryTotal)}
           </p>
         </div>
         <div className="modal-action flex justify-center">
@@ -465,25 +463,3 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
 };
 
 export default CheckOutContent;
-
-// interface Voucher {
-//   id: string;
-//   voucher: string;
-//   code?: string;
-//   voucher_type: string;
-//   discount_type: string;
-//   product_discount?: {
-//     discount: number;
-//     discount_type: string;
-//   };
-//   type: "product" | "delivery";
-//   discountAmount: number;
-//   discountType: "percentage" | "nominal";
-//   delivery_discount?: number;
-//   is_delivery_free?: boolean;
-//   discount_amount?: number;
-//   product?: {
-//     name: string;
-//   };
-//   description?: string;
-// }

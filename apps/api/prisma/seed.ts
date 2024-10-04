@@ -520,7 +520,7 @@ async function main() {
         address: '123 Main St',
         kecamatan: 'Downtown',
         kelurahan: 'Central',
-        image: 'https://placehold.co/600x400.svg',
+        image: null,
         latitude: new Prisma.Decimal(-6.2),
         longtitude: new Prisma.Decimal(106.816666),
         id: 1,
@@ -530,14 +530,14 @@ async function main() {
         province_id: 6,
       },
       {
-        created_by: 1, // Assuming user ID 2 exists
+        created_by: 1,
         name: 'JKT Ogro Cabang',
         store_type: 'branch',
-        city_id: 151, // Assuming city ID 2 exists
+        city_id: 151,
         address: '456 Elm St',
         kecamatan: 'Uptown',
         kelurahan: 'North',
-        image: 'https://placehold.co/600x400.svg',
+        image: null,
         latitude: new Prisma.Decimal(-6.2000677),
         longtitude: new Prisma.Decimal(106.8167943),
         id: 2,
@@ -547,21 +547,21 @@ async function main() {
         province_id: 6,
       },
       {
-        created_by: 1, // Assuming user ID 2 exists
-        name: 'KTNG Ogro Cabang',
+        created_by: 1,
+        name: 'Karanganyar Ogro Cabang',
         store_type: 'branch',
-        city_id: 455, // Assuming city ID 2 exists
+        city_id: 169,
         address: '456 Elm St',
         kecamatan: 'Uptown',
         kelurahan: 'North',
-        image: 'https://placehold.co/600x400.svg',
-        latitude: new Prisma.Decimal(-6.16667),
-        longtitude: new Prisma.Decimal(106.48333),
+        image: null,
+        latitude: new Prisma.Decimal(-7.6196965),
+        longtitude: new Prisma.Decimal(111.0698003),
         id: 3,
         createdAt: new Date(),
         updatedAt: null,
         deletedAt: null,
-        province_id: 3,
+        province_id: 10,
       },
     ];
 
@@ -638,7 +638,6 @@ async function main() {
     console.log(stage2);
 
     console.log(await seedProductDiscounts());
-    
 
     const [productData, storeData] = await Promise.allSettled([
       await prisma.product.findMany(),
@@ -783,7 +782,7 @@ async function main() {
           store_id: 3,
           product_id: 1,
           order_id: 1,
-          id:1
+          id: 1,
         },
         {
           qty: 5,
@@ -792,7 +791,7 @@ async function main() {
           store_id: 3,
           product_id: 2,
           order_id: 1,
-          id:2
+          id: 2,
         },
       ],
       skipDuplicates: true,
@@ -810,7 +809,7 @@ async function main() {
           qty_change: -11,
           product_id: 1,
           managed_by_id: 1,
-          order_detail_id: 1
+          order_detail_id: 1,
         },
         {
           id: 182,
@@ -820,7 +819,7 @@ async function main() {
           qty_change: -5,
           product_id: 2,
           managed_by_id: 1,
-          order_detail_id: 2
+          order_detail_id: 2,
         },
         // {
         //   id: 182,

@@ -1,12 +1,10 @@
 'use client';
 
-import { productDefault } from "@/mocks/productData";
 import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
-import ProductCardF2 from "../ui/ProductCardF2";
 import ProductCardF2V2 from "../ui/ProductCardF2V2";
 
 export default function PublicProductList({
-  products = productDefault,
+  products ,
   isLoading,
 }: {
   products: ProductCompleteInterface[];

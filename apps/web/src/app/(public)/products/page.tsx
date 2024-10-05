@@ -22,8 +22,8 @@ export default async function Page() {
         limit: 20,
       }),
   });
-  console.log('prefetch query');
-  
+  // console.log('prefetch query');
+
   await queryClient.prefetchQuery({
     queryKey: [queryKeys.productCategories],
     queryFn: async () => await getProductCategoryList({}),

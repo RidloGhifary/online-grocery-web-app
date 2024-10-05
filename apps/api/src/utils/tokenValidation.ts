@@ -84,6 +84,6 @@ export default function tokenValidation(
   //     }
   //   }
 
-  console.log('REsult, ', result);
+  // console.log('REsult, ', result);
   return result;
 }

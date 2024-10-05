@@ -43,10 +43,7 @@ class RoleRepository {
           ? undefined
           : [
               {
-                name:
-                  orderField && orderField === 'name'
-                    ? order
-                    : undefined,
+                name: orderField && orderField === 'name' ? order : undefined,
               },
               {
                 display_name:
@@ -70,8 +67,7 @@ class RoleRepository {
       result.data.data = res;
       result.ok = true;
       result.message = 'Query Success';
-      console.log(result);
-      
+      // console.log(result);
     } catch (error) {
       result.error = error;
       result.message = 'Error';
@@ -86,11 +82,13 @@ class RoleRepository {
       ok: false,
     };
     try {
-      const [newData] = await prisma.$transaction([prisma.productCategory.create({
-        data: {
-          ...productCategory,
-        },
-      })]);
+      const [newData] = await prisma.$transaction([
+        prisma.productCategory.create({
+          data: {
+            ...productCategory,
+          },
+        }),
+      ]);
       result.data = newData;
       result.ok = true;
       result.message = 'Success adding data';
@@ -110,15 +108,17 @@ class RoleRepository {
     try {
       const categoryId = productCategory.id;
       delete productCategory.id;
-      const [newData] = await prisma.$transaction([prisma.productCategory.update({
-        data: {
-          ...productCategory,
-        },
-        where: {
-          id: categoryId,
-          deletedAt: null,
-        },
-      })]);
+      const [newData] = await prisma.$transaction([
+        prisma.productCategory.update({
+          data: {
+            ...productCategory,
+          },
+          where: {
+            id: categoryId,
+            deletedAt: null,
+          },
+        }),
+      ]);
       if (!newData) {
         throw new Error('404 not found');
       }
@@ -139,9 +139,11 @@ class RoleRepository {
       ok: false,
     };
     try {
-      const [deleted] = await prisma.$transaction([prisma.productCategory.delete({
-        where: { id: productCategoryId, deletedAt: null },
-      })]) ;
+      const [deleted] = await prisma.$transaction([
+        prisma.productCategory.delete({
+          where: { id: productCategoryId, deletedAt: null },
+        }),
+      ]);
       if (!deleted) {
         throw new Error(JSON.stringify(deleted));
       }
@@ -154,8 +156,8 @@ class RoleRepository {
   }
 
   async isProductCategoryIdExist(id?: number): Promise<boolean> {
-    console.log('from category repo');
-    
+    // console.log('from category repo');
+
     return !!(
       (await prisma.productCategory.findFirst({
         select: { id: true, deletedAt: true },

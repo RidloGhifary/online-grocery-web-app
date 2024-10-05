@@ -7,15 +7,18 @@ const validateRequestVerbose = <T extends ZodSchema>(
   requestType: 'body' | 'params' | 'query' | 'all' | undefined = 'body',
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    console.log('params : ');
-    
-    console.log(req.params);
+    // console.log('params : ');
 
-    console.log('body : ');
-    
-    console.log(req.body);
+    // console.log(req.params);
 
-    if (req.originalUrl.includes('products') && typeof req.body.image === 'string') {
+    // console.log('body : ');
+
+    // console.log(req.body);
+
+    if (
+      req.originalUrl.includes('products') &&
+      typeof req.body.image === 'string'
+    ) {
       try {
         req.body.image = JSON.parse(req.body.image);
       } catch (error) {
@@ -26,7 +29,7 @@ const validateRequestVerbose = <T extends ZodSchema>(
       }
     }
 
-    if (requestType==='body'|| requestType === 'all') {
+    if (requestType === 'body' || requestType === 'all') {
       const validatedRequest = await schema.safeParseAsync(req.body);
       if (!validatedRequest.success) {
         return res.status(400).json({
@@ -37,8 +40,7 @@ const validateRequestVerbose = <T extends ZodSchema>(
       // Ensure that req.body has the correct type after validation
       req.body = validatedRequest.data as z.infer<T>;
     }
-    if (requestType==='params'|| requestType === 'all') {
-      
+    if (requestType === 'params' || requestType === 'all') {
       const validatedRequest = await schema.safeParseAsync(req.params);
       if (!validatedRequest.success) {
         return res.status(400).json({
@@ -50,7 +52,7 @@ const validateRequestVerbose = <T extends ZodSchema>(
       req.params = validatedRequest.data as z.infer<T>;
     }
 
-    if (requestType==='query'|| requestType === 'all') {
+    if (requestType === 'query' || requestType === 'all') {
       const validatedRequest = await schema.safeParseAsync(req.query);
       if (!validatedRequest.success) {
         return res.status(400).json({

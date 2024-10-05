@@ -15,7 +15,7 @@ interface Props {
 
 const OrdersContentAdmin: React.FC<Props> = ({ user }) => {
   const role = user?.role;
-  console.log("User role:", role);
+  // console.log("User role:", role);
   const [startDate, setStartDate] = useState<string | undefined>(undefined);
   const [endDate, setEndDate] = useState<string | undefined>(undefined);
   const [filter, setFilter] = useState<

@@ -73,7 +73,7 @@ export async function getProductListWithFilter({
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to fetch product list";
-    console.log(error);
+    // console.log(error);
   }
 
   return result;
@@ -159,7 +159,7 @@ export async function createProduct(
     });
     const response =
       (await prep.json()) as CommonResultInterface<ProductCompleteInterface>;
-    console.log(response);
+    // console.log(response);
 
     if (!response.ok) {
       result.error = ` ${response.error}`;
@@ -193,7 +193,7 @@ export async function updateProduct(
     });
     const response =
       (await prep.json()) as CommonResultInterface<ProductCompleteInterface>;
-    console.log(response);
+    // console.log(response);
 
     if (!response.ok) {
       result.error = ` ${response.error}`;
@@ -214,12 +214,12 @@ export async function deleteProduct(
   let result: CommonResultInterface<boolean> = {
     ok: false,
   };
-  console.log(`${process.env.BACKEND_URL}/products/delete/${id}`);
+  // console.log(`${process.env.BACKEND_URL}/products/delete/${id}`);
 
   try {
     const token = await getCookies("token");
     if (!token) throw new Error("403");
-    console.log(`${process.env.BACKEND_URL}/products/delete/${id}`);
+    // console.log(`${process.env.BACKEND_URL}/products/delete/${id}`);
 
     const prep = await fetch(
       `${process.env.BACKEND_URL}/products/delete/${id}`,
@@ -261,24 +261,23 @@ export async function addProductItemToCart({
   };
   let result: ProductCartItem | null | undefined | string = null;
   console.log(JSON.stringify({ productId, quantity, storeId }));
-  
+
   try {
     const prep = await fetch(url, {
       method: "POST",
       headers: header,
       body: JSON.stringify({ productId, quantity, storeId }),
     });
-    const response = await prep.json() ;
+    const response = await prep.json();
     result = response as ProductCartItem;
     if (!prep.ok) {
-      console.log(response);
-      
+      // console.log(response);
+
       throw new Error(response);
     }
   } catch (error) {
-    result = (error as Error).message as string
+    result = (error as Error).message as string;
     throw new Error(result);
-    
   }
   return result;
 }

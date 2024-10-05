@@ -6,16 +6,17 @@ import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast, Bounce } from "react-toastify";
 import { useSearchParams } from "next/navigation";
-import {
-  ProductCompleteInterface,
-} from "@/interfaces/ProductInterface";
+import { ProductCompleteInterface } from "@/interfaces/ProductInterface";
 import { FaCheck, FaRegSave, FaTrash } from "react-icons/fa";
 import Button from "../ui/ButtonWithAction";
 import { queryKeys } from "@/constants/queryKeys";
 import { useAtom } from "jotai";
 import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 import { CategoryInterface } from "@/interfaces/CategoryInterface";
-import { currentDetailCategorysAtom, currentProductCategoryOperation } from "@/stores/productCategoryStores";
+import {
+  currentDetailCategorysAtom,
+  currentProductCategoryOperation,
+} from "@/stores/productCategoryStores";
 import { updateCategory } from "@/actions/categories";
 
 // Define the Zod schema for validation
@@ -103,7 +104,7 @@ export default function AdminCategoryUpdateForm() {
         theme: "colored",
         transition: Bounce,
         // toastId:2,
-        containerId:10912
+        containerId: 10912,
       });
     },
   });
@@ -112,7 +113,7 @@ export default function AdminCategoryUpdateForm() {
     // Create a copy of the submitted data
     const modifiedData = { ...data };
     // console.log(data);
-    
+
     // Iterate over the keys of the submitted data
     Object.keys(data).forEach((key) => {
       // Skip the 'id' field
@@ -152,7 +153,7 @@ export default function AdminCategoryUpdateForm() {
 
   useEffect(() => {
     if (mutation.isSuccess) {
-      console.log("success");
+      // console.log("success");
       const params = {
         search: queryParams.get("search") || "",
         orderField: queryParams.get("orderField") || "name",
@@ -160,9 +161,14 @@ export default function AdminCategoryUpdateForm() {
         page: Number(queryParams.get("page")) || 1,
         limit: Number(queryParams.get("limit")) || 20,
       };
-      const updatedData = (queryClient.getQueryData([queryKeys.productCategories,{...params}]) as CommonPaginatedResultInterface<CategoryInterface[]>).data?.data?.filter(category=>category.id == initialData?.id )[0]
+      const updatedData = (
+        queryClient.getQueryData([
+          queryKeys.productCategories,
+          { ...params },
+        ]) as CommonPaginatedResultInterface<CategoryInterface[]>
+      ).data?.data?.filter((category) => category.id == initialData?.id)[0];
       if (updatedData) {
-        setInitialData(updatedData)
+        setInitialData(updatedData);
       }
       queryClient.invalidateQueries({
         queryKey: [queryKeys.productCategories, { ...params }],
@@ -209,7 +215,9 @@ export default function AdminCategoryUpdateForm() {
           className={`input input-bordered w-full ${errors.display_name ? "input-error" : ""}`}
           {...register("display_name")}
         />
-        {errors.display_name && <p className="text-red-500">{errors.display_name.message}</p>}
+        {errors.display_name && (
+          <p className="text-red-500">{errors.display_name.message}</p>
+        )}
       </label>
 
       {/* Submit button */}

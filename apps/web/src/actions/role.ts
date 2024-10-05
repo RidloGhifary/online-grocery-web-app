@@ -1,4 +1,4 @@
-'use server'
+"use server";
 import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 import createQueryParams from "@/utils/createQueryParams";
 import { getCookies } from "./cookies";
@@ -30,14 +30,14 @@ export async function getAllRoleList({
       }),
       {
         headers: {
-          'Content-type': 'application/json',
-          'Authorization':`Bearer ${token}`
+          "Content-type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       },
-      }
     );
     if (!response.ok) {
-      console.log(await response.json());
-      
+      // console.log(await response.json());
+
       result.error = `Failed to fetch some of role list: ${response.statusText}`;
       return result;
     }

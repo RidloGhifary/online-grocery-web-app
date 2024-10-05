@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,13 +43,11 @@ export default function ProductForm() {
   const queryClient = useQueryClient();
   const queryParams = useSearchParams();
 
-  const [, setCurrentOperation] = useAtom(
-    currentProductOperation,
-  );
-  const { data:categoriesData, isLoading:categoryLoading } = useQuery({
+  const [, setCurrentOperation] = useAtom(currentProductOperation);
+  const { data: categoriesData, isLoading: categoryLoading } = useQuery({
     queryKey: [queryKeys.productCategories],
     queryFn: async () => await getProductCategoryList({}),
-  })
+  });
 
   // Check if categoriesData is valid and contains data
   const categories = Array.isArray(categoriesData?.data.data)
@@ -81,7 +79,6 @@ export default function ProductForm() {
   const mutation = useMutation({
     mutationFn: createProduct,
     onSuccess: () => {
-
       toast.success("Success add data", {
         position: "top-right",
         autoClose: 2000,
@@ -111,20 +108,28 @@ export default function ProductForm() {
       // setTimeout(()=>{router.refresh();},2000)
       // router.refresh();
     },
-    onError : (e)=>{
-     let error : any  = ''
-     if (typeof JSON.parse(e.message) === 'string') {
-      error = JSON.parse(JSON.parse(e.message)) as unknown as CommonResultInterface<ProductCompleteInterface>
-      error = (error as unknown as CommonResultInterface<ProductCompleteInterface>).error
-     } else {
-      error = JSON.parse(e.message) as unknown as CommonResultInterface<ProductCompleteInterface>
-      error = (error as unknown as CommonResultInterface<ProductCompleteInterface>).error
-     }
-     
-     if (typeof error === 'object') {
-       if (Array.isArray(error)) {
+    onError: (e) => {
+      let error: any = "";
+      if (typeof JSON.parse(e.message) === "string") {
+        error = JSON.parse(
+          JSON.parse(e.message),
+        ) as unknown as CommonResultInterface<ProductCompleteInterface>;
+        error = (
+          error as unknown as CommonResultInterface<ProductCompleteInterface>
+        ).error;
+      } else {
+        error = JSON.parse(
+          e.message,
+        ) as unknown as CommonResultInterface<ProductCompleteInterface>;
+        error = (
+          error as unknown as CommonResultInterface<ProductCompleteInterface>
+        ).error;
+      }
+
+      if (typeof error === "object") {
+        if (Array.isArray(error)) {
           // console.log(error);
-          (error as Array<{message:string}>).forEach((e,i)=>{
+          (error as Array<{ message: string }>).forEach((e, i) => {
             toast.error(e.message, {
               position: "top-right",
               autoClose: 2000,
@@ -135,10 +140,10 @@ export default function ProductForm() {
               progress: undefined,
               theme: "colored",
               transition: Bounce,
-              containerId:10912,
+              containerId: 10912,
               // toastId:i
             });
-          })
+          });
         }
       } else {
         toast.error(error.error, {
@@ -151,16 +156,15 @@ export default function ProductForm() {
           progress: undefined,
           theme: "colored",
           transition: Bounce,
-          containerId:10912
+          containerId: 10912,
         });
       }
-    }
+    },
   });
   const onSubmit = (data: ProductFormValues) => {
     // console.log("Form Data:", data);
     mutation.mutate(data as unknown as ProductRecordInterface);
   };
-  
 
   // Transform categories data for React Select
   const categoryOptions = categories?.map((category) => ({
@@ -184,7 +188,7 @@ export default function ProductForm() {
   };
   useEffect(() => {
     if (mutation.isSuccess) {
-      console.log("success");
+      // console.log("success");
       setCurrentOperation("idle");
     }
   }, [mutation.isSuccess]);
@@ -240,7 +244,9 @@ export default function ProductForm() {
           )}
           isDisabled={mutation.isSuccess}
           isLoading={categoryLoading}
-          loadingMessage={()=><span className="loading loading-spinner loading-xs"></span>}
+          loadingMessage={() => (
+            <span className="loading loading-spinner loading-xs"></span>
+          )}
         />
         {errors.product_category_id && (
           <p className="text-red-500">{errors.product_category_id.message}</p>
@@ -396,7 +402,7 @@ export default function ProductForm() {
             <span className="loading loading-spinner loading-xs"></span>
           ) : mutation.isSuccess ? (
             <>
-            <FaCheck />
+              <FaCheck />
             </>
           ) : (
             ""

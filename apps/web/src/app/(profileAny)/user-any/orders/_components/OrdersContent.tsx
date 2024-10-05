@@ -131,11 +131,3 @@ const OrdersContent = () => {
 };
 
 export default OrdersContent;
-
-{
-  /* <MainButton
-          text={FaCalendarCheck}
-          onClick={() => fetchOrders()}
-          variant="primary"
-        /> */
-}

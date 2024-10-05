@@ -35,8 +35,8 @@ export default function AssignAdminStore({
         toast.error(res.message || res.error || "Something went wrong!");
       }
     },
-    onError: (res) => {
-      toast.error(res.message || "Something went wrong!");
+    onError: (res:any) => {
+      toast.error(res.message || res.error || "Something went wrong!");
     },
   });
 

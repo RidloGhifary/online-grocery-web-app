@@ -48,7 +48,7 @@ export async function loginAuth(formData: LoginFormData) {
 
     const responseData = await response.json();
     result.ok = responseData.ok;
-    result.message = responseData.message || "Logged in successfully";
+    result.message = responseData.message;
     result.token = responseData.token;
     result.data = responseData.data;
   } catch (error) {

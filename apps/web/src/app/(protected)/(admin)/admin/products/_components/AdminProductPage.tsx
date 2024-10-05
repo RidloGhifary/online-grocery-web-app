@@ -153,14 +153,14 @@ export default function AdminProductPage() {
           {/* Pagination */}
         </div>
 
-        <Modal show={operation === "filter" ?? false} onClose={handleClose}>
+        <Modal show={operation === "filter" } onClose={handleClose}>
           <div className="flex w-full flex-col items-center justify-center sm:flex-row">
             <AdminFilter />
           </div>
         </Modal>
 
         <Modal
-          show={currentOperation !== "idle" ?? false}
+          show={currentOperation !== "idle" }
           useTCustomContentWidthClass={`${currentOperation === "detail" ? "sm:w-full sm:max-w-3xl" : ""}`}
           onClose={handleClose}
           closeButton={false}

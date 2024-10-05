@@ -136,12 +136,12 @@ export default function AdminCategoriesPage() {
           </div>
         )}
       </div>
-      <Modal show={operation === "filter" ?? false} onClose={handleClose}>
         {/* <AdminFilter /> */}
+      {/* <Modal show={operation === "filter" ?? false} onClose={handleClose}>
         'Filter'
-      </Modal>
+      </Modal> */}
       <Modal
-        show={currentOperation !== "idle" ?? false}
+        show={currentOperation !== "idle" }
         onClose={handleClose}
         closeButton={false}
         toasterContainer={

@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import crypto from 'crypto';
 import CommonPaginatedResultInterface from '@/interfaces/CommonPaginatedResultInterface';
 import CommonResultInterface from '@/interfaces/CommonResultInterface';

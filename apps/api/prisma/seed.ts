@@ -10,7 +10,7 @@ import {
 import { faker, tr } from '@faker-js/faker';
 import axios from 'axios';
 import crypto from 'crypto';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 

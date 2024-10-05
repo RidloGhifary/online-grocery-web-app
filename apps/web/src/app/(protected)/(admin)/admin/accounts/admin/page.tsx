@@ -136,10 +136,10 @@ export default function Page () {
           </div>
         )}
       </div>
-      <Modal show={operation === "filter" ?? false} onClose={handleClose}>
-      </Modal>
+      {/* <Modal show={operation === "filter" ?? false} onClose={handleClose}>
+      </Modal> */}
       <Modal
-        show={currentOperation !== "idle" ?? false}
+        show={currentOperation !== "idle" }
         onClose={handleClose}
         closeButton={false}
         toasterContainer={

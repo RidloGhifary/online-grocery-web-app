@@ -100,11 +100,6 @@ const OrdersContent = () => {
           onChange={(e) => setEndDate(e.target.value)}
           className="ml-2 rounded-md border p-2"
         />
-        {/* <MainButton
-          text={FaCalendarCheck}
-          onClick={() => fetchOrders()}
-          variant="primary"
-        /> */}
       </div>
       <div className="mb-4 flex justify-center space-x-4">
         <MainButton
@@ -137,4 +132,10 @@ const OrdersContent = () => {
 
 export default OrdersContent;
 
-//Test
+{
+  /* <MainButton
+          text={FaCalendarCheck}
+          onClick={() => fetchOrders()}
+          variant="primary"
+        /> */
+}

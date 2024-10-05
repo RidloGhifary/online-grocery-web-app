@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import MainButton from "@/components/MainButton";
 import convertToRupiah from "@/utils/convertRupiah";
 
-interface Voucher {
-  id: string;
-  voucher: string;
-  discountAmount: number;
-  type: "product" | "delivery";
-  discountType: "percentage" | "nominal";
-  description: string;
-}
+// interface Voucher {
+//   id: string;
+//   voucher: string;
+//   discountAmount: number;
+//   type: "product" | "delivery";
+//   discountType: "percentage" | "nominal";
+//   description: string;
+// }
 
 interface Product {
   name: string;
@@ -26,18 +26,18 @@ interface CartItem {
 
 interface CheckoutSummaryProps {
   items: CartItem[];
-  selectedProductVoucher: Voucher | null;
-  selectedDeliveryVoucher: Voucher | null;
-  onProductVoucherSelect?: (voucher: Voucher) => void;
-  onDeliveryVoucherSelect?: (voucher: Voucher) => void;
+  selectedProductVoucher: any | null;
+  selectedDeliveryVoucher: any | null;
+  onProductVoucherSelect?: (voucher: any) => void;
+  onDeliveryVoucherSelect?: (voucher: any) => void;
   buttonText: string;
   showDeliveryPrice?: boolean;
   deliveryPrice?: number;
   subtotal: number;
   deliveryTotal: number;
   disableButton?: boolean;
-  productVouchers?: Voucher[];
-  deliveryVouchers?: Voucher[];
+  productVouchers?: any[];
+  deliveryVouchers?: any[];
   onCheckout: () => void;
   showVoucherButton?: boolean;
   customSubtotalCalculator?: () => number;
@@ -75,7 +75,7 @@ const CheckoutSummary: React.FC<CheckoutSummaryProps> = ({
     setSelectedDeliveryVoucherId(selectedDeliveryVoucher?.id || null);
   }, [selectedProductVoucher, selectedDeliveryVoucher]);
 
-  const calculateDiscount = (voucher: Voucher | null, total: number) => {
+  const calculateDiscount = (voucher: any | null, total: number) => {
     if (!voucher) return 0;
     if (voucher.discountType === "percentage") {
       return (voucher.discountAmount / 100) * total;

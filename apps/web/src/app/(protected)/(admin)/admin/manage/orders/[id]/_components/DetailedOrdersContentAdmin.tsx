@@ -33,7 +33,7 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
         setOrder(orderData.data);
 
         if (user) {
-          const isSuperAdmin = user?.role?.includes("super_admin");
+          const isSuperAdmin = user.role?.includes("super_admin");
           const isStoreAdminOfOrder = orderData.data.isStoreAdminOfOrder;
 
           if (isSuperAdmin || isStoreAdminOfOrder) {
@@ -161,9 +161,9 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
           {order.order_details.map((item) => (
             <div key={item.product_id} className="mb-6">
               <p>
-                User's request: {item.qty} X {item.product.name}
+                User&#39;s request: {item.qty} X {item.product.name}
               </p>
-              <p>In Store warehouse: {item.store_qty}</p>
+              {/* <p>In Store warehouse: {item.store_qty}</p> */}
             </div>
           ))}
           <div className="flex justify-center space-x-4">
@@ -184,7 +184,7 @@ const DetailedOrdersContentAdmin: React.FC<Props> = ({ user }) => {
       </Modal>
       <div className="mt-12">
         <p className="mb-8 text-center text-xl font-semibold">
-          Costumer's Requested Items
+          Customer&#39;s Requested Items
         </p>
         <RequestedItemsTable items={order.order_details} />
       </div>

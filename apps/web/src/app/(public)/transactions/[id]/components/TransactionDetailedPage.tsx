@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { UserProps } from "@/interfaces/user";
 import { paymentStages } from "@/constants/index";
-import { MdArrowBack, MdCancel } from "react-icons/md";
+import { MdArrowBack } from "react-icons/md";
 import PaymentDetail from "./PaymentDetail";
 import TransactionItemsTable from "./TransactionItemsTable";
 import MainLink from "@/components/MainLink";
@@ -17,7 +17,6 @@ import {
 } from "@/api/order/route";
 import DeliveryInformationBox from "./DeliveryInformation";
 import { useUploadThing } from "@/utils/uploadthing";
-import { OrderResponse } from "@/api/order/route";
 
 interface Props {
   user: UserProps | null;
@@ -86,7 +85,7 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     setIsCancelingOrder(true);
     try {
       const orderId = Array.isArray(id) ? Number(id[0]) : Number(id);
-      await cancelOrder(orderId); // Pass the number
+      await cancelOrder(orderId);
       setPaymentStage("cancelled");
       setTransactionDetails({
         ...transactionDetails,
@@ -131,27 +130,31 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
   const formatTimeForCompletion = () => {
     if (!transactionDetails) return null;
     const completionAtTime = new Date(transactionDetails.completeAt);
-    return completionAtTime.toLocaleTimeString([], {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Asia/Jakarta",
-    });
+    return completionAtTime
+      .toLocaleTimeString("en-US", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Jakarta",
+      })
+      .replace("at", "at");
   };
 
   const formatTimeForCancellation = () => {
     if (!transactionDetails) return null;
     const cancelAtTime = new Date(transactionDetails.cancelAt);
-    return cancelAtTime.toLocaleTimeString([], {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Asia/Jakarta",
-    });
+    return cancelAtTime
+      .toLocaleTimeString("en-US", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Jakarta",
+      })
+      .replace("at", "at");
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

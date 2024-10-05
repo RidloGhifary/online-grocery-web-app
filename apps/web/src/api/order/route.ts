@@ -86,12 +86,12 @@ const uploadApi = axios.create({
 export const getOrdersByUser = async (
   filter: "all" | "ongoing" | "completed" | "cancelled" = "all",
   search?: string,
-  sortBy: "invoice" | "createdAt" = "invoice",
-  order: "asc" | "desc" = "asc",
+  sortBy: "invoice" | "createdAt" | any = "invoice",
+  order: "asc" | "desc" | any = "asc",
   page: number = 1,
   limit: number = 12,
-  startDate?: string,
-  endDate?: string,
+  startDate?: string | null,
+  endDate?: string | null,
 ): Promise<AxiosResponse<OrdersByUserResponse>> => {
   const token = getToken();
 

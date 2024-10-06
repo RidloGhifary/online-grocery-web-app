@@ -13,9 +13,9 @@ services:
       NODE_ENV: production
     # volumes:
     #   - finpro:./opt
-    ports:
-      - "8000:8000"
-      - "3000:3000"
+    # ports:
+    #   - "8000:8000"
+    #   - "3000:3000"
     networks:
       - finpro
       - public

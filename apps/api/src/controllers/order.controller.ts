@@ -114,7 +114,7 @@ export class OrderController {
 
       const totalOrders = await prisma.order.count({ where: whereClause });
 
-      const enhancedOrders = orders.map((order) => {
+      const enhancedOrders = orders.map((order: any) => {
         const totalProductPrice = order.order_details.reduce(
           (total: number, item: any) => {
             return total + item.price * item.qty;
@@ -206,9 +206,12 @@ export class OrderController {
         });
       }
 
-      const totalProductPrice = order.order_details.reduce((total, item) => {
-        return total + item.price * item.qty;
-      }, 0);
+      const totalProductPrice = order.order_details.reduce(
+        (total: any, item: any) => {
+          return total + item.price * item.qty;
+        },
+        0,
+      );
 
       const deliveryPrice =
         order.order_details[0].sub_total -
@@ -426,10 +429,10 @@ export class OrderController {
   }
 
   cancelOrder = async (req: CustomRequest, res: Response) => {
-    console.log('Received params:', req.params);
+    // console.log('Received params:', req.params);
     const { id } = req.params;
 
-    console.log('Received order ID:', id);
+    // console.log('Received order ID:', id);
 
     try {
       const orderId = parseInt(id);
@@ -465,7 +468,7 @@ export class OrderController {
         });
 
         if (stockAdjustment && stockAdjustment.destinied_store_id !== null) {
-          console.log('Updating original store stock...');
+          // console.log('Updating original store stock...');
 
           const storeHasProduct = await prisma.storeHasProduct.findFirst({
             where: {
@@ -475,10 +478,10 @@ export class OrderController {
           });
 
           if (storeHasProduct) {
-            console.log(
-              'Restoring stock for the original store:',
-              storeHasProduct.id,
-            );
+            // console.log(
+            //   'Restoring stock for the original store:',
+            //   storeHasProduct.id,
+            // );
 
             await prisma.storeHasProduct.update({
               where: { id: storeHasProduct.id },
@@ -509,7 +512,7 @@ export class OrderController {
         });
 
         if (mutation && mutation.from_store_id !== null) {
-          console.log('Updating mutation store stock...');
+          // console.log('Updating mutation store stock...');
 
           const aidingStoreHasProduct = await prisma.storeHasProduct.findFirst({
             where: {
@@ -519,10 +522,10 @@ export class OrderController {
           });
 
           if (aidingStoreHasProduct) {
-            console.log(
-              'Restoring stock for the aiding store:',
-              aidingStoreHasProduct.id,
-            );
+            // console.log(
+            //   'Restoring stock for the aiding store:',
+            //   aidingStoreHasProduct.id,
+            // );
 
             await prisma.storeHasProduct.update({
               where: { id: aidingStoreHasProduct.id },
@@ -631,7 +634,7 @@ export class OrderController {
     });
 
     if (!result.success) {
-      console.log('Validation errors:', result.error.format());
+      // console.log('Validation errors:', result.error.format());
       return res
         .status(400)
         .json({ ok: false, message: 'Invalid payment proof format or size' });

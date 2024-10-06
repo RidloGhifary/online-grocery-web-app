@@ -49,7 +49,7 @@ class ProductRepository {
     if (latitude && longitude) {
       // If latitude and longitude are provided, get the city name
       const cityName = await getCityByGeoIndo(latitude, longitude);
-      console.log('City name:', cityName);
+      // console.log('City name:', cityName);
       theCityName = cityName;
 
       if (theCityName) {
@@ -168,7 +168,7 @@ class ProductRepository {
       if (latitude && longitude) {
         // If latitude and longitude are provided, get the city name
         const cityName = await getCityByGeoIndo(latitude, longitude);
-        console.log('City name:', cityName);
+        // console.log('City name:', cityName);
 
         if (cityName) {
           // Clean the city name to remove "Kabupaten/kabupaten/Kota/kota"
@@ -179,7 +179,7 @@ class ProductRepository {
           const cityFromDB = await prisma.city.findFirst({
             where: { city_name: theCityName },
           });
-          console.log('City from DB:', cityFromDB);
+          // console.log('City from DB:', cityFromDB);
 
           if (cityFromDB) {
             citiId = cityFromDB.id; // Use the city ID from the database
@@ -265,16 +265,16 @@ class ProductRepository {
     // }
     const isSuper =
       userLoggedIn.data?.role[0].role?.roles_permissions.filter(
-        (e) =>
+        (e: any) =>
           e.permission.name == 'super' ||
           userLoggedIn.data?.role[0].role?.name == 'super_admin',
       )[0].permission.name == 'super';
 
     const isAdmin =
       userLoggedIn.data?.role[0].role?.roles_permissions.filter(
-        (e) => e.permission.name == 'admin_access',
+        (e: any) => e.permission.name == 'admin_access',
       )[0].permission.name == 'admin_access';
-    console.log('product repooo');
+    // console.log('product repooo');
 
     try {
       const res = await prisma.product.findFirst({

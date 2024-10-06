@@ -29,7 +29,16 @@ const adminSchema = z.object({
   id: z.number().positive("ID should be in valid format"),
   username: z.string().min(1, { message: "Username is required" }).optional(),
   email: z.string().email({ message: "Invalid email address" }),
-  phone_number: z.string().nullable().optional().refine((value) => !value  || /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(value),'Not valid phone number'),
+  phone_number: z
+    .string()
+    .nullable()
+    .optional()
+    .refine(
+      (value) =>
+        !value ||
+        /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(value),
+      "Not valid phone number",
+    ),
   first_name: z
     .string()
     .min(1, { message: "First name is required" })
@@ -60,16 +69,16 @@ export default function AdminUpdateForm() {
   const roles = Array.isArray(rolesData?.data?.data) ? rolesData.data.data : [];
 
   const [uploadedImages, setUploadedImages] = useState<string | undefined>(
-    currentData?.image! ,
+    currentData?.image!,
   );
 
   const currentRole = currentData?.role ? currentData?.role[0].role?.id : 2;
 
-  console.log(roles);
+  // console.log(roles);
 
-  console.log("--");
+  // console.log("--");
 
-  console.log({ ...currentData, password: undefined, role_id: currentRole });
+  // console.log({ ...currentData, password: undefined, role_id: currentRole });
 
   const {
     register,
@@ -81,7 +90,7 @@ export default function AdminUpdateForm() {
   } = useForm<AdminFormValues>({
     resolver: zodResolver(adminSchema),
     defaultValues: { ...currentData, role_id: currentRole },
-    mode:'onChange'
+    mode: "onChange",
   });
 
   useEffect(() => {
@@ -261,7 +270,7 @@ export default function AdminUpdateForm() {
 
   useEffect(() => {
     if (mutation.isSuccess) {
-      console.log("success");
+      // console.log("success");
       const params = {
         search: queryParams.get("search") || "",
         orderField: queryParams.get("orderField") || "name",

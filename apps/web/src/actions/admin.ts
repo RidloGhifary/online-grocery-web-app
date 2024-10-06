@@ -207,7 +207,7 @@ export async function getAllAdminList({
       },
     );
     if (!response.ok) {
-      console.log(await response.json());
+      // console.log(await response.json());
 
       result.error = `Failed to fetch admin list: ${response.statusText}`;
       return result;
@@ -244,7 +244,7 @@ export async function createAdmin(
     });
     const response =
       (await prep.json()) as CommonResultInterface<UserInterface>;
-    console.log(response);
+    // console.log(response);
 
     if (!response.ok) {
       result.error = ` ${response.error}`;
@@ -281,7 +281,7 @@ export async function updateAdmin(
     );
     const response =
       (await prep.json()) as CommonResultInterface<UserInterface>;
-    console.log(response);
+    // console.log(response);
 
     if (!response.ok) {
       result.error = ` ${response.error}`;
@@ -302,12 +302,12 @@ export async function deleteAdmin(
   let result: CommonResultInterface<boolean> = {
     ok: false,
   };
-  console.log(`${process.env.BACKEND_URL}/admins/manage-admin/delete/${id}`);
+  // console.log(`${process.env.BACKEND_URL}/admins/manage-admin/delete/${id}`);
 
   try {
     const token = await getCookies("token");
     if (!token) throw new Error("403");
-    console.log(`${process.env.BACKEND_URL}/admins/manage-admin/delete/${id}`);
+    // console.log(`${process.env.BACKEND_URL}/admins/manage-admin/delete/${id}`);
 
     const prep = await fetch(
       `${process.env.BACKEND_URL}/admins/manage-admin/delete/${id}`,

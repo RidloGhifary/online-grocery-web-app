@@ -64,7 +64,7 @@ export default function AdminProductUpdateForm() {
   const queryParams = useSearchParams();
 
   const queryClient = useQueryClient();
-  const { data: categories, isLoading:categoryLoading } = useProductCategory();
+  const { data: categories, isLoading: categoryLoading } = useProductCategory();
 
   const controls = useDragControls();
   const [, setCurrentOperation] = useAtom(currentProductOperation);
@@ -225,7 +225,7 @@ export default function AdminProductUpdateForm() {
 
   useEffect(() => {
     if (mutation.isSuccess) {
-      console.log("success");
+      // console.log("success");
       const params = {
         search: queryParams.get("search") || "",
         orderField: queryParams.get("orderField") || "product_name",
@@ -301,7 +301,9 @@ export default function AdminProductUpdateForm() {
             (option) => option.value === watch("product_category_id"),
           )}
           isLoading={categoryLoading}
-          loadingMessage={()=><span className="loading loading-spinner loading-xs"></span>}
+          loadingMessage={() => (
+            <span className="loading loading-spinner loading-xs"></span>
+          )}
         />
         {errors.product_category_id && (
           <p className="text-red-500">{errors.product_category_id.message}</p>

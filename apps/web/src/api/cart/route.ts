@@ -69,7 +69,7 @@ export async function getCartItems(
     const response = await api.get<GetCartItemsResponse>("/cart/items", {
       params: { page, pageSize, sort, order, search },
     });
-    console.log(response);
+    // console.log(response);
     return response;
   } catch (error) {
     throw new Error(`Failed to fetch cart items: ${error}`);

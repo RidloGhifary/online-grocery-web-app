@@ -1,7 +1,10 @@
 "use server";
 import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
 import { getCookies } from "./cookies";
-import { CategoryCompleteInterface, CategoryInterface } from "@/interfaces/CategoryInterface";
+import {
+  CategoryCompleteInterface,
+  CategoryInterface,
+} from "@/interfaces/CategoryInterface";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import createQueryParams from "@/utils/createQueryParams";
 
@@ -36,7 +39,7 @@ export async function getProductCategoryList({
       (await response.json()) as unknown as CommonPaginatedResultInterface<
         CategoryCompleteInterface[]
       >;
-    console.log(`${process.env.BACKEND_URL}/categories`);
+    // console.log(`${process.env.BACKEND_URL}/categories`);
     // console.log(response);
     // console.log(data.data.pagination);
     result = data;
@@ -69,7 +72,7 @@ export async function createCategory(
     });
     const response =
       (await prep.json()) as CommonResultInterface<CategoryInterface>;
-    console.log(response);
+    // console.log(response);
 
     if (!response.ok) {
       result.error = ` ${response.error}`;
@@ -103,7 +106,7 @@ export async function updateCategory(
     });
     const response =
       (await prep.json()) as CommonResultInterface<CategoryInterface>;
-    console.log(response);
+    // console.log(response);
 
     if (!response.ok) {
       result.error = ` ${response.error}`;
@@ -124,12 +127,12 @@ export async function deleteCategory(
   let result: CommonResultInterface<boolean> = {
     ok: false,
   };
-  console.log(`${process.env.BACKEND_URL}/categories/delete/${id}`);
+  // console.log(`${process.env.BACKEND_URL}/categories/delete/${id}`);
 
   try {
     const token = await getCookies("token");
     if (!token) throw new Error("403");
-    console.log(`${process.env.BACKEND_URL}/categories/delete/${id}`);
+    // console.log(`${process.env.BACKEND_URL}/categories/delete/${id}`);
 
     const prep = await fetch(
       `${process.env.BACKEND_URL}/categories/delete/${id}`,

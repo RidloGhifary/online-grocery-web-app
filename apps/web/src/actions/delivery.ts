@@ -21,12 +21,12 @@ export async function getDeliveryOptions({
 
   try {
     // Log the request parameters
-    console.log("Request Parameters: ", {
-      origin,
-      destination,
-      weight,
-      courier,
-    });
+    // console.log("Request Parameters: ", {
+    //   origin,
+    //   destination,
+    //   weight,
+    //   courier,
+    // });
 
     const body = new URLSearchParams({
       origin: origin.toString(),
@@ -45,16 +45,16 @@ export async function getDeliveryOptions({
     });
 
     // Log response status and headers
-    console.log("Response Status: ", response.status);
-    console.log("Response Headers: ", response.headers);
+    // console.log("Response Status: ", response.status);
+    // console.log("Response Headers: ", response.headers);
 
     // Parse response body
     let responseData;
     try {
       responseData = await response.json(); // Attempt to parse JSON
-      console.log("Full API Response: ", responseData);
+      // console.log("Full API Response: ", responseData);
     } catch (jsonError) {
-      console.error("Error parsing JSON: ", jsonError);
+      // console.error("Error parsing JSON: ", jsonError);
       result.error = "Failed to parse response body";
       return result;
     }
@@ -70,7 +70,7 @@ export async function getDeliveryOptions({
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to fetch product list";
-    console.log("Fetch error: ", error);
+    // console.log("Fetch error: ", error);
   }
 
   return result;

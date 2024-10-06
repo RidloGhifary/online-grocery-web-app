@@ -48,7 +48,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const refreshCart = async () => {
     try {
       const response = await getCartItems();
-      console.log("Cart items fetched:", response.data.data);
+      // console.log("Cart items fetched:", response.data.data);
       const cartItems = response.data.data;
 
       if (Array.isArray(cartItems)) {

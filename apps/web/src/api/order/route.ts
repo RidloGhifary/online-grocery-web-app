@@ -70,7 +70,7 @@ function getToken(): string | undefined {
 }
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
   },

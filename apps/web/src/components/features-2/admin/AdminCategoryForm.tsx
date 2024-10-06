@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,9 +28,7 @@ export default function CategoryForm() {
   const queryClient = useQueryClient();
   const queryParams = useSearchParams();
 
-  const [, setCurrentOperation] = useAtom(
-    currentProductCategoryOperation,
-  );
+  const [, setCurrentOperation] = useAtom(currentProductCategoryOperation);
 
   const {
     register,
@@ -48,7 +46,6 @@ export default function CategoryForm() {
   const mutation = useMutation({
     mutationFn: createCategory,
     onSuccess: () => {
-
       toast.success("Success add data", {
         position: "top-right",
         autoClose: 2000,
@@ -77,20 +74,26 @@ export default function CategoryForm() {
       // setTimeout(()=>{router.refresh();},2000)
       // router.refresh();
     },
-    onError : (e)=>{
-     let error : any  = ''
-     if (typeof JSON.parse(e.message) === 'string') {
-      error = JSON.parse(JSON.parse(e.message)) as unknown as CommonResultInterface<CategoryInterface>
-      error = (error as unknown as CommonResultInterface<CategoryInterface>).error
-     } else {
-      error = JSON.parse(e.message) as unknown as CommonResultInterface<CategoryInterface>
-      error = (error as unknown as CommonResultInterface<CategoryInterface>).error
-     }
-     
-     if (typeof error === 'object') {
-       if (Array.isArray(error)) {
-          console.log(error);
-          (error as Array<{message:string}>).forEach((e,i)=>{
+    onError: (e) => {
+      let error: any = "";
+      if (typeof JSON.parse(e.message) === "string") {
+        error = JSON.parse(
+          JSON.parse(e.message),
+        ) as unknown as CommonResultInterface<CategoryInterface>;
+        error = (error as unknown as CommonResultInterface<CategoryInterface>)
+          .error;
+      } else {
+        error = JSON.parse(
+          e.message,
+        ) as unknown as CommonResultInterface<CategoryInterface>;
+        error = (error as unknown as CommonResultInterface<CategoryInterface>)
+          .error;
+      }
+
+      if (typeof error === "object") {
+        if (Array.isArray(error)) {
+          // console.log(error);
+          (error as Array<{ message: string }>).forEach((e, i) => {
             toast.error(e.message, {
               position: "top-right",
               autoClose: 2000,
@@ -101,10 +104,10 @@ export default function CategoryForm() {
               progress: undefined,
               theme: "colored",
               transition: Bounce,
-              containerId:10912,
-              toastId:i
+              containerId: 10912,
+              toastId: i,
             });
-          })
+          });
         }
       } else {
         toast.error(error.error, {
@@ -117,21 +120,20 @@ export default function CategoryForm() {
           progress: undefined,
           theme: "colored",
           transition: Bounce,
-          containerId:10912
+          containerId: 10912,
         });
       }
-    }
+    },
   });
   const onSubmit = (data: CategoryFormValues) => {
     // console.log("Form Data:", data);
     mutation.mutate(data as unknown as CategoryInterface);
   };
-  
 
   // Transform categories data for React Select
   useEffect(() => {
     if (mutation.isSuccess) {
-      console.log("success");
+      // console.log("success");
       queryClient.invalidateQueries({
         queryKey: [queryKeys.productCategories],
       });
@@ -170,9 +172,10 @@ export default function CategoryForm() {
           disabled={mutation.isSuccess}
           {...register("display_name")}
         />
-        {errors.display_name && <p className="text-red-500">{errors.display_name.message}</p>}
+        {errors.display_name && (
+          <p className="text-red-500">{errors.display_name.message}</p>
+        )}
       </label>
-
 
       <div className="flex max-w-full justify-end py-5">
         <ButtonWithAction type="submit" replaceTWClass="btn btn-primary btn-sm">
@@ -181,7 +184,7 @@ export default function CategoryForm() {
             <span className="loading loading-spinner loading-xs"></span>
           ) : mutation.isSuccess ? (
             <>
-            <FaCheck />
+              <FaCheck />
             </>
           ) : (
             ""

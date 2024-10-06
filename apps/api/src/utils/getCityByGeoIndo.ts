@@ -18,8 +18,8 @@ export default async function getCityByGeoIndo(
 
     const results = response.data.results;
     // console.log(results[0].components.county);
-    console.log(results);
-    
+    // console.log(results);
+
     if (results && results.length > 0) {
       const city =
         (results[0].components.city_district as string) ||

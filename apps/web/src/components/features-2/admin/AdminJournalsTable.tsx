@@ -21,42 +21,48 @@ export default function AdminJournalsTable({
       : "N/A";
   };
 
-  const [selectedStoreStock, setSelectedStoreStock] = useAtom(currentStoreInStockAtom);
+  const [selectedStoreStock, setSelectedStoreStock] = useAtom(
+    currentStoreInStockAtom,
+  );
 
   const handleAllow = (id: number) => {
-    console.log(`Allow clicked for stock adjustment ID: ${id}`);
+    // console.log(`Allow clicked for stock adjustment ID: ${id}`);
     // Logic to approve the adjustment
   };
 
   const handleReject = (id: number) => {
-    console.log(`Reject clicked for stock adjustment ID: ${id}`);
+    // console.log(`Reject clicked for stock adjustment ID: ${id}`);
     // Logic to reject the adjustment
   };
 
   // Helper function to check if action buttons should be shown
   const shouldShowActions = (adjustment: StockAdjustment) => {
     const { from_store_id, mutation_type, adjustment_related_end } = adjustment;
-  
+
     // Ensure the store matches the selected store
     const isStoreMatching = from_store_id === selectedStoreStock?.id;
     const isPending = mutation_type === "pending";
-    const hasNoEndRecordAfterPending = !adjustment_related_end || adjustment_related_end.length === 0;
-  
+    const hasNoEndRecordAfterPending =
+      !adjustment_related_end || adjustment_related_end.length === 0;
+
     // Check if adjustment_related_end has "purchase" or "abort" type
     const hasPurchaseOrAbort = adjustment_related_end?.some(
-      (end) => end.type === "purchase" || end.type === "abort"
+      (end) => end.type === "purchase" || end.type === "abort",
     );
-  
+
     // Ensure that actions are not shown if "purchase" or "abort" type exists
-    const shouldShow = isStoreMatching && isPending && hasNoEndRecordAfterPending && !hasPurchaseOrAbort;
-  
+    const shouldShow =
+      isStoreMatching &&
+      isPending &&
+      hasNoEndRecordAfterPending &&
+      !hasPurchaseOrAbort;
+
     // console.log("from_store_id:", from_store_id);
     // console.log("selectedStoreStock id:", selectedStoreStock?.id);
     // console.log("shouldShowActions:", shouldShow);
-  
+
     return shouldShow;
   };
-  
 
   return (
     <div className="overflow-x-auto">

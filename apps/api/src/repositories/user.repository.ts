@@ -88,7 +88,7 @@ class UserRepository {
         },
       });
       // !!();
-      
+
       if (!ress) {
         result.message = "You don't have any permission";
         result.error = '403 Forbidden Request';
@@ -96,18 +96,18 @@ class UserRepository {
       }
       if (
         !ress.role?.roles_permissions.filter(
-          (e) =>
+          (e: any) =>
             e.permission.name.includes('super') ||
-            e.permission.name.includes(permission)||
-            ress.role?.name.includes('super')
-          )
-        ) {
-          result.message = "You don't have the related permission";
-          result.error = '403 Forbidden Request';
-        }
-        console.log(ress);
-        result.ok = true
-        result.data = true
+            e.permission.name.includes(permission) ||
+            ress.role?.name.includes('super'),
+        )
+      ) {
+        result.message = "You don't have the related permission";
+        result.error = '403 Forbidden Request';
+      }
+      // console.log(ress);
+      result.ok = true;
+      result.data = true;
     } catch (error) {
       result.message = 'An error occurred while checking permissions';
       result.error = '500 Internal Server Error';

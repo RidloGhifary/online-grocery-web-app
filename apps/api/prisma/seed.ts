@@ -563,6 +563,23 @@ async function main() {
         deletedAt: null,
         province_id: 10,
       },
+      {
+        created_by: 1, 
+        name: 'KTNG Ogro Cabang',
+        store_type: 'branch',
+        city_id: 455, 
+        address: '456 Elm St',
+        kecamatan: 'Uptown',
+        kelurahan: 'North',
+        image: 'https://placehold.co/600x400.svg',
+        latitude: new Prisma.Decimal(-6.16667),
+        longtitude: new Prisma.Decimal(106.48333),
+        id: 4,
+        createdAt: new Date(),
+        updatedAt: null,
+        deletedAt: null,
+        province_id: 3,
+      },
     ];
 
     const expedition = prisma.expedition.createMany({

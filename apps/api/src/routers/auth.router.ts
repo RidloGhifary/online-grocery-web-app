@@ -42,12 +42,14 @@ export class AuthRouter {
     this.router.get(
       '/google/callback',
       passport.authenticate('google', {
-        failureRedirect: `${ENV.API_URL}/api/auth/google/failure`,
+        failureRedirect: `${process.env.API_URL}/api/auth/google/failure`,
         failureMessage: 'Google authentication failed or was canceled',
       }),
       function (req, res) {
         const { token } = req.user as any;
-        res.redirect(`${ENV.NEXT_PUBLIC_APP_URL}/redirect?token=${token}`);
+        res.redirect(
+          `${process.env.NEXT_PUBLIC_APP_URL}/redirect?token=${token}`,
+        );
       },
     );
     this.router.get('/google/failure', (req, res) => {
@@ -55,7 +57,7 @@ export class AuthRouter {
         (req.session as any).messages?.[0] ||
         'Google authentication failed or was canceled';
       res.redirect(
-        `${ENV.NEXT_PUBLIC_APP_URL}/redirect?error=${encodeURIComponent(failureMessage)}`,
+        `${process.env.NEXT_PUBLIC_APP_URL}/redirect?error=${encodeURIComponent(failureMessage)}`,
       );
     });
   }

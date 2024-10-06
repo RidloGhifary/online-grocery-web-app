@@ -13,7 +13,8 @@ export default function GoogleLoginButton({
   const router = useRouter();
 
   const onClick = () => {
-    router.push(process.env.NEXT_PUBLIC_BASE_API_URL + "/auth/google");
+    router.push(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/google`);
+    // router.push(process.env.NEXT_PUBLIC_BASE_API_URL + "/auth/google");
   };
 
   return (

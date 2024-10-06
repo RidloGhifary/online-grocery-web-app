@@ -5,11 +5,12 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "cross-env NODE_ENV=development ts-node-dev -r tsconfig-paths/register src/index.ts",
-    "build": "prisma generate && tsc && tsc-alias && cp .env ./dist/.env",
+    "build": "npx prisma generate && tsc && tsc-alias && npx prisma migrate deploy && npx prisma db seed",
     "serve": "cross-env NODE_ENV=production node dist/src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prisma": "npx prisma",
     "migrate": "dotenv -e .env.development -- npx prisma migrate dev",
+    "migrate:prod": "npx prisma migrate dev --name newInit",
     "migrate:clean": "dotenv -e \".env.development\" -- npx prisma migrate reset --skip-seed",
     "migrate:seed": "dotenv -e \".env.development\" -- npx prisma db seed"
   },

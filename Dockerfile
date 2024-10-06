@@ -9,7 +9,8 @@ ENV NODE_ENV=${NODE_ENV}
 WORKDIR /opt
 
 # Copy root-level files
-COPY ./package.json ./package-lock.json ./turbo.json ./.env /opt/
+COPY ./package.json ./turbo.json ./.env /opt/
+# COPY ./package.json ./package-lock.json ./turbo.json ./.env /opt/
 
 COPY ./apps /opt/apps
 # Install root-level dependencies (if needed)

@@ -718,8 +718,10 @@ async function main() {
       skipDuplicates: true,
     });
 
-    const customer = await prisma.user.create({
-      data: {
+    const customer = await prisma.user.upsert({
+      where:{id:3},
+      update:{},
+      create:{
         id: 3,
         email: 'user.test@test.gmail',
         first_name: 'test',
@@ -753,6 +755,8 @@ async function main() {
         addresses: true,
       },
     });
+    console.log(customer);
+    
 
     const order = await prisma.order.createMany({
       data: [

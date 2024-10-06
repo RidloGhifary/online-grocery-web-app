@@ -10,6 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prisma": "npx prisma",
     "migrate": "dotenv -e .env.development -- npx prisma migrate dev",
+    "migrate:prod": "npx prisma migrate dev --name newInit",
     "migrate:clean": "dotenv -e \".env.development\" -- npx prisma migrate reset --skip-seed",
     "migrate:seed": "dotenv -e \".env.development\" -- npx prisma db seed"
   },

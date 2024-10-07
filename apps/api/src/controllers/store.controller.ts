@@ -35,8 +35,8 @@ export class StoreController {
         orderBy: {
           createdAt: 'asc',
         },
-        take: 20,
-        skip: (Number(page) - 1) * 20,
+        take: 10,
+        skip: (Number(page) - 1) * 10,
       });
 
       const pagination = paginate({

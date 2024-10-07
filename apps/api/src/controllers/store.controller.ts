@@ -41,7 +41,8 @@ export class StoreController {
 
       const pagination = paginate({
         pageNumber: Number(page),
-        totalData: stores.length,
+        totalData: await prisma.store.count(),
+        limitNumber: 10
       });
 
       res.status(200).json({ ok: true, data: stores, pagination });

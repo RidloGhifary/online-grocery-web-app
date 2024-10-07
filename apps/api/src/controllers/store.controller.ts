@@ -35,13 +35,14 @@ export class StoreController {
         orderBy: {
           createdAt: 'asc',
         },
-        take: 20,
-        skip: (Number(page) - 1) * 20,
+        take: 10,
+        skip: (Number(page) - 1) * 10,
       });
 
       const pagination = paginate({
         pageNumber: Number(page),
-        totalData: stores.length,
+        totalData: await prisma.store.count(),
+        limitNumber: 10
       });
 
       res.status(200).json({ ok: true, data: stores, pagination });

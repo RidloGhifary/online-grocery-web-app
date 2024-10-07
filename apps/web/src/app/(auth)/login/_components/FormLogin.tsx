@@ -56,19 +56,23 @@ export default function FormLogin() {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       setCookies("token", res.token as string);
 
-      if (callbackUrl) {
-        router.push(callbackUrl);
-        router.refresh();
-      } else if (
-        res?.data &&
-        (res.data as { role: string }).role.includes("admin")
-      ) {
-        router.push("/admin");
-        router.refresh();
-      } else {
-        router.push("/");
-        router.refresh();
-      }
+      const isAdmin = res?.data?.role!.includes("admin");
+      router.push(callbackUrl ? callbackUrl : isAdmin ? "/admin":"/");
+
+
+      // if (callbackUrl) {
+      //   router.push(callbackUrl);
+      //   router.refresh();
+      // } else if (
+      //   res?.data &&
+      //   (res.data as { role: string }).role.includes("admin")
+      // ) {
+      //   router.push("/admin");
+      //   router.refresh();
+      // } else {
+      //   router.push("/");
+      //   router.refresh();
+      // }
 
       router.refresh();
     },

@@ -1,7 +1,5 @@
 import { ENV } from '@/config';
 import CommonResultInterface from '@/interfaces/CommonResultInterface';
-import { userRepository } from '@/repositories/user.repository';
-import { UserWithRoleAndPermissionEntity } from '@/types/UserType';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
 export default function tokenValidation(
@@ -86,6 +84,6 @@ export default function tokenValidation(
   //     }
   //   }
 
-  console.log('REsult, ', result);
+  // console.log('REsult, ', result);
   return result;
 }

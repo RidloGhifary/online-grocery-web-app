@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { getVouchers } from "@/api/checkout/route";
 import convertRupiah from "@/utils/convertRupiah";
 import { useCart } from "@/context/CartContext";
 import CheckoutSummary from "@/components/CheckoutSummary";
@@ -14,9 +15,9 @@ import DeliveryService from "./deliverySection/DeliveryService";
 import DeliveryNotes from "./deliverySection/DeliveryNotes";
 import ErrorInfo from "@/components/ErrorInfo";
 import { getNearestStore } from "@/api/checkout/route";
-import { createOrder } from "@/api/order/route";
+import { createOrder } from "@/api/checkout/route";
 import { useRouter } from "next/navigation";
-import { Modal } from "@/components/Modal";
+import { Modal } from "@/components/features-2/ui/Modal";
 import MainButton from "@/components/MainButton";
 
 interface Props {
@@ -28,18 +29,32 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
   const selectedAddressActive = user?.addresses?.find(
     (address) => address?.is_primary,
   );
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [storeCityId, setStoreCityId] = useState<number | null>(null);
+  const [vouchers, setVouchers] = useState<any[]>([]);
   const [selectedCourierPrice, setSelectedCourierPrice] = useState<number>(0);
-  const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
   const [selectedCourier, setSelectedCourier] = useState<string>("jne");
   const [deliveryService, setDeliveryService] = useState<number>(0);
   const [deliveryNotes, setDeliveryNotes] = useState("");
+  const [selectedProductVoucher, setSelectedProductVoucher] = useState<
+    any | null
+  >(null);
+  const [selectedDeliveryVoucher, setSelectedDeliveryVoucher] = useState<
+    any | null
+  >(null);
+  const [subtotal, setSubtotal] = useState<number>(0);
+  const [deliveryTotal, setDeliveryTotal] = useState<number>(0);
+
   const [selectedAddress, setSelectedAddress] =
     useState<UserAddressProps | null>(
       selectedAddressActive as UserAddressProps,
     );
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    refreshCart();
+  }, []);
+
   const totalWeight =
     checkoutItems.length > 0
       ? checkoutItems.reduce(
@@ -48,21 +63,6 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
         )
       : 10;
   const router = useRouter();
-
-  useEffect(() => {
-    refreshCart();
-  }, []);
-
-  // useEffect(() => {
-  //   if (checkoutItems.length > 0) {
-  //     const weight = checkoutItems.reduce(
-  //       (acc, item) => acc + item.qty * item?.product?.unit_in_gram,
-  //       0,
-  //     );
-  //     // setTotalWeight(weight);
-  //     console.log("Total weight calculated:", weight);
-  //   }
-  // }, [checkoutItems]);
 
   const { data: nearestStoreData, error: nearestStoreError } = useQuery({
     queryKey: ["nearestStore", selectedAddress?.id],
@@ -109,10 +109,165 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
     if (deliveryData) {
       const initialPrice =
         deliveryData?.data?.results[0]?.costs[0]?.cost[0]?.value;
-      setSelectedCourierPrice(initialPrice);
-      setDeliveryService(initialPrice);
+      if (initialPrice) {
+        setSelectedCourierPrice(initialPrice);
+        setDeliveryService(initialPrice);
+      }
     }
   }, [deliveryData]);
+
+  useEffect(() => {
+    const fetchVouchers = async () => {
+      try {
+        const response = await getVouchers();
+        if (response.data && Array.isArray(response.data.vouchers)) {
+          const allVouchers = response.data.vouchers.map((v: any) => ({
+            id: v.id,
+            voucher: v.voucher,
+            voucher_type: v.voucher_type,
+            discount_type: v.discount_type,
+            product_discount: v.product_discount
+              ? {
+                  discount: v.product_discount.discount,
+                  discount_type: v.product_discount.discount_type,
+                }
+              : undefined,
+            type: v.type,
+            discountAmount: v.discountAmount,
+            discountType: v.discountType,
+            delivery_discount: v.delivery_discount,
+            is_delivery_free: v.is_delivery_free,
+            discount_amount: v.discount_amount,
+            product: v.product ? { name: v.product.name } : undefined,
+            description: v.description,
+          }));
+
+          setVouchers(allVouchers);
+        } else {
+          console.error("Invalid voucher data format", response.data);
+          setErrorMessage("Invalid voucher data format.");
+        }
+      } catch (error) {
+        console.error("Error fetching vouchers", error);
+        setErrorMessage("Error fetching vouchers. Please try again later.");
+      }
+    };
+
+    fetchVouchers();
+  }, []);
+
+  useEffect(() => {
+    if (checkoutItems) {
+      const initialSubtotal = checkoutItems.reduce(
+        (acc, item) => acc + item.qty * item.product.price,
+        0,
+      );
+      setSubtotal(initialSubtotal);
+    }
+  }, [checkoutItems]);
+
+  const handleProductVoucherSelect = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const selectedVoucher = vouchers.find(
+      (voucher) => voucher.id.toString() == e.target.value,
+    );
+
+    if (selectedVoucher) {
+      const discount = selectedVoucher.product_discount?.discount || 0;
+      const discountType =
+        selectedVoucher.product_discount?.discount_type || "nominal";
+
+      setSelectedProductVoucher({
+        id: selectedVoucher.id,
+        voucher: selectedVoucher.voucher,
+        discountAmount: discount,
+        discountType: discountType,
+        type: "product",
+      });
+    }
+  };
+
+  const handleDeliveryVoucherSelect = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const selectedVoucher = vouchers.find(
+      (voucher) => voucher.id.toString() == e.target.value,
+    );
+
+    if (selectedVoucher) {
+      const discount = selectedVoucher.delivery_discount || 0;
+      const discountType =
+        selectedVoucher.voucher_type === "delivery_free"
+          ? "free"
+          : "percentage";
+
+      setSelectedDeliveryVoucher({
+        id: selectedVoucher.id,
+        discountAmount: discount,
+        discountType: discountType,
+        type: "delivery",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (selectedProductVoucher && checkoutItems) {
+      let newSubtotal = checkoutItems.reduce((acc, item) => {
+        let discountedPrice = item.product.price;
+
+        if (selectedProductVoucher) {
+          const discount = selectedProductVoucher?.discountAmount || 0;
+          const discountType =
+            selectedProductVoucher?.discountType || "nominal";
+
+          if (discountType === "percentage") {
+            discountedPrice = item.product.price * ((100 - discount) / 100);
+          } else if (discountType === "nominal") {
+            discountedPrice = Math.max(0, item.product.price - discount);
+          }
+        }
+
+        return acc + discountedPrice * item.qty;
+      }, 0);
+
+      setSubtotal(newSubtotal);
+    }
+  }, [selectedProductVoucher, checkoutItems]);
+
+  // useEffect(() => {
+  //   if (selectedProductVoucher && checkoutItems) {
+  //     let newSubtotal = checkoutItems.reduce(
+  //       (acc, item) => acc + item.qty * item.product.price,
+  //       0,
+  //     );
+  //     const discount = selectedProductVoucher?.discountAmount || 0;
+  //     const discountType = selectedProductVoucher?.discountType || "nominal";
+  //     if (discountType === "percentage") {
+  //       newSubtotal = newSubtotal * ((100 - discount) / 100);
+  //     } else if (discountType === "nominal") {
+  //       newSubtotal = Math.max(0, newSubtotal - discount);
+  //     }
+  //     setSubtotal(newSubtotal);
+  //   }
+  // }, [selectedProductVoucher, checkoutItems]);
+
+  useEffect(() => {
+    if (selectedDeliveryVoucher && selectedCourierPrice > 0) {
+      const discount = selectedDeliveryVoucher?.discountAmount || 0;
+      const discountType =
+        selectedDeliveryVoucher?.discountType || "percentage";
+
+      if (discountType === "free") {
+        setDeliveryTotal(0);
+      } else if (discountType === "percentage") {
+        const discountedDelivery = selectedCourierPrice * (1 - discount / 100);
+        setDeliveryTotal(Math.max(0, discountedDelivery));
+      }
+    } else if (selectedCourierPrice > 0) {
+      setDeliveryTotal(selectedCourierPrice);
+    }
+  }, [selectedDeliveryVoucher, selectedCourierPrice]);
 
   const handleCreateOrder = async () => {
     try {
@@ -126,7 +281,14 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
         selectedAddressId: selectedAddress?.id as number,
         storeId: nearestStoreData?.data?.closestStore.id as number,
         selectedCourier,
-        selectedCourierPrice,
+        selectedCourierPrice: deliveryTotal,
+        note: deliveryNotes,
+        productVoucherId: selectedProductVoucher
+          ? selectedProductVoucher.id
+          : null,
+        deliveryVoucherId: selectedDeliveryVoucher
+          ? selectedDeliveryVoucher.id
+          : null,
       };
 
       const response = await createOrder(orderData);
@@ -134,10 +296,15 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
       if (response.status === 200) {
         router.push(`/user/orders`);
       } else {
-        console.log("Failed to create order: ", response.data);
+        console.error("Failed to create order: ", response.data);
+        setErrorMessage("Failed to create order. Please try again.");
       }
     } catch (error: any) {
       console.error("Error creating order: ", error);
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Error creating order. Please try again.",
+      );
     }
   };
 
@@ -151,7 +318,7 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
   };
 
   return (
-    <div className="container mx-auto mb-20 h-screen p-4">
+    <div className="container mx-auto mb-20 h-[150vh] lg:h-screen p-4">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <div className="lg:col-span-3">
           {nearestStoreData && nearestStoreData.data && (
@@ -209,15 +376,28 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
           <CheckoutSummary
             items={checkoutItems}
             deliveryPrice={selectedCourierPrice}
+            selectedProductVoucher={selectedProductVoucher}
+            selectedDeliveryVoucher={selectedDeliveryVoucher}
             showDeliveryPrice={true}
             buttonText="Proceed to Payment"
             onCheckout={handleOpenModal}
-            showVoucherButton={false}
+            onProductVoucherSelect={handleProductVoucherSelect}
+            onDeliveryVoucherSelect={handleDeliveryVoucherSelect}
+            subtotal={subtotal}
+            deliveryTotal={deliveryTotal}
+            productVouchers={vouchers.filter(
+              (v) =>
+                v.voucher_type === "buy_n_get_n" ||
+                v.voucher_type === "product_discount",
+            )}
+            deliveryVouchers={vouchers.filter(
+              (v) =>
+                v.voucher_type === "delivery_discount" ||
+                v.voucher_type === "delivery_free",
+            )}
           />
         </div>
       </div>
-
-      {/* Modal Confirmation */}
       <Modal
         show={isModalOpen}
         closeButton={false}
@@ -249,31 +429,20 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
             <span className="uppercase">{selectedCourier}</span>
           </p>
           <p>
-            <strong>Subtotal:</strong>{" "}
-            {convertRupiah(
-              checkoutItems.reduce(
-                (acc, item) => acc + item.qty * item.product.price,
-                0,
-              ),
-            )}
+            <strong>Subtotal:</strong> {convertRupiah(subtotal)}
           </p>
           <p>
-            <strong>Delivery Price:</strong>{" "}
-            {convertRupiah(selectedCourierPrice)}
+            <strong>Delivery Price:</strong> {convertRupiah(deliveryTotal)}
           </p>
           <p>
-            <strong>Total:</strong>{" "}
-            {convertRupiah(
-              checkoutItems.reduce(
-                (acc, item) => acc + item.qty * item.product.price,
-                0,
-              ) + selectedCourierPrice,
-            )}
+            <strong>Total:</strong> {convertRupiah(subtotal + deliveryTotal)}
           </p>
         </div>
         <div className="modal-action flex justify-center">
           <MainButton
-            onClick={() => setIsModalOpen(false)}
+            onClick={() => {
+              setIsModalOpen(false);
+            }}
             text="Cancel"
             variant="danger"
           />
@@ -284,6 +453,11 @@ const CheckOutContent: React.FC<Props> = ({ user }) => {
           />
         </div>
       </Modal>
+      {errorMessage && (
+        <div className="mt-auto mb-4 text-center text-red-600 font-semibold">
+          <p>{errorMessage}</p>
+        </div>
+      )}
     </div>
   );
 };

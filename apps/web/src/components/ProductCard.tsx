@@ -11,9 +11,13 @@ import parseImage from "@/utils/parseImage";
 
 interface ProductCardProps {
   product: ProductProps;
+  geoLocation?: boolean;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  geoLocation,
+}: ProductCardProps) {
   const imageSrc = product?.image
     ? parseImage(product?.image as string)[0]
     : "/default-image.jpeg";

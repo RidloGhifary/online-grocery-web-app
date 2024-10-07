@@ -23,8 +23,8 @@ export async function addAddress(formData: CreateAddressFormData) {
     });
 
     const data = await response.json();
-    result.ok = data.ok || true;
-    result.message = data.message || "Address added successfully";
+    result.ok = data.ok;
+    result.message = data.message;
     result.data = data.data;
   } catch (error) {
     result.error =
@@ -54,8 +54,8 @@ export async function asPrimaryAddress({ id }: { id: number }) {
     );
 
     const data = await response.json();
-    result.ok = data.ok || true;
-    result.message = data.message || "Address set as primary";
+    result.ok = data.ok;
+    result.message = data.message;
     result.data = data.data;
   } catch (error) {
     result.error =
@@ -87,8 +87,8 @@ export async function deleteAddress({ id }: { id: number }) {
     );
 
     const data = await response.json();
-    result.ok = data.ok || true;
-    result.message = data.message || "Address deleted successfully";
+    result.ok = data.ok;
+    result.message = data.message;
   } catch (error) {
     result.error =
       error instanceof Error ? error.message : "Failed to delete address";

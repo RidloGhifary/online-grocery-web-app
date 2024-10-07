@@ -22,6 +22,10 @@ import { StoreRouter } from './routers/store.router';
 import { AdminRouter } from './routers/admin.router';
 import { CheckoutRouter } from './routers/checkout.router';
 import { OrderRouter } from './routers/order.router';
+import { RoleRouter } from './routers/role.router';
+import { WarehouseRouter } from './routers/warehouse.router';
+import { StockRouter } from './routers/stock.router';
+import { MutationRouter } from './routers/mutation.router';
 
 export default class App {
   private app: Express;
@@ -78,6 +82,10 @@ export default class App {
     const adminRouter = new AdminRouter();
     const checkoutRouter = new CheckoutRouter();
     const orderRouter = new OrderRouter();
+    const roleRouter = new RoleRouter();
+    const warehouseRouter = new WarehouseRouter();
+    const stockRouter = new StockRouter()
+    const mutationRouter = new MutationRouter();
 
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, Purwadhika Student API!`);
@@ -94,6 +102,10 @@ export default class App {
     this.app.use('/api/stores', storeRouter.getRouter());
     this.app.use('/api/orders', orderRouter.getRouter());
     this.app.use('/api/admins', adminRouter.getRouter());
+    this.app.use('/api/roles', roleRouter.getRouter());
+    this.app.use('/api/warehouse', warehouseRouter.getRouter());
+    this.app.use('/api/stocks', stockRouter.getRouter())
+    this.app.use('/api/mutations', mutationRouter.getRouter());
   }
 
   public start(): void {

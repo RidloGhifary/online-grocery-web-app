@@ -16,6 +16,14 @@ export class CheckoutRouter {
     this.router.post('/store-location', verifyToken, (req, res) =>
       this.checkoutController.findNearestStore(req as CustomRequest, res),
     );
+
+    this.router.post('/create-order', verifyToken, (req, res) =>
+      this.checkoutController.createOrder(req as CustomRequest, res),
+    );
+
+    this.router.get('/get-vouchers', verifyToken, (req, res) =>
+      this.checkoutController.getVouchers(req as CustomRequest, res),
+    );
   }
 
   getRouter(): Router {

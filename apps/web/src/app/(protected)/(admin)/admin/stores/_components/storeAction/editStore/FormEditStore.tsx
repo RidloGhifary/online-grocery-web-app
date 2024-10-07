@@ -44,12 +44,12 @@ export default function FormEditStore({
           className={`cursor-pointer ${isLoading && "opacity-70"}`}
         >
           <Image
-            src={(store && store?.image) || image || "/store.webp"}
+            src={image || (store && store?.image) || "/store.webp"}
             alt="store image"
             width={200}
             height={200}
             priority
-            className="aspect-square h-[150px] w-[150px] rounded-full"
+            className="aspect-square h-[150px] w-[150px] rounded-full object-cover"
           />
         </label>
         <input
@@ -209,23 +209,13 @@ export default function FormEditStore({
           </span>
         </div>
       </label>
-      <div className="grid grid-cols-2 gap-1">
-        <button
-          disabled={isLoading}
-          type="button"
-          onClick={() => router.back()}
-          className="btn btn-error btn-sm w-full text-white md:btn-md"
-        >
-          {isLoading ? "Loading..." : "Cancel"}
-        </button>
-        <button
-          disabled={isLoading}
-          type="submit"
-          className="btn btn-primary btn-sm w-full text-white md:btn-md"
-        >
-          {isLoading ? "Loading..." : "Update"}
-        </button>
-      </div>
+      <button
+        disabled={isLoading}
+        type="submit"
+        className="btn btn-primary btn-sm w-full text-white md:btn-md"
+      >
+        {isLoading ? "Loading..." : "Update"}
+      </button>
     </form>
   );
 }

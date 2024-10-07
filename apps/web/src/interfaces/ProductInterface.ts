@@ -1,4 +1,6 @@
-import { Store } from "./product";
+import { CategoryCompleteInterface } from "./CategoryInterface";
+import { ProductDiscount } from "./product";
+import { StoreInterface } from "./store";
 
 export interface ProductCompleteInterface {
   id: number;
@@ -15,24 +17,18 @@ export interface ProductCompleteInterface {
   updatedAt: Date | string | null;
   deletedAt: Date | string | null;
   store_id: number | null;
-  product_category?: ProductCategoryInterface;
+  product_discounts: ProductDiscount[];
+  product_category?: CategoryCompleteInterface;
   StoreHasProduct?: StoreHasProductInterface[]
 }
 
-export interface ProductCategoryInterface {
-  id: number;
-  name: string;
-  display_name: string | null;
-  createdAt: Date | string | null;
-  updatedAt: Date | string | null;
-  deletedAt: Date | string | null;
-}
 
 export interface ProductCardListInterface {
   name: string;
   price: number;
   slug: string;
   city?: string;
+  image?: string
 }
 
 export interface ProductRecordInterface {
@@ -55,7 +51,7 @@ export interface StoreHasProductInterface {
   createdAt?: string | Date | null;
   updatedAt?: string | Date | null;
   deletedAt?: string | Date | null;
-  store?: Store
+  store?: StoreInterface
 }
 
 export interface UpdateProductInputInterface {
@@ -69,4 +65,21 @@ export interface UpdateProductInputInterface {
   price?: number;
   image?: string | null;
   unit_in_gram?: number ;
+}
+
+
+export interface ProductCartItem {
+  id: number;
+  product_id: number;
+  qty: number;
+  user_id: number;
+  store_id: number;
+  totalPrice: number;
+  product: {
+    name: string;
+    unit_in_gram: number;
+    price: number;
+    image: string;
+    description: string;
+  };
 }

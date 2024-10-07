@@ -11,12 +11,12 @@ export default async function Page() {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
     queryKey: [queryKeys.productCategories],
-    queryFn: async () => await getProductCategoryList(),
+    queryFn: () => getProductCategoryList({}),
   });
+
   return (
     <>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        {/* <AdminProductPage /> */}
         <AdminCategoriesPage/>
       </HydrationBoundary>
     </>

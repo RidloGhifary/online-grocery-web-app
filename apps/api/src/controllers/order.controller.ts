@@ -35,13 +35,12 @@ export class OrderController {
         queryValidation.data;
 
       const filterOptions: { [key: string]: number[] | undefined } = {
-        all: undefined, // No filtering for 'all'
-        ongoing: [1, 2, 3, 4], // Order statuses for ongoing
-        completed: [5], // Completed orders
-        cancelled: [6], // Cancelled orders
+        all: undefined,
+        ongoing: [1, 2, 3, 4],
+        completed: [5],
+        cancelled: [6],
       };
 
-      // Pagination options
       const pageSize = limit;
       const currentPage = page;
       const offset = (currentPage - 1) * pageSize;
@@ -63,11 +62,11 @@ export class OrderController {
 
       if (search) {
         whereClause.OR = [
-          { invoice: { contains: search, mode: 'insensitive' } },
+          { invoice: { contains: search || '' } },
           {
             order_details: {
               some: {
-                product: { name: { contains: search, mode: 'insensitive' } },
+                product: { name: { contains: search || '' } },
               },
             },
           },
@@ -115,7 +114,7 @@ export class OrderController {
 
       const totalOrders = await prisma.order.count({ where: whereClause });
 
-      const enhancedOrders = orders.map((order) => {
+      const enhancedOrders = orders.map((order: any) => {
         const totalProductPrice = order.order_details.reduce(
           (total: number, item: any) => {
             return total + item.price * item.qty;
@@ -161,6 +160,9 @@ export class OrderController {
       const order = await prisma.order.findUnique({
         where: { id: Number(orderId) },
         include: {
+          customer: {
+            select: { username: true, first_name: true, last_name: true },
+          },
           store: {
             select: {
               name: true,
@@ -171,6 +173,7 @@ export class OrderController {
           order_status: {
             select: {
               status: true,
+              id: true,
             },
           },
           expedition: {
@@ -203,19 +206,217 @@ export class OrderController {
         });
       }
 
-      const totalProductPrice = order.order_details.reduce((total, item) => {
-        return total + item.price * item.qty;
-      }, 0);
+      const totalProductPrice = order.order_details.reduce(
+        (total: any, item: any) => {
+          return total + item.price * item.qty;
+        },
+        0,
+      );
 
       const deliveryPrice =
         order.order_details[0].sub_total -
         order.order_details[0].price * order.order_details[0].qty;
 
+      let remainingTime = null;
+      if (order.cancelAt) {
+        const now = new Date();
+        const cancelAtTime = new Date(order.cancelAt);
+        remainingTime = cancelAtTime.getTime() - now.getTime();
+
+        if (order.order_status_id !== 1 && remainingTime > 0) {
+          await prisma.order.update({
+            where: { id: Number(orderId) },
+            data: { cancelAt: null },
+          });
+          remainingTime = null;
+        }
+
+        if (
+          remainingTime !== null &&
+          remainingTime <= 0 &&
+          order.order_status_id === 1
+        ) {
+          await prisma.order.update({
+            where: { id: Number(orderId) },
+            data: { order_status_id: 6 },
+          });
+
+          const updatedOrder = await prisma.order.findUnique({
+            where: { id: Number(orderId) },
+            include: {
+              customer: {
+                select: { username: true, first_name: true, last_name: true },
+              },
+              store: {
+                select: {
+                  name: true,
+                  address: true,
+                  city: { select: { city_name: true } },
+                },
+              },
+              order_status: {
+                select: { status: true, id: true },
+              },
+              expedition: {
+                select: { name: true, display_name: true },
+              },
+              address: {
+                select: {
+                  address: true,
+                  kecamatan: true,
+                  kelurahan: true,
+                  city: { select: { city_name: true } },
+                },
+              },
+              order_details: {
+                include: {
+                  product: { select: { name: true, image: true } },
+                },
+              },
+            },
+          });
+
+          return res.status(200).json({
+            ...updatedOrder,
+            totalProductPrice,
+            deliveryPrice,
+            remainingTime: null,
+          });
+        }
+      }
+
+      let remainingCompletionTime = null;
+      if (order.completeAt) {
+        const now = new Date();
+        const completeAtTime = new Date(order.completeAt);
+        remainingCompletionTime = completeAtTime.getTime() - now.getTime();
+
+        if (order.order_status_id !== 4 && remainingCompletionTime > 0) {
+          await prisma.order.update({
+            where: { id: Number(orderId) },
+            data: { completeAt: null },
+          });
+          remainingCompletionTime = null;
+        }
+
+        if (
+          remainingCompletionTime !== null &&
+          remainingCompletionTime <= 0 &&
+          order.order_status_id === 4
+        ) {
+          await prisma.order.update({
+            where: { id: Number(orderId) },
+            data: { order_status_id: 5 },
+          });
+
+          const updatedOrder = await prisma.order.findUnique({
+            where: { id: Number(orderId) },
+            include: {
+              customer: {
+                select: { username: true, first_name: true, last_name: true },
+              },
+              store: {
+                select: {
+                  name: true,
+                  address: true,
+                  city: { select: { city_name: true } },
+                },
+              },
+              order_status: {
+                select: { status: true, id: true },
+              },
+              expedition: {
+                select: { name: true, display_name: true },
+              },
+              address: {
+                select: {
+                  address: true,
+                  kecamatan: true,
+                  kelurahan: true,
+                  city: { select: { city_name: true } },
+                },
+              },
+              order_details: {
+                include: {
+                  product: { select: { name: true, image: true } },
+                },
+              },
+            },
+          });
+
+          return res.status(200).json({
+            ...updatedOrder,
+            totalProductPrice,
+            deliveryPrice,
+            remainingCompletionTime: null,
+          });
+        }
+      }
+
+      if (order.order_status_id === 1 && !order.cancelAt) {
+        const cancelationTime = new Date(Date.now() + 48 * 60 * 60 * 1000);
+        await prisma.order.update({
+          where: { id: Number(orderId) },
+          data: { cancelAt: cancelationTime },
+        });
+
+        const cancelJob = nodeSchedule.scheduleJob(
+          orderId.toString(),
+          cancelationTime,
+          async () => {
+            const order = await prisma.order.findUnique({
+              where: { id: Number(orderId) },
+            });
+
+            if (!order?.payment_proof) {
+              await prisma.order.update({
+                where: { id: Number(orderId) },
+                data: { order_status_id: 6 },
+              });
+            }
+          },
+        );
+
+        remainingTime = cancelationTime.getTime() - Date.now();
+      }
+
+      if (order.order_status_id === 4 && !order.completeAt) {
+        const completionTime = new Date(Date.now() + 48 * 60 * 60 * 1000);
+        await prisma.order.update({
+          where: { id: Number(orderId) },
+          data: { completeAt: completionTime },
+        });
+
+        const completionJob = nodeSchedule.scheduleJob(
+          orderId.toString(),
+          completionTime,
+          async () => {
+            const order = await prisma.order.findUnique({
+              where: { id: Number(orderId) },
+            });
+
+            if (order?.order_status_id === 4) {
+              await prisma.order.update({
+                where: { id: Number(orderId) },
+                data: { order_status_id: 5 },
+              });
+            }
+          },
+        );
+
+        remainingCompletionTime = completionTime.getTime() - Date.now();
+      }
+
       return res.status(200).json({
         ...order,
         totalProductPrice,
         deliveryPrice,
-        // createdAt: order.createdAt,
+        cancelAt: order.cancelAt,
+        completeAt: order.completeAt,
+        remainingTime: remainingTime ? Math.max(remainingTime, 0) : null,
+        remainingCompletionTime: remainingCompletionTime
+          ? Math.max(remainingCompletionTime, 0)
+          : null,
       });
     } catch (error) {
       console.error(error);
@@ -223,99 +424,15 @@ export class OrderController {
     }
   };
 
-  createOrder = async (req: CustomRequest, res: Response) => {
-    try {
-      const validation = createOrderSchema.safeParse(req.body);
-      if (!validation.success) {
-        return res.status(400).json({ error: validation.error.errors });
-      }
-
-      const {
-        userId,
-        checkoutItems,
-        selectedAddressId,
-        storeId,
-        selectedCourier,
-        selectedCourierPrice,
-      } = validation.data;
-
-      const currentUser = req.currentUser;
-      if (!currentUser) {
-        return res.status(401).json({ error: 'User not authenticated' });
-      }
-
-      const storeAdmin = await prisma.storeHasAdmin.findFirst({
-        where: { store_id: storeId },
-        select: { assignee_id: true },
-      });
-      if (!storeAdmin) {
-        return res.status(400).json({ error: 'No admin found for this store' });
-      }
-
-      const expedition = await prisma.expedition.findFirst({
-        where: { name: selectedCourier },
-        select: { id: true },
-      });
-      if (!expedition) {
-        return res.status(400).json({ message: 'Expedition not found' });
-      }
-
-      const newOrder = await prisma.order.create({
-        data: {
-          invoice: 'INV-TEMPDATA',
-          customer_id: userId,
-          managed_by_id: storeAdmin.assignee_id,
-          store_id: storeId,
-          expedition_id: expedition.id,
-          order_status_id: 1,
-          address_id: selectedAddressId,
-          order_details: {
-            create: checkoutItems.map((item) => ({
-              product_id: item.product_id,
-              qty: item.quantity,
-              store_id: storeId,
-              price: item.price,
-              sub_total: item.price * item.quantity + selectedCourierPrice,
-            })),
-          },
-        },
-      });
-
-      const invoice = `INV-${newOrder.id.toString().padStart(7, '0')}`;
-
-      await prisma.order.update({
-        where: { id: newOrder.id },
-        data: { invoice },
-      });
-
-      const cancelJob = nodeSchedule.scheduleJob(
-        newOrder.id.toString(),
-        new Date(Date.now() + 1 * 60 * 1000),
-        async () => {
-          const order = await prisma.order.findUnique({
-            where: { id: newOrder.id },
-          });
-
-          if (!order?.payment_proof) {
-            await prisma.order.update({
-              where: { id: newOrder.id },
-              data: { order_status_id: 6 },
-            });
-          }
-        },
-      );
-
-      return res.status(200).json(newOrder);
-    } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  };
+  ensureNumber(value: number | null): number {
+    return value ?? 0;
+  }
 
   cancelOrder = async (req: CustomRequest, res: Response) => {
-    console.log('Received params:', req.params);
+    // console.log('Received params:', req.params);
     const { id } = req.params;
 
-    console.log('Received order ID:', id);
+    // console.log('Received order ID:', id);
 
     try {
       const orderId = parseInt(id);
@@ -325,6 +442,7 @@ export class OrderController {
 
       const order = await prisma.order.findUnique({
         where: { id: orderId },
+        include: { order_details: true },
       });
 
       if (!order || order.customer_id !== req.currentUser?.id) {
@@ -343,6 +461,96 @@ export class OrderController {
         where: { id: orderId },
         data: { order_status_id: 6 },
       });
+
+      for (const detail of order.order_details) {
+        const stockAdjustment = await prisma.stocksAdjustment.findFirst({
+          where: { order_detail_id: detail.id, type: 'checkout' },
+        });
+
+        if (stockAdjustment && stockAdjustment.destinied_store_id !== null) {
+          // console.log('Updating original store stock...');
+
+          const storeHasProduct = await prisma.storeHasProduct.findFirst({
+            where: {
+              store_id: stockAdjustment.destinied_store_id,
+              product_id: detail.product_id,
+            },
+          });
+
+          if (storeHasProduct) {
+            // console.log(
+            //   'Restoring stock for the original store:',
+            //   storeHasProduct.id,
+            // );
+
+            await prisma.storeHasProduct.update({
+              where: { id: storeHasProduct.id },
+              data: {
+                qty: { increment: Math.abs(stockAdjustment.qty_change) },
+              },
+            });
+
+            await prisma.stocksAdjustment.create({
+              data: {
+                qty_change: Math.abs(stockAdjustment.qty_change),
+                type: 'cancel',
+                managed_by_id: order.managed_by_id,
+                product_id: detail.product_id,
+                detail: `cancel order for product id ${detail.product_id} in store id ${detail.store_id}`,
+                destinied_store_id: detail.store_id,
+                order_detail_id: detail.id,
+                adjustment_related_id: stockAdjustment.id,
+              },
+            });
+          } else {
+            console.error('Original store stock not found for update.');
+          }
+        }
+
+        const mutation = await prisma.stocksAdjustment.findFirst({
+          where: { order_detail_id: detail.id, mutation_type: 'pending' },
+        });
+
+        if (mutation && mutation.from_store_id !== null) {
+          // console.log('Updating mutation store stock...');
+
+          const aidingStoreHasProduct = await prisma.storeHasProduct.findFirst({
+            where: {
+              store_id: mutation.from_store_id,
+              product_id: detail.product_id,
+            },
+          });
+
+          if (aidingStoreHasProduct) {
+            // console.log(
+            //   'Restoring stock for the aiding store:',
+            //   aidingStoreHasProduct.id,
+            // );
+
+            await prisma.storeHasProduct.update({
+              where: { id: aidingStoreHasProduct.id },
+              data: { qty: { increment: Math.abs(mutation.qty_change) } },
+            });
+
+            await prisma.stocksAdjustment.create({
+              data: {
+                qty_change: mutation.qty_change * -1,
+                type: 'cancel',
+                managed_by_id: mutation.managed_by_id,
+                product_id: mutation.product_id,
+                detail: `aborted mutation of order detail ${detail.id} for checkout in store ${detail.store_id}, return product to store id ${mutation.from_store_id}`,
+                from_store_id: mutation.destinied_store_id,
+                destinied_store_id: mutation.from_store_id,
+                order_detail_id: detail.id,
+                mutation_type: 'abort',
+                adjustment_related_id: mutation.id,
+              },
+            });
+          } else {
+            console.error('Mutation store stock not found for update.');
+          }
+        }
+      }
 
       return res.status(200).json({ ok: true, order: cancelledOrder });
     } catch (error: any) {
@@ -379,10 +587,8 @@ export class OrderController {
 
       const completedOrder = await prisma.order.update({
         where: { id: parseInt(id) },
-        data: { order_status_id: 5 }, // completed
+        data: { order_status_id: 5 },
       });
-
-      // this.autoConfirmDelivery(order.id);
 
       return res.status(200).json({ ok: true, order: completedOrder });
     } catch (error) {
@@ -395,7 +601,7 @@ export class OrderController {
   autoConfirmDelivery = (orderId: number) => {
     nodeSchedule.scheduleJob(
       orderId.toString(),
-      new Date(Date.now() + 1 * 60 * 1000),
+      new Date(Date.now() + 48 * 60 * 60 * 1000),
       async () => {
         const order = await prisma.order.findUnique({ where: { id: orderId } });
 
@@ -410,13 +616,10 @@ export class OrderController {
   };
 
   updateOrderToDelivered = async (orderId: number) => {
-    // Update order status to delivered
     await prisma.order.update({
       where: { id: orderId },
       data: { order_status_id: 4 },
     });
-
-    // Schedule auto-confirmation
     this.autoConfirmDelivery(orderId);
   };
 
@@ -431,7 +634,7 @@ export class OrderController {
     });
 
     if (!result.success) {
-      console.log('Validation errors:', result.error.format());
+      // console.log('Validation errors:', result.error.format());
       return res
         .status(400)
         .json({ ok: false, message: 'Invalid payment proof format or size' });
@@ -452,6 +655,7 @@ export class OrderController {
         where: { id: parseInt(id) },
         data: {
           payment_proof: result.data.payment_proof,
+          cancelAt: null,
           order_status_id: 2,
         },
       });
@@ -465,181 +669,3 @@ export class OrderController {
     }
   };
 }
-// createOrder = async (req: CustomRequest, res: Response) => {
-//   try {
-//     const validation = createOrderSchema.safeParse(req.body);
-//     if (!validation.success) {
-//       return res.status(400).json({ error: validation.error.errors });
-//     }
-
-//     const {
-//       userId,
-//       checkoutItems,
-//       selectedAddressId,
-//       storeId,
-//       selectedCourier,
-//       selectedCourierPrice,
-//     } = validation.data;
-
-//     const currentUser = req.currentUser;
-//     if (!currentUser) {
-//       return res.status(401).json({ error: 'User not authenticated' });
-//     }
-
-//     const orderCount = await prisma.order.count();
-//     const invoice = `INV-${orderCount.toString().padStart(7, '0')}`;
-
-//     const storeAdmin = await prisma.storeHasAdmin.findFirst({
-//       where: { store_id: storeId },
-//       select: { assignee_id: true },
-//     });
-//     if (!storeAdmin) {
-//       return res.status(400).json({ error: 'No admin found for this store' });
-//     }
-
-//     const expedition = await prisma.expedition.findFirst({
-//       where: { name: selectedCourier },
-//       select: { id: true },
-//     });
-//     if (!expedition) {
-//       return res.status(400).json({ message: 'Expedition not found' });
-//     }
-
-//     const newOrder = await prisma.order.create({
-//       data: {
-//         invoice,
-//         customer_id: userId,
-//         managed_by_id: storeAdmin.assignee_id,
-//         store_id: storeId,
-//         expedition_id: expedition.id,
-//         order_status_id: 1,
-//         address_id: selectedAddressId,
-//         order_details: {
-//           create: checkoutItems.map((item) => ({
-//             product_id: item.product_id,
-//             qty: item.quantity,
-//             store_id: storeId,
-//             price: item.price,
-//             sub_total: item.price * item.quantity + selectedCourierPrice,
-//           })),
-//         },
-//       },
-//     });
-
-//     return res.status(200).json(newOrder);
-//   } catch (error) {
-//     return res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
-// uploadPaymentProof = async (req: CustomRequest, res: Response) => {
-//   const { id } = req.params;
-//   const result = uploadPaymentProofSchema.safeParse(req.body);
-
-//   console.log('Request body:', req.body);
-
-//   if (!result.success) {
-//     return res
-//       .status(400)
-//       .json({ ok: false, message: 'Invalid payment proof' });
-//   }
-
-//   try {
-//     const order = await prisma.order.findUnique({
-//       where: { id: parseInt(id) },
-//     });
-
-//     if (!order || order.customer_id !== req.currentUser?.id) {
-//       return res
-//         .status(404)
-//         .json({ ok: false, message: 'Order not found or unauthorized' });
-//     }
-
-//     const updatedOrder = await prisma.order.update({
-//       where: { id: parseInt(id) },
-//       data: {
-//         payment_proof: result.data.payment_proof,
-//         order_status_id: 2,
-//       },
-//     });
-
-//     return res.status(200).json({ ok: true, order: updatedOrder });
-//   } catch (error) {
-//     return res
-//       .status(500)
-//       .json({ ok: false, message: 'Payment proof upload failed', error });
-//   }
-// };
-
-// getOrdersByUser = async (req: CustomRequest, res: Response) => {
-//   const { userId } = req.params;
-
-//   try {
-//     const validation = getOrdersByUserSchema.safeParse({ userId });
-//     if (!validation.success) {
-//       return res.status(400).json({ error: validation.error.errors });
-//     }
-
-//     const currentUser = req.currentUser;
-//     if (!currentUser || Number(userId) !== currentUser.id) {
-//       return res.status(403).json({
-//         message: 'You do not have permission to view these orders',
-//       });
-//     }
-
-//     const orders = await prisma.order.findMany({
-//       where: { customer_id: Number(userId) },
-//       include: {
-//         store: {
-//           select: {
-//             name: true,
-//             address: true,
-//             city: { select: { city_name: true } },
-//           },
-//         },
-//         order_status: {
-//           select: {
-//             status: true,
-//           },
-//         },
-//         expedition: {
-//           select: { name: true },
-//         },
-//         address: {
-//           select: {
-//             address: true,
-//             kecamatan: true,
-//             kelurahan: true,
-//             city: { select: { city_name: true } },
-//           },
-//         },
-//         order_details: {
-//           include: {
-//             product: { select: { name: true, image: true } },
-//           },
-//         },
-//       },
-//     });
-
-//     const enhancedOrders = orders.map((order) => {
-//       const totalProductPrice = order.order_details.reduce((total, item) => {
-//         return total + item.price * item.qty;
-//       }, 0);
-
-//       const deliveryPrice =
-//         order.order_details[0].sub_total -
-//         order.order_details[0].price * order.order_details[0].qty;
-
-//       return {
-//         ...order,
-//         totalProductPrice,
-//         deliveryPrice,
-//       };
-//     });
-
-//     return res.status(200).json({ orders: enhancedOrders });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ error: 'Internal server error' });
-//   }
-// };

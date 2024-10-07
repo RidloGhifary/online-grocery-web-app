@@ -73,7 +73,7 @@ export default function FormLogin() {
       router.refresh();
     },
     onError: (res: any) => {
-      toast.error(res?.response.data.message || "Something went wrong!");
+      toast.error(res.message || res.error || "Something went wrong!");
     },
   });
 

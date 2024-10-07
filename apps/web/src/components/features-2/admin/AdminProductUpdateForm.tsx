@@ -1,31 +1,36 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { MouseEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Select from "react-select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast, Bounce } from "react-toastify";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { updateProduct } from "@/actions/products";
 import {
-  ProductCategoryInterface,
   ProductCompleteInterface,
   UpdateProductInputInterface,
 } from "@/interfaces/ProductInterface";
 import { UploadDropzone } from "@/utils/uploadthing";
-import { FaCheck, FaTrash } from "react-icons/fa";
+import { FaCheck, FaInfo, FaRegSave, FaTrash } from "react-icons/fa";
 import Image from "next/image";
-import ButtonWithAction from "../ui/ButtonWithAction";
+import Button from "../ui/ButtonWithAction";
 import { Reorder, useDragControls } from "framer-motion";
 import { IoReorderFour } from "react-icons/io5";
-import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import { queryKeys } from "@/constants/queryKeys";
 import { useAtom } from "jotai";
 import {
   currentDetailProductsAtom,
   currentProductOperation,
 } from "@/stores/productStores";
+import CommonPaginatedResultInterface from "@/interfaces/CommonPaginatedResultInterface";
+import { CategoryCompleteInterface } from "@/interfaces/CategoryInterface";
+import {
+  useProductCategory,
+  useProductCategoryWithFilter,
+} from "@/hooks/publicProductCategoriesHooks";
+import PermissionWrapper from "../auth/PermissionWrapper";
 
 // Define the Zod schema for validation
 const updateProductSchema = z.object({
@@ -55,16 +60,22 @@ type UpdateProductFormValues = z.infer<typeof updateProductSchema>;
 // }
 
 export default function AdminProductUpdateForm() {
-  const [initialData] = useAtom(currentDetailProductsAtom);
+  const [initialData, setInitialData] = useAtom(currentDetailProductsAtom);
   const queryParams = useSearchParams();
 
-  // const router = useRouter();
   const queryClient = useQueryClient();
-  const categories = queryClient.getQueryData<
-    CommonResultInterface<ProductCategoryInterface[]>
-  >([queryKeys.productCategories]);
+  const { data: categories, isLoading: categoryLoading } = useProductCategory();
 
   const controls = useDragControls();
+  const [, setCurrentOperation] = useAtom(currentProductOperation);
+  function handleDetail(e: MouseEvent) {
+    e.preventDefault();
+    setCurrentOperation("detail");
+  }
+  function handleDelete(e: MouseEvent) {
+    e.preventDefault();
+    setCurrentOperation("delete");
+  }
 
   const {
     register,
@@ -79,9 +90,7 @@ export default function AdminProductUpdateForm() {
   });
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [, setCurrentOperation] = useAtom(
-    currentProductOperation,
-  );
+  // const [, setCurrentOperation] = useAtom(currentProductOperation);
 
   useEffect(() => {
     if (initialData) {
@@ -115,8 +124,9 @@ export default function AdminProductUpdateForm() {
         progress: undefined,
         theme: "colored",
         transition: Bounce,
+        // toastId:1,
+        containerId: 10912,
       });
-      // setCurrentOperation('idle')
       const params = {
         search: queryParams.get("search") || "",
         orderField: queryParams.get("orderField") || "product_name",
@@ -131,7 +141,6 @@ export default function AdminProductUpdateForm() {
       return queryClient.invalidateQueries({
         queryKey: [queryKeys.products, { ...params }],
       });
-
     },
     onError: (error) => {
       let errorMessage = "";
@@ -151,6 +160,8 @@ export default function AdminProductUpdateForm() {
         progress: undefined,
         theme: "colored",
         transition: Bounce,
+        // toastId:2,
+        containerId: 10912,
       });
     },
   });
@@ -190,11 +201,13 @@ export default function AdminProductUpdateForm() {
         progress: undefined,
         theme: "colored",
         transition: Bounce,
+        toastId: 3,
+        containerId: 10912,
       });
     }
   };
 
-  const categoryOptions = categories?.data?.map((category) => ({
+  const categoryOptions = categories?.data?.data?.map((category) => ({
     value: category.id,
     label: category.display_name || category.name,
   }));
@@ -212,8 +225,28 @@ export default function AdminProductUpdateForm() {
 
   useEffect(() => {
     if (mutation.isSuccess) {
-      console.log("success");
-      setCurrentOperation("idle");
+      // console.log("success");
+      const params = {
+        search: queryParams.get("search") || "",
+        orderField: queryParams.get("orderField") || "product_name",
+        order: (queryParams.get("order") as "asc" | "desc") || "asc",
+        category: queryParams.get("category") || "",
+        page: Number(queryParams.get("page")) || 1,
+        limit: Number(queryParams.get("limit")) || 20,
+      };
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products, { ...params }],
+      });
+      const updatedData = (
+        queryClient.getQueryData([
+          queryKeys.products,
+          { ...params },
+        ]) as CommonPaginatedResultInterface<ProductCompleteInterface[]>
+      ).data?.data?.filter((product) => product.id == initialData?.id)[0];
+      if (updatedData) {
+        setInitialData(updatedData);
+      }
+      setCurrentOperation("detail");
     }
   }, [mutation.isSuccess]);
 
@@ -266,6 +299,10 @@ export default function AdminProductUpdateForm() {
           placeholder="Select a category"
           value={categoryOptions?.find(
             (option) => option.value === watch("product_category_id"),
+          )}
+          isLoading={categoryLoading}
+          loadingMessage={() => (
+            <span className="loading loading-spinner loading-xs"></span>
           )}
         />
         {errors.product_category_id && (
@@ -375,14 +412,14 @@ export default function AdminProductUpdateForm() {
                     {url.slice(0, 30).concat(" . . .")}
                   </span>
                   <div className="flex flex-row items-center gap-2">
-                    <ButtonWithAction
+                    <Button
                       replaceTWClass="btn btn-error btn-sm"
                       action={() => removeImage(url)}
                       type="button"
                       eventType="onClick"
                     >
                       <FaTrash />
-                    </ButtonWithAction>
+                    </Button>
                     <div
                       className="reorder-handle"
                       onPointerDown={(e) => controls.start(e)}
@@ -408,20 +445,46 @@ export default function AdminProductUpdateForm() {
         </div>
       </div>
 
-      {/* Submit button */}
+      {/* Other action button */}
       <div className="flex max-w-full justify-end py-5">
-        <ButtonWithAction type="submit" replaceTWClass="btn btn-primary">
-          Save{" "}
-          {mutation.isPending ? (
-            <span className="loading loading-spinner loading-xs"></span>
-          ) : mutation.isSuccess ? (
-            <>
-              <FaCheck />
-            </>
-          ) : (
-            ""
-          )}
-        </ButtonWithAction>
+        <div className="flex flex-row justify-end gap-3">
+          <PermissionWrapper permissionRequired={"super"}>
+            <Button
+              replaceTWClass="btn btn-error btn-sm"
+              id={initialData.id}
+              action={handleDelete}
+              eventType="onClick"
+              type="button"
+            >
+              Delete
+              <FaTrash />
+            </Button>
+          </PermissionWrapper>
+          <Button
+            replaceTWClass="btn btn-accent btn-sm"
+            action={handleDetail}
+            eventType="onClick"
+            type="button"
+            id={initialData.id}
+          >
+            Detail
+            <FaInfo />
+          </Button>
+          <PermissionWrapper permissionRequired={"super"}>
+            <Button type="submit" replaceTWClass="btn btn-primary btn-sm">
+              Save <FaRegSave />
+              {mutation.isPending ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : mutation.isSuccess ? (
+                <>
+                  <FaCheck />
+                </>
+              ) : (
+                ""
+              )}
+            </Button>
+          </PermissionWrapper>
+        </div>
       </div>
     </form>
   );

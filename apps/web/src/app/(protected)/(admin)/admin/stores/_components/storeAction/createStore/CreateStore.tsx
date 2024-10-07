@@ -16,10 +16,6 @@ import { ChangeEvent, useState } from "react";
 import { MdOutlineKeyboardArrowLeft } from "react-icons/md";
 import { createStore } from "@/actions/stores";
 
-interface Props {
-  api_url: string;
-}
-
 const schema = z.object({
   name: z
     .string()
@@ -56,7 +52,7 @@ export type FormData = {
   kecamatan: string;
 };
 
-export default function CreateStore({ api_url }: Props) {
+export default function CreateStore() {
   const [image, setImage] = useState<File[]>([]);
   const [isUploadImageLoading, setIsUploadImageLoading] =
     useState<boolean>(false);
@@ -73,7 +69,7 @@ export default function CreateStore({ api_url }: Props) {
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
-      store_type: "central",
+      store_type: "branch",
       province: "",
       province_id: 0,
       city: "",
@@ -98,7 +94,7 @@ export default function CreateStore({ api_url }: Props) {
     mutationFn: async (data: FormData) => createStore({ formData: data }),
     onSuccess: (res) => {
       if (!res.ok) {
-        return toast.error(res.message || "Something went wrong!");
+        return toast.error(res.message || res.error);
       } else {
         toast.success(res.message || "Store created successfully!");
         queryClient.invalidateQueries({ queryKey: ["stores"] });
@@ -170,7 +166,7 @@ export default function CreateStore({ api_url }: Props) {
   };
 
   return (
-    <div className="grid w-full grid-cols-1 gap-3">
+    <div className="w-full space-y-3">
       <button
         onClick={() => router.back()}
         disabled={isLoading || isUploadImageLoading}
@@ -180,52 +176,54 @@ export default function CreateStore({ api_url }: Props) {
         <MdOutlineKeyboardArrowLeft />
         Back
       </button>
-      <div className="flex flex-col items-center justify-start gap-2">
-        <label
-          htmlFor="file"
-          className="tooltip tooltip-bottom tooltip-info cursor-pointer"
-          data-tip={
-            isLoading ? "Uploading image..." : "Click me to upload image"
-          }
-        >
-          {image.length > 0 ? (
-            <Image
-              alt="store-image"
-              src={URL.createObjectURL(image[0])}
-              width={400}
-              height={400}
-              priority
-              className="block aspect-square h-32 w-32 rounded-full object-cover md:h-40 md:w-40 lg:h-52 lg:w-52"
-            />
-          ) : (
-            <Image
-              alt="store-image"
-              src={`/400.svg`}
-              width={400}
-              height={400}
-              priority
-              className="block aspect-square h-32 w-32 rounded-full object-cover md:h-40 md:w-40 lg:h-52 lg:w-52"
-            />
-          )}
-        </label>
-        <input
-          id="file"
-          type="file"
-          accept="image/*"
-          disabled={isLoading || isUploadImageLoading}
-          onChange={(e) => handleImage(e)}
-          className="file-input file-input-bordered file-input-xs hidden w-full max-w-xs"
-        />
-      </div>
-      <div>
-        <Form
-          handleSubmit={handleSubmit}
-          onSubmit={onSubmit}
-          register={register}
-          errors={errors}
-          filteredCities={filteredCities}
-          isLoading={isLoading || isUploadImageLoading}
-        />
+      <div className="bg-white rounded-md p-5">
+        <div className="flex flex-col items-center justify-start gap-2">
+          <label
+            htmlFor="file"
+            className="tooltip tooltip-bottom tooltip-info cursor-pointer"
+            data-tip={
+              isLoading ? "Uploading image..." : "Click me to upload image"
+            }
+          >
+            {image.length > 0 ? (
+              <Image
+                alt="store-image"
+                src={URL.createObjectURL(image[0])}
+                width={400}
+                height={400}
+                priority
+                className="block aspect-square h-32 w-32 rounded-full object-cover md:h-40 md:w-40 lg:h-52 lg:w-52"
+              />
+            ) : (
+              <Image
+                alt="store-image"
+                src={`/400.svg`}
+                width={400}
+                height={400}
+                priority
+                className="block aspect-square h-32 w-32 rounded-full object-cover md:h-40 md:w-40 lg:h-52 lg:w-52"
+              />
+            )}
+          </label>
+          <input
+            id="file"
+            type="file"
+            accept="image/*"
+            disabled={isLoading || isUploadImageLoading}
+            onChange={(e) => handleImage(e)}
+            className="file-input file-input-bordered file-input-xs hidden w-full max-w-xs"
+          />
+        </div>
+        <div>
+          <Form
+            handleSubmit={handleSubmit}
+            onSubmit={onSubmit}
+            register={register}
+            errors={errors}
+            filteredCities={filteredCities}
+            isLoading={isLoading || isUploadImageLoading}
+          />
+        </div>
       </div>
     </div>
   );

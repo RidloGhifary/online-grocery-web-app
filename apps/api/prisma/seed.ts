@@ -1,16 +1,114 @@
 import {
+  DiscountType,
   Prisma,
   PrismaClient,
   Product,
+  StocksAdjustment,
   Store,
   StoreHasProduct,
 } from '@prisma/client';
 import { faker, tr } from '@faker-js/faker';
 import axios from 'axios';
 import crypto from 'crypto';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+async function seedProductDiscounts() {
+  // Sample discounts data to seed
+  const discounts = [
+    {
+      discount: 10, // percentage
+      started_at: new Date('2024-01-01'),
+      end_at: new Date('2024-12-31'),
+      product_id: 1,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 15, // percentage
+      started_at: new Date('2024-06-01'),
+      end_at: new Date('2024-11-30'),
+      product_id: 2,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 5000, // nominal
+      started_at: new Date('2024-03-01'),
+      end_at: new Date('2024-09-30'),
+      product_id: 3,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 20, // percentage
+      started_at: new Date('2024-05-01'),
+      end_at: new Date('2024-12-31'),
+      product_id: 4,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 2500, // nominal
+      started_at: new Date('2024-07-01'),
+      end_at: new Date('2024-10-31'),
+      product_id: 5,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 30, // percentage
+      started_at: new Date('2024-08-01'),
+      end_at: new Date('2024-11-30'),
+      product_id: 6,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 3500, // nominal
+      started_at: new Date('2024-09-01'),
+      end_at: new Date('2024-12-31'),
+      product_id: 7,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 5, // percentage
+      started_at: new Date('2024-01-15'),
+      end_at: new Date('2024-06-30'),
+      product_id: 8,
+      discount_type: DiscountType.percentage,
+    },
+    {
+      discount: 2000, // nominal
+      started_at: new Date('2024-02-01'),
+      end_at: new Date('2024-08-31'),
+      product_id: 9,
+      discount_type: DiscountType.nominal,
+    },
+    {
+      discount: 12, // percentage
+      started_at: new Date('2024-04-01'),
+      end_at: new Date('2024-10-31'),
+      product_id: 10,
+      discount_type: DiscountType.percentage,
+    },
+  ];
+
+  for (const discount of discounts) {
+    await prisma.productDiscount.upsert({
+      where: {
+        id: discount.product_id,
+      },
+      update: {},
+      create: {
+        discount: discount.discount,
+        started_at: discount.started_at,
+        end_at: discount.end_at,
+        product: {
+          connect: { id: discount.product_id },
+        },
+        discount_type: discount.discount_type,
+      },
+    });
+  }
+
+  console.log('Product discounts seeding completed!');
+}
 
 function generateProducts() {
   const categories = [1, 2, 3]; // Assuming 3 product categories: dairy, vegetable, fruit
@@ -24,7 +122,7 @@ function generateProducts() {
     const sku = `SKU${i.toString().padStart(4, '0')}`;
     const description = faker.commerce.productDescription();
     const unitInGram = faker.number.int({ min: 10, max: 100 });
-    const imageUrl = JSON.stringify([faker.image.url()])
+    const imageUrl = JSON.stringify([faker.image.url()]);
 
     products.push({
       id: i,
@@ -32,8 +130,8 @@ function generateProducts() {
       price,
       sku,
       unit,
-      product_category_id: randomCategory,
       image: imageUrl,
+      product_category_id: randomCategory,
       description,
       slug: faker.helpers.slugify(name).toLowerCase(),
       unit_in_gram: unitInGram,
@@ -43,22 +141,28 @@ function generateProducts() {
   return products;
 }
 
-async function generateStoreHasProduct(products: Product[], store: Store[]) {
-  // let data : StoreHasProduct[] = []
-  products.forEach((product, i) => {
-    store.forEach(async (store, i) => {
-      const data = await prisma.storeHasProduct.create({
-        data: {
+async function generateStoreHasProduct(products: Product[], stores: Store[]) {
+  let dataFinal: StoreHasProduct[] = [];
+  let counter = 1;
+  for (const product of products) {
+    for (const store of stores) {
+      const data = await prisma.storeHasProduct.upsert({
+        where: {
+          id: counter,
+        },
+        update: {},
+        create: {
           product_id: product.id,
-          qty: 10,
+          qty: faker.number.int({ min: 1, max: 50 }),
           store_id: store.id,
         },
       });
-      console.log(data);
-      
-    });
-  });
-  // return data
+      counter++;
+      // console.log(data);
+      dataFinal.push(data);
+    }
+  }
+  return dataFinal;
 }
 // Fetch provinces using axios
 async function fetchProvinces() {
@@ -162,32 +266,96 @@ async function main() {
         {
           id: 10,
           name: 'admin_product_category_list',
-          display_name: 'Admin Product List',
+          display_name: 'Admin Product Category List',
         },
         {
           id: 11,
           name: 'admin_product_category_detail',
-          display_name: 'Admin Product Detail',
+          display_name: 'Admin Product Category Detail',
         },
         {
           id: 12,
           name: 'admin_product_category_create',
-          display_name: 'Admin Product Create',
+          display_name: 'Admin Product Category Create',
         },
         {
           id: 13,
           name: 'admin_product_category_update',
-          display_name: 'Admin Product Update',
+          display_name: 'Admin Category Update',
         },
         {
           id: 14,
           name: 'admin_product_category_delete',
-          display_name: 'Admin Product Delete',
+          display_name: 'Admin Category Delete',
+        },
+        {
+          id: 15,
+          name: 'admin_user_access',
+          display_name: 'Admin User Access',
+        },
+        {
+          id: 16,
+          name: 'admin_user_list',
+          display_name: 'Admin User list',
+        },
+        {
+          id: 17,
+          name: 'admin_user_detail',
+          display_name: 'Admin User Detail',
+        },
+        {
+          id: 18,
+          name: 'admin_user_create',
+          display_name: 'Admin User Create',
+        },
+        {
+          id: 19,
+          name: 'admin_user_update',
+          display_name: 'Admin User Update',
+        },
+        {
+          id: 20,
+          name: 'admin_user_delete',
+          display_name: 'Admin User Delete',
+        },
+        {
+          id: 21,
+          name: 'admin_role_access',
+          display_name: 'Admin Role Access',
+        },
+        {
+          id: 21,
+          name: 'admin_role_create',
+          display_name: 'Admin Role Create',
+        },
+        {
+          id: 22,
+          name: 'admin_role_update',
+          display_name: 'Admin Role Update',
+        },
+        {
+          id: 23,
+          name: 'admin_role_delete',
+          display_name: 'Admin Role Delete',
+        },
+        {
+          id: 24,
+          name: 'admin_role_assign',
+          display_name: 'Admin Role Assign',
+        },
+        {
+          id: 25,
+          name: 'admin_role_list',
+          display_name: 'Admin Role List',
+        },
+        {
+          id: 26,
+          name: 'admin_stock_access',
+          display_name: 'Admin Stock Access',
         },
       ],
     });
 
-    // Seeding super admin user
     // Seeding super admin user
     const superAdminUser = prisma.user.upsert({
       where: { id: 1 },
@@ -207,6 +375,25 @@ async function main() {
         referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
       },
     });
+
+    // const storeAdminUser = prisma.user.upsert({
+    //   where: { id: 2 },
+    //   update: {},
+    //   create: {
+    //     id: 2,
+    //     email: 'windah.admin@ogro.com', // Random email
+    //     first_name: 'Windah',
+    //     last_name: 'Basudara',
+    //     username: 'Windah Basudara', // Random username
+    //     password: await bcrypt.hash(
+    //       process.env.SUPERUSER_PASSWORD!, // Set the password here
+    //       await bcrypt.genSalt(),
+    //     ),
+    //     validated_at: new Date().toISOString(),
+    //     validation_sent_at: new Date().toISOString(),
+    //     referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
+    //   },
+    // });
 
     // Seeding super admin role and permissions
     const superRole = prisma.role.upsert({
@@ -228,6 +415,87 @@ async function main() {
       },
     });
 
+    // const itterate = Array.from({ length: 25 }, (_, i) => i + 1);
+
+    const storeAdminUser = prisma.user.upsert({
+      where: { id: 2 },
+      update: {},
+      create: {
+        id: 2,
+        email: 'store.admin@ogro.com',
+        first_name: 'Store',
+        last_name: 'Admin',
+        username: 'store_admin',
+        password: await bcrypt.hash(
+          process.env.SUPERUSER_PASSWORD!,
+          await bcrypt.genSalt(),
+        ),
+        validated_at: new Date().toISOString(),
+        validation_sent_at: new Date().toISOString(),
+        referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
+      },
+    });
+
+    const storeAdminRole = prisma.role.upsert({
+      where: { id: 2 },
+      update: {},
+      create: {
+        name: 'store_admin',
+        display_name: 'Store Admin',
+        id: 2,
+        roles_permissions: {
+          createMany: {
+            data: [
+              {
+                permission_id: 2,
+                id: 2,
+              },
+              {
+                permission_id: 3,
+                id: 3,
+              },
+              {
+                permission_id: 4,
+                id: 4,
+              },
+              {
+                permission_id: 5,
+                id: 5,
+              },
+              {
+                permission_id: 9,
+                id: 6,
+              },
+              {
+                permission_id: 10,
+                id: 7,
+              },
+              {
+                permission_id: 15,
+                id: 8,
+              },
+              {
+                permission_id: 16,
+                id: 9,
+              },
+              {
+                permission_id: 26,
+                id: 10,
+              },
+            ],
+            // itterate
+            // .filter((i) => i > 1)  // Filter out the first permission
+            // .map((i) => ({ permission_id: i })),  // Map to the proper permission object,
+            skipDuplicates: true,
+          },
+        },
+
+        user_role: {
+          createMany: { data: [{ user_id: 2, id: 2 }], skipDuplicates: true },
+        },
+      },
+    });
+
     // Seeding product categories
     const productCategory = prisma.productCategory.createMany({
       data: [
@@ -242,273 +510,121 @@ async function main() {
     const products = prisma.product.createMany({
       skipDuplicates: true,
       data: [...generateProducts()],
-      // data: [
-      //   // Dairy Products
-      //   {
-      //     id: 1,
-      //     name: 'SUSU UHT ULTRAMILK 500ML',
-      //     price: 10000,
-      //     sku: 'D0001',
-      //     unit: 'Piece',
-      //     product_category_id: 1,
-      //     image: '',
-      //     description: 'High-quality UHT milk from Ultramilk.',
-      //     slug: 'susu-uht-ultramilk-500ml',
-      //     unit_in_gram : 200
-      //   },
-      //   {
-      //     id: 2,
-      //     name: 'KEJU KRAFT 250GR',
-      //     price: 30000,
-      //     sku: 'D0002',
-      //     unit: 'Piece',
-      //     product_category_id: 1,
-      //     image: '',
-      //     description: 'Rich and creamy cheese from Kraft.',
-      //     slug: 'keju-kraft-250gr',
-      //   },
-      //   {
-      //     id: 3,
-      //     name: 'YOGURT CIMORY 200ML',
-      //     price: 15000,
-      //     sku: 'D0003',
-      //     unit: 'Piece',
-      //     product_category_id: 1,
-      //     image: '',
-      //     description: 'Delicious yogurt from Cimory.',
-      //     slug: 'yogurt-cimory-200ml',
-      //   },
-      //   {
-      //     id: 4,
-      //     name: 'BUTTER BLUE BAND 200GR',
-      //     price: 20000,
-      //     sku: 'D0004',
-      //     unit: 'Piece',
-      //     product_category_id: 1,
-      //     image: '',
-      //     description: 'High-quality butter from Blue Band.',
-      //     slug: 'butter-blue-band-200gr',
-      //   },
-      //   {
-      //     id: 5,
-      //     name: 'CREAM CHEESE PHILADELPHIA 150GR',
-      //     price: 35000,
-      //     sku: 'D0005',
-      //     unit: 'Piece',
-      //     product_category_id: 1,
-      //     image: '',
-      //     description: 'Smooth and creamy cheese from Philadelphia.',
-      //     slug: 'cream-cheese-philadelphia-150gr',
-      //   },
-
-      //   // Vegetable Products
-      //   {
-      //     id: 6,
-      //     name: 'KENTANG 1KG',
-      //     price: 15000,
-      //     sku: 'V0001',
-      //     unit: 'Kilogram',
-      //     product_category_id: 2,
-      //     image: '',
-      //     description: 'Fresh potatoes, perfect for cooking.',
-      //     slug: 'kentang-1kg',
-      //   },
-      //   {
-      //     id: 7,
-      //     name: 'WORTEL 500GR',
-      //     price: 10000,
-      //     sku: 'V0002',
-      //     unit: 'Piece',
-      //     product_category_id: 2,
-      //     image: '',
-      //     description: 'Crunchy and fresh carrots.',
-      //     slug: 'wortel-500gr',
-      //   },
-      //   {
-      //     id: 8,
-      //     name: 'BROKOLI 250GR',
-      //     price: 12000,
-      //     sku: 'V0003',
-      //     unit: 'Piece',
-      //     product_category_id: 2,
-      //     image: '',
-      //     description: 'Fresh broccoli, rich in nutrients.',
-      //     slug: 'brokoli-250gr',
-      //   },
-      //   {
-      //     id: 9,
-      //     name: 'KACANG PANJANG 300GR',
-      //     price: 8000,
-      //     sku: 'V0004',
-      //     unit: 'Piece',
-      //     product_category_id: 2,
-      //     image: '',
-      //     description: 'Fresh long beans, great for soups.',
-      //     slug: 'kacang-panjang-300gr',
-      //   },
-      //   {
-      //     id: 10,
-      //     name: 'BUNCIS 250GR',
-      //     price: 9000,
-      //     sku: 'V0005',
-      //     unit: 'Piece',
-      //     product_category_id: 2,
-      //     image: '',
-      //     description: 'Fresh green beans, crunchy and tasty.',
-      //     slug: 'buncis-250gr',
-      //   },
-
-      //   // Fruit Products
-      //   {
-      //     id: 11,
-      //     name: 'APEL FUJI 1KG',
-      //     price: 35000,
-      //     sku: 'F0001',
-      //     unit: 'Kilogram',
-      //     product_category_id: 3,
-      //     image: '',
-      //     description: 'Crisp and sweet Fuji apples.',
-      //     slug: 'apel-fuji-1kg',
-      //   },
-      //   {
-      //     id: 12,
-      //     name: 'PISANG CAVENDISH 1KG',
-      //     price: 25000,
-      //     sku: 'F0002',
-      //     unit: 'Kilogram',
-      //     product_category_id: 3,
-      //     image: '',
-      //     description: 'Sweet and ripe Cavendish bananas.',
-      //     slug: 'pisang-cavendish-1kg',
-      //   },
-      //   {
-      //     id: 13,
-      //     name: 'JERUK SANTANG 1KG',
-      //     price: 30000,
-      //     sku: 'F0003',
-      //     unit: 'Kilogram',
-      //     product_category_id: 3,
-      //     image: '',
-      //     description: 'Fresh and juicy Santang oranges.',
-      //     slug: 'jeruk-santang-1kg',
-      //   },
-      //   {
-      //     id: 14,
-      //     name: 'ANGGUR MERAH 500GR',
-      //     price: 40000,
-      //     sku: 'F0004',
-      //     unit: 'Piece',
-      //     product_category_id: 3,
-      //     image: '',
-      //     description: 'Sweet and delicious red grapes.',
-      //     slug: 'anggur-merah-500gr',
-      //   },
-      //   {
-      //     id: 15,
-      //     name: 'ALPUKAT MENTEGA 1KG',
-      //     price: 45000,
-      //     sku: 'F0005',
-      //     unit: 'Kilogram',
-      //     product_category_id: 3,
-      //     image: '',
-      //     description: 'Creamy and rich butter avocados.',
-      //     slug: 'alpukat-mentega-1kg',
-      //   },
-
-      //   // Additional products for variety
-      //   {
-      //     id: 16,
-      //     name: 'TOMAT 1KG',
-      //     price: 12000,
-      //     sku: 'V0006',
-      //     unit: 'Kilogram',
-      //     product_category_id: 2,
-      //     image: '',
-      //     description: 'Fresh and ripe tomatoes.',
-      //     slug: 'tomat-1kg',
-      //   },
-      //   {
-      //     id: 17,
-      //     name: 'PEPAYA CALIFORNIA 1KG',
-      //     price: 18000,
-      //     sku: 'F0006',
-      //     unit: 'Kilogram',
-      //     product_category_id: 3,
-      //     image: '',
-      //     description: 'Sweet and fresh California papayas.',
-      //     slug: 'pepaya-california-1kg',
-      //   },
-      //   {
-      //     id: 18,
-      //     name: 'SUSU KEDELAI V-SOY 300ML',
-      //     price: 12000,
-      //     sku: 'D0006',
-      //     unit: 'Piece',
-      //     product_category_id: 1,
-      //     image: '',
-      //     description: 'Healthy and delicious soy milk.',
-      //     slug: 'susu-kedelai-v-soy-300ml',
-      //   },
-      //   {
-      //     id: 19,
-      //     name: 'TELUR AYAM 1 LUSIN',
-      //     price: 20000,
-      //     sku: 'D0007',
-      //     unit: 'Lusin',
-      //     product_category_id: 1,
-      //     image: '',
-      //     description: 'Fresh eggs, perfect for daily consumption.',
-      //     slug: 'telur-ayam-1-lusin',
-      //   },
-      //   {
-      //     id: 20,
-      //     name: 'PEAR 1KG',
-      //     price: 35000,
-      //     sku: 'F0007',
-      //     unit: 'Kilogram',
-      //     product_category_id: 3,
-      //     image: '',
-      //     description: 'Juicy and fresh pears.',
-      //     slug: 'pear-1kg',
-      //   },
-      // ],
     });
     const stores: Store[] = [
       {
-        created_by: 1, // Assuming user ID 1 exists
+        created_by: 1,
         name: 'JKT Ogro Central',
         store_type: 'central',
-        city_id: 152, // Assuming city ID 1 exists
+        city_id: 152,
         address: '123 Main St',
         kecamatan: 'Downtown',
         kelurahan: 'Central',
-        image: 'central-store.jpg',
-        latitude: new Prisma.Decimal(12.345678),
-        longtitude: new Prisma.Decimal(98.765432),
+        image: null,
+        latitude: new Prisma.Decimal(-6.2),
+        longtitude: new Prisma.Decimal(106.816666),
         id: 1,
         createdAt: new Date(),
         updatedAt: null,
         deletedAt: null,
-        province_id: 6
+        province_id: 6,
       },
       {
-        created_by: 1, // Assuming user ID 2 exists
+        created_by: 1,
         name: 'JKT Ogro Cabang',
         store_type: 'branch',
-        city_id: 152, // Assuming city ID 2 exists
+        city_id: 151,
         address: '456 Elm St',
         kecamatan: 'Uptown',
         kelurahan: 'North',
-        image: 'branch-store.jpg',
-        latitude: new Prisma.Decimal(23.456789),
-        longtitude: new Prisma.Decimal(87.654321),
+        image: null,
+        latitude: new Prisma.Decimal(-6.2000677),
+        longtitude: new Prisma.Decimal(106.8167943),
         id: 2,
         createdAt: new Date(),
         updatedAt: null,
         deletedAt: null,
-        province_id: 6
+        province_id: 6,
+      },
+      {
+        created_by: 1,
+        name: 'Karanganyar Ogro Cabang',
+        store_type: 'branch',
+        city_id: 169,
+        address: '456 Elm St',
+        kecamatan: 'Uptown',
+        kelurahan: 'North',
+        image: null,
+        latitude: new Prisma.Decimal(-7.6196965),
+        longtitude: new Prisma.Decimal(111.0698003),
+        id: 3,
+        createdAt: new Date(),
+        updatedAt: null,
+        deletedAt: null,
+        province_id: 10,
+      },
+      {
+        created_by: 1, 
+        name: 'KTNG Ogro Cabang',
+        store_type: 'branch',
+        city_id: 455, 
+        address: '456 Elm St',
+        kecamatan: 'Uptown',
+        kelurahan: 'North',
+        image: 'https://placehold.co/600x400.svg',
+        latitude: new Prisma.Decimal(-6.16667),
+        longtitude: new Prisma.Decimal(106.48333),
+        id: 4,
+        createdAt: new Date(),
+        updatedAt: null,
+        deletedAt: null,
+        province_id: 3,
       },
     ];
+
+    const expedition = prisma.expedition.createMany({
+      data: [
+        { id: 1, name: 'jne', display_name: 'JNE' },
+        { id: 2, name: 'pos', display_name: 'Pos Indonesia' },
+        { id: 3, name: 'tiki', display_name: 'TIKI' },
+      ],
+      skipDuplicates: true,
+    });
+    const orderStatuses = prisma.orderStatus.createMany({
+      data: [
+        {
+          id: 1,
+          status: 'waiting for payment',
+          createdAt: new Date('2024-09-11T21:03:41.472Z'),
+        },
+        {
+          id: 2,
+          status: 'waiting payment confirmation',
+          createdAt: new Date('2024-09-11T21:03:41.472Z'),
+        },
+        {
+          id: 3,
+          status: 'processing',
+          createdAt: new Date('2024-09-11T21:03:41.472Z'),
+        },
+        {
+          id: 4,
+          status: 'delivered',
+          createdAt: new Date('2024-09-11T21:03:41.472Z'),
+        },
+        {
+          id: 5,
+          status: 'completed',
+          createdAt: new Date('2024-09-11T21:03:41.473Z'),
+        },
+        {
+          id: 6,
+          status: 'cancelled',
+          createdAt: new Date('2024-09-11T21:03:41.473Z'),
+        },
+      ],
+      skipDuplicates: true,
+    });
 
     // Seed provinces and cities
     await seedProvinces();
@@ -520,45 +636,313 @@ async function main() {
       skipDuplicates: true,
     });
 
-    const [
-      res_permission,
-      res_superAdminUser,
-      res_superRole,
-      res_productCategory,
-      res_products,
-      res_store,
-    ] = await Promise.all([
+    const stage1 = await Promise.allSettled([
       permission,
       superAdminUser,
-      superRole,
+      storeAdminUser,
       productCategory,
+      expedition,
+      orderStatuses,
+    ]);
+    console.log(stage1);
+
+    const stage2 = await Promise.allSettled([
       products,
+      storeAdminRole,
+      superRole,
       storeSeed,
     ]);
+    console.log(stage2);
 
-    console.log(
-      res_permission,
-      res_superAdminUser,
-      res_superRole,
-      res_productCategory,
-      res_products,
-      res_store,
-    );
+    console.log(await seedProductDiscounts());
 
-    const generateStoreHasProductData =  await generateStoreHasProduct(
+    const [productData, storeData] = await Promise.allSettled([
       await prisma.product.findMany(),
       await prisma.store.findMany(),
+    ]);
+
+    const productSettled =
+      productData.status === 'fulfilled' ? productData.value : [];
+
+    const storeSettled =
+      storeData.status === 'fulfilled' ? storeData.value : [];
+
+    if (productSettled.length === 0 || stores.length === 0) {
+      throw new Error('Failed to fetch products or stores');
+    }
+    const generateStoreHasProductData = await generateStoreHasProduct(
+      productSettled,
+      storeSettled,
     );
-    console.log(generateStoreHasProductData);
+    const recentStoreHasProduct = await prisma.storeHasProduct.findMany({
+      include: { product: true, store: true },
+    });
+    const stockAdjustmentData: Prisma.StocksAdjustmentCreateManyInput[] =
+      recentStoreHasProduct.map((data) => ({
+        managed_by_id: 1, // Adjust as necessary
+        product_id: data.product_id as number, // Ensure product_id is not null
+        qty_change: data.qty as number, // Ensure qty is not null
+        type: 'manual',
+        destinied_store_id: data.store_id as number, // Ensure store_id is not null
+        detail: `Initial stock for product ${data.product?.name} in store ${data.store?.name}`,
+        from_store_id: null, // Adjust this value if needed
+        order_detail_id: null, // Adjust this value if needed
+        adjustment_related_id: null, // Adjust this value if needed
+        deletedAt: null, // Assuming you're not setting this for new records
+      }));
+
+    const seedStockAdjusment = await prisma.stocksAdjustment.createMany({
+      data: [...stockAdjustmentData],
+      skipDuplicates: true,
+    });
+
+    const storeHasAdminGenerate: Prisma.StoreHasAdminCreateManyInput[] = [];
+    const admin = await prisma.user.findMany({
+      where: {
+        role: {
+          some: {
+            AND: [
+              {
+                role_id: {
+                  not: null,
+                },
+              },
+              {
+                role_id: {
+                  not: 1,
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    const storeFromDb = await prisma.store.findMany();
+    admin.forEach((adminUser) => {
+      storeFromDb.forEach((store) => {
+        storeHasAdminGenerate.push({
+          store_id: store.id,
+          user_id: adminUser.id,
+          assignee_id: 1,
+        });
+      });
+    });
+
+    // Now you can use `storeHasAdminGenerate` in a Prisma `createMany` query to bulk insert
+    await prisma.storeHasAdmin.createMany({
+      data: storeHasAdminGenerate,
+      skipDuplicates: true,
+    });
+
+    const customer = await prisma.user.upsert({
+      where:{id:3},
+      update:{},
+      create:{
+        id: 3,
+        email: 'user.test@test.gmail',
+        first_name: 'test',
+        last_name: 'test',
+        username: 'testtest',
+        image: 'https://cdn-icons-png.flaticon.com/512/10412/10412383.png',
+        validated_at: new Date().toISOString(),
+        validation_sent_at: new Date().toISOString(),
+        referral: crypto.randomBytes(5).toString('hex').toUpperCase(),
+        addresses: {
+          create: {
+            id: 1,
+            address: faker.location.streetAddress(),
+            is_primary: true,
+            kecamatan: 'dasda',
+            kelurahan: 'dasdas',
+            postal_code: '155789',
+            city_id: 455,
+            latitude: new Prisma.Decimal(-6.16667),
+            longtitude: new Prisma.Decimal(106.48333),
+          },
+        },
+        gender: 'male',
+        phone_number: faker.phone.number({ style: 'national' }),
+        password: await bcrypt.hash(
+          process.env.SUPERUSER_PASSWORD!,
+          await bcrypt.genSalt(),
+        ),
+      },
+      include: {
+        addresses: true,
+      },
+    });
+    console.log(customer);
     
+
+    const order = await prisma.order.createMany({
+      data: [
+        {
+          id: 1,
+          invoice: faker.commerce.isbn(),
+          customer_id: customer.id,
+          address_id: customer.addresses.find((e) => e.is_primary === true)
+            ?.id!,
+          store_id: 3,
+          expedition_id: 1,
+          managed_by_id: 1,
+          order_status_id: 3,
+          payment_proof: 'https://placehold.co/600x400.svg',
+        },
+      ],
+      skipDuplicates: true,
+    });
+    console.log(order);
+
+    const orderDetail = await prisma.orderDetail.createMany({
+      data: [
+        {
+          qty: 11,
+          price: 10000,
+          sub_total: 20000,
+          store_id: 3,
+          product_id: 1,
+          order_id: 1,
+          id: 1,
+        },
+        {
+          qty: 5,
+          price: 10000,
+          sub_total: 20000,
+          store_id: 3,
+          product_id: 2,
+          order_id: 1,
+          id: 2,
+        },
+      ],
+      skipDuplicates: true,
+    });
+
+    console.log(orderDetail);
+
+    const stockAdjusmentUser = await prisma.stocksAdjustment.createMany({
+      data: [
+        {
+          id: 181,
+          type: 'checkout',
+          detail: 'eltest',
+          destinied_store_id: 3,
+          qty_change: -11,
+          product_id: 1,
+          managed_by_id: 1,
+          order_detail_id: 1,
+        },
+        {
+          id: 182,
+          type: 'checkout',
+          detail: 'eltest',
+          destinied_store_id: 3,
+          qty_change: -5,
+          product_id: 2,
+          managed_by_id: 1,
+          order_detail_id: 2,
+        },
+        // {
+        //   id: 182,
+        //   type: 'manual',
+        //   detail: 'eltest',
+        //   mutation_type: 'pending',
+        //   from_store_id: 3,
+        //   destinied_store_id: 2,
+        //   qty_change: -2,
+        //   product_id: 1,
+        //   managed_by_id: 1,
+        //   adjustment_related_id: 1,
+        // },
+        // {
+        //   id:183,
+        //   type:'manual',
+        //   detail :'eltest',
+        //   mutation_type:'complete',
+        //   from_store_id:2,
+        //   destinied_store_id : 3,
+        //   qty_change : 2,
+        //   product_id : 1,
+        //   managed_by_id : 1,
+        //   adjustment_related_id: 1,
+        // },
+      ],
+      skipDuplicates: true,
+    });
+    const stockAdjusmentUser2 = await prisma.stocksAdjustment.createMany({
+      data: [
+        {
+          id: 183,
+          type: 'checkout',
+          detail: 'eltest',
+          mutation_type: 'pending',
+          from_store_id: 2,
+          destinied_store_id: 3,
+          qty_change: -2,
+          product_id: 1,
+          managed_by_id: 1,
+          adjustment_related_id: 181,
+          // order_detail_id : null
+        },
+        {
+          id: 184,
+          type: 'manual',
+          detail: 'eltest',
+          mutation_type: 'pending',
+          from_store_id: 3,
+          destinied_store_id: 2,
+          qty_change: -4,
+          product_id: 1,
+          managed_by_id: 1,
+          adjustment_related_id: 181,
+          // order_detail_id : null
+        },
+        // {
+        //   id: 184,
+        //   type: 'checkout',
+        //   detail: 'eltest',
+        //   mutation_type: 'complete',
+        //   from_store_id: 2,
+        //   destinied_store_id: 3,
+        //   qty_change: 0,
+        //   product_id: 1,
+        //   managed_by_id: 1,
+        //   adjustment_related_id: 183,
+        //   // order_detail_id : null
+        // },
+      ],
+      skipDuplicates: true,
+    });
+
+    const storeProduct = await prisma.storeHasProduct.findFirst({
+      where: { product_id: 1, store_id: 3 },
+    });
+
+    const storeProductDecreaseAfterCheckout =
+      await prisma.storeHasProduct.update({
+        where: {
+          id: storeProduct?.id,
+        },
+        data: {
+          qty: -1,
+        },
+      });
+
+    console.log(generateStoreHasProductData);
+    console.log(seedStockAdjusment);
+    console.log(stockAdjusmentUser);
+    console.log(stockAdjusmentUser2);
+    console.log(storeProductDecreaseAfterCheckout);
+
+    // console.log(order);
   } catch (error) {
-    console.error(error);
+    console.error('Error during seeding:', error);
   } finally {
     await prisma.$disconnect();
   }
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error('Error during seeding:', error);
   process.exit(1);
 });

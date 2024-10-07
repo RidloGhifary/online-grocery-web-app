@@ -72,7 +72,7 @@ export async function getAdmin(): Promise<
         break;
       case "500":
         result.error = "500";
-        console.log(error);
+        // console.log(error);
         result.message = "Something wrong";
         break;
       default:

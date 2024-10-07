@@ -11,6 +11,7 @@ class UserRepository {
       ok: false,
     };
     try {
+      // console.log(tokenValidation(token).data!);
       const { id, email } = tokenValidation(token).data!;
 
       const userDataWithRoleAndPermission = await prisma.user.findFirst({
@@ -53,6 +54,63 @@ class UserRepository {
           result.error = error;
           break;
       }
+    }
+    return result;
+  }
+
+  async isUserHasRelatedPermission(
+    userId?: number,
+    permission?: string,
+  ): Promise<CommonResultInterface<boolean>> {
+    let result: CommonResultInterface<boolean> = {
+      ok: false,
+    };
+    if (!userId || !permission) {
+      result.message = 'Neither user id or permission are not provided';
+      result.error = '400 Bad Request';
+      return result;
+    }
+    try {
+      const ress = await prisma.userHasRole.findFirst({
+        where: {
+          AND: {
+            id: userId,
+          },
+        },
+        include: {
+          role: {
+            include: {
+              roles_permissions: {
+                include: { permission: true },
+              },
+            },
+          },
+        },
+      });
+      // !!();
+
+      if (!ress) {
+        result.message = "You don't have any permission";
+        result.error = '403 Forbidden Request';
+        return result;
+      }
+      if (
+        !ress.role?.roles_permissions.filter(
+          (e: any) =>
+            e.permission.name.includes('super') ||
+            e.permission.name.includes(permission) ||
+            ress.role?.name.includes('super'),
+        )
+      ) {
+        result.message = "You don't have the related permission";
+        result.error = '403 Forbidden Request';
+      }
+      // console.log(ress);
+      result.ok = true;
+      result.data = true;
+    } catch (error) {
+      result.message = 'An error occurred while checking permissions';
+      result.error = '500 Internal Server Error';
     }
     return result;
   }

@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { UserProps } from "@/interfaces/user";
 import { paymentStages } from "@/constants/index";
-import { MdArrowBack, MdCancel } from "react-icons/md";
+import { MdArrowBack } from "react-icons/md";
 import PaymentDetail from "./PaymentDetail";
 import TransactionItemsTable from "./TransactionItemsTable";
 import MainLink from "@/components/MainLink";
 import MainButton from "@/components/MainButton";
 import { useParams } from "next/navigation";
+import { Modal } from "@/components/features-2/ui/Modal";
 import {
   getOrderById,
   cancelOrder,
@@ -23,6 +24,8 @@ interface Props {
 
 const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
   const { id } = useParams();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
   const [paymentStage, setPaymentStage] = useState("waiting for payment");
   const [timeLeft, setTimeLeft] = useState(3600);
   const [fileUploaded, setFileUploaded] = useState(false);
@@ -34,8 +37,9 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
   const [error, setError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { startUpload } = useUploadThing("imageUploader");
-  const [timeLeftUntilConfirmation, setTimeLeftUntilConfirmation] =
-    useState<number>(0);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalTitle, setModalTitle] = useState("");
 
   useEffect(() => {
     const fetchTransactionDetails = async () => {
@@ -43,18 +47,30 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
         const response = await getOrderById(Number(id));
         setTransactionDetails(response.data);
         setPaymentStage(response.data.order_status.status);
-        const orderCreatedAt = new Date(
-          response.data.order_details[0].createdAt,
-        ).getTime();
-        const currentTime = new Date().getTime();
-        const timeElapsed = Math.floor((currentTime - orderCreatedAt) / 1000);
-        const timeRemaining = 60 - timeElapsed;
+        if (response.data.order_status_id === 1) {
+          setModalTitle(`Notification`);
+          setModalMessage(
+            `You haven't provided a payment proof or it was declined, please upload your payment proof again before time limit`,
+          );
+          setShowModal(true);
+        }
 
-        setTimeLeft(timeRemaining > 0 ? timeRemaining : 0);
-
-        if (response.data.order_status.status === "delivered") {
-          const timeRemainingForAutoConfirmation = 60;
-          setTimeLeftUntilConfirmation(timeRemainingForAutoConfirmation);
+        if (response.data.order_status_id === 3) {
+          setModalTitle("Order Confirmation");
+          setModalMessage(
+            `
+            Your order with the details below is being processed.\n
+            Invoice: ${response.data.invoice}\n
+            Customer: ${response.data.customer.first_name} ${response.data.customer.last_name}\n
+            Delivery Address: ${response.data.address.address}, ${response.data.address.city.city_name}\n
+            Delivery Service: ${response.data.expedition.display_name}\n
+            Store: ${response.data.store.name}, ${response.data.store.address}, ${response.data.store.city.city_name}\n
+            Total Price: Rp. ${(
+              response.data.totalProductPrice + response.data.deliveryPrice
+            ).toLocaleString()}
+            `,
+          );
+          setShowModal(true);
         }
       } catch (error: any) {
         setError(error.message);
@@ -68,7 +84,8 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
   const handleCancelTransaction = async () => {
     setIsCancelingOrder(true);
     try {
-      await cancelOrder(id);
+      const orderId = Array.isArray(id) ? Number(id[0]) : Number(id);
+      await cancelOrder(orderId);
       setPaymentStage("cancelled");
       setTransactionDetails({
         ...transactionDetails,
@@ -78,6 +95,7 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
       console.error("Failed to cancel order", error);
     } finally {
       setIsCancelingOrder(false);
+      setIsModalOpen(false);
     }
   };
 
@@ -91,9 +109,6 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
       const timer = setInterval(() => {
         setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
       }, 1000);
-      // if (timeLeft === 0) {
-      //   handleCancelTransaction();
-      // }
       return () => clearInterval(timer);
     }
   }, [timeLeft, paymentStage, fileUploaded]);
@@ -108,29 +123,61 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
       setError("Delivery confirmation failed");
     } finally {
       setIsConfirmingDelivery(false);
+      setIsDeliveryModalOpen(false);
     }
   };
 
-  useEffect(() => {
-    if (paymentStage === "delivered") {
-      const confirmationTimer = setInterval(() => {
-        setTimeLeftUntilConfirmation((prev) => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
+  const formatTimeForCompletion = () => {
+    if (!transactionDetails) return null;
+    const completionAtTime = new Date(transactionDetails.completeAt);
+    return completionAtTime
+      .toLocaleTimeString("en-US", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Jakarta",
+      })
+      .replace("at", "at");
+  };
 
-      // console.log(timeLeftUntilConfirmation);
-      if (timeLeftUntilConfirmation == 0) {
-        handleConfirmDelivery();
-      }
-
-      return () => clearInterval(confirmationTimer);
-    }
-  }, [timeLeftUntilConfirmation, paymentStage]);
+  const formatTimeForCancellation = () => {
+    if (!transactionDetails) return null;
+    const cancelAtTime = new Date(transactionDetails.cancelAt);
+    return cancelAtTime
+      .toLocaleTimeString("en-US", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Jakarta",
+      })
+      .replace("at", "at");
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
     }
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleOpenDeliveryModal = () => {
+    setIsDeliveryModalOpen(true);
+  };
+
+  const handleCloseDeliveryModal = () => {
+    setIsDeliveryModalOpen(false);
   };
 
   const handleFileUpload = async () => {
@@ -164,26 +211,32 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
-
   const currentStageIndex = paymentStages.findIndex(
     (stage) => stage.label === transactionDetails?.order_status.status,
   );
 
   if (isLoading) {
-    return <div>Loading transaction details...</div>;
+    return (
+      <div className="text-center font-semibold text-primary my-8">
+        Loading transaction details...
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div className="text-center font-semibold text-red-500 my-8">
+        Error: {error}
+      </div>
+    );
   }
 
   if (!transactionDetails) {
-    return <div>No transaction found.</div>;
+    return (
+      <div className="text-center font-semibold text-red-500 my-8">
+        No transaction found.
+      </div>
+    );
   }
 
   const {
@@ -229,9 +282,6 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
               </div>
             </div>
           ))}
-          {/* <div className="mt-4 text-center text-lg">
-            {order_status_id !== 6 && <p>{order_status?.status}</p>}
-          </div> */}
         </div>
       )}
       {paymentStage === "cancelled" && (
@@ -247,9 +297,10 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
             Payment Status: Waiting for Payment
           </div>
           <div className="mb-4 flex justify-center text-lg">
-            Please make the payment within {formatTime(timeLeft)} to avoid order
-            cancellation.
+            Please make the payment by {formatTimeForCancellation()} to avoid
+            order cancellation.
           </div>
+
           <div className="mb-4 flex justify-center">
             <input type="file" accept="image/*" onChange={handleFileChange} />
           </div>
@@ -291,15 +342,41 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
           <div className="mb-4 flex justify-center text-lg">
             Your order is already delivered
           </div>
+          <div className="mb-4 flex justify-center text-lg">
+            Your order will be auto-completed by {formatTimeForCompletion()}
+          </div>
           <div className="flex justify-center">
             <MainButton
               text="Confirm Delivery"
-              onClick={handleConfirmDelivery}
+              onClick={handleOpenDeliveryModal}
               disabled={isConfirmingDelivery}
             />
           </div>
         </>
       )}
+      <Modal
+        show={isDeliveryModalOpen}
+        closeButton={false}
+        onClose={handleCloseDeliveryModal}
+      >
+        <div>
+          <h2 className="mb-4 text-center text-lg font-semibold">
+            Do you want to confirm that items of this order have been delivered?
+          </h2>
+        </div>
+        <div className="modal-action flex justify-center">
+          <MainButton
+            onClick={handleCloseDeliveryModal}
+            text="Cancel"
+            variant="static"
+          />
+          <MainButton
+            onClick={handleConfirmDelivery}
+            text="Confirm"
+            variant="primary"
+          />
+        </div>
+      </Modal>
       {paymentStage === "completed" && (
         <>
           <div className="mb-4 flex justify-center text-lg font-bold text-green-800">
@@ -310,17 +387,59 @@ const TransactionDetailedPage: React.FC<Props> = ({ user }) => {
           </div>
         </>
       )}
+      {showModal && (
+        <Modal
+          show={showModal}
+          closeButton={false}
+          onClose={() => setShowModal(false)}
+        >
+          <h2 className="mb-4 text-center text-lg font-semibold">
+            {modalTitle}
+          </h2>
+          <p className="flex justify-around whitespace-pre-line">
+            {modalMessage}
+          </p>
+          {transactionDetails.order_status_id === 3 && (
+            <div className="mt-4 flex justify-center">
+              <MainButton
+                text="Confirm"
+                onClick={() => setShowModal(false)}
+                className="bg-green-500 text-white"
+              />
+            </div>
+          )}
+        </Modal>
+      )}
       {order_status_id === 1 && paymentStage !== "cancelled" && (
         <div className="flex justify-center">
           <MainButton
             text="Cancel Order"
             className="mt-2 w-[180px]"
-            onClick={handleCancelTransaction}
+            onClick={handleOpenModal}
             variant="danger"
             disabled={isCancelingOrder}
           />
         </div>
       )}
+      <Modal show={isModalOpen} closeButton={false} onClose={handleCloseModal}>
+        <div>
+          <h2 className="mb-4 text-center text-lg font-semibold">
+            Are you sure you want to cancel this order?
+          </h2>
+        </div>
+        <div className="modal-action flex justify-center">
+          <MainButton
+            onClick={handleCloseModal}
+            text="No"
+            variant="secondary"
+          />
+          <MainButton
+            onClick={handleCancelTransaction}
+            text="Ok"
+            variant="danger"
+          />
+        </div>
+      </Modal>
       <DeliveryInformationBox
         address={address}
         store={store}

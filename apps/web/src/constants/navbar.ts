@@ -2,6 +2,7 @@ import { IoCart } from "react-icons/io5";
 import { LuLogIn } from "react-icons/lu";
 import { FiSearch } from "react-icons/fi";
 import { FaUser, FaStore } from "react-icons/fa";
+import { GrTransaction } from "react-icons/gr";
 import { BiSolidCoupon } from "react-icons/bi";
 import { IoMdCreate } from "react-icons/io";
 import { MdSpaceDashboard } from "react-icons/md";
@@ -16,6 +17,11 @@ export const AdminNavbarItems = [
     name: "Add Store",
     href: "/admin/stores?actions=create-store",
     icon: FaStore,
+  },
+  {
+    name: "Manage Orders",
+    href: "/admin/manage/orders",
+    icon: GrTransaction,
   },
 ];
 
@@ -57,5 +63,35 @@ export const NavbarItemAuth = [
     name: "Profile",
     href: "/profile",
     icon: FaUser,
+  },
+];
+
+export const ProfileDropDownItems = [
+  {
+    name: "Profile",
+    href: "/user/settings",
+    requireAuth: true,
+    icon: FaUser,
+  },
+];
+
+export const ProfileDropDownSuperAdminItems = [
+  {
+    name: "Profile",
+    href: "/user/settings",
+    requireAuth: true,
+    icon: FaUser,
+  },
+  {
+    name: "My Store",
+    href: "/my-store",
+    requireAuth: true,
+    icon: FaStore,
+  },
+  {
+    name: "Create Store",
+    href: "/create-store",
+    requireAuth: true,
+    icon: IoMdCreate,
   },
 ];

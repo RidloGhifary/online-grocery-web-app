@@ -19,30 +19,33 @@ interface PaginationInfo {
   totalPages: number;
 }
 
-interface CreateOrderRequest {
-  userId: number;
-  checkoutItems: OrderItem[];
-  selectedAddressId: number;
-  storeId: number;
-  selectedCourier: string;
-  selectedCourierPrice: number;
-}
-
-interface CreateOrderResponse {
-  invoice: string;
-  customer_id: number;
-  managed_by_id: number;
-  store_id: number;
-  expedition_id: number;
-  order_status_id: number;
-  address_id: number;
-  order_details: OrderItem[];
-}
-
 export interface OrderResponse {
   id: number;
   invoice: string;
   customer_id: number;
+  order_status: {
+    status: string;
+  };
+  customer: {
+    first_name: string;
+    last_name: string;
+  };
+  address: {
+    address: string;
+    city: {
+      city_name: string;
+    };
+  };
+  expedition: {
+    display_name: string;
+  };
+  store: {
+    name: string;
+    address: string;
+    city: {
+      city_name: string;
+    };
+  };
   managed_by_id: number;
   store_id: number;
   expedition_id: number;
@@ -51,25 +54,11 @@ export interface OrderResponse {
   order_details: OrderItem[];
   totalProductPrice: number;
   deliveryPrice: number;
-  order_status: string;
 }
 
 interface OrdersByUserResponse {
   orders: OrderResponse[];
   pagination: PaginationInfo;
-}
-
-interface CancelOrderRequest {
-  orderId: number;
-}
-
-interface UploadPaymentProofRequest {
-  orderId: number;
-  paymentProof: File;
-}
-
-interface ConfirmDeliveryRequest {
-  orderId: number;
 }
 
 interface GenericResponse {
@@ -81,64 +70,28 @@ function getToken(): string | undefined {
 }
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
 const uploadApi = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-export const createOrder = async (
-  orderData: CreateOrderRequest,
-): Promise<AxiosResponse<CreateOrderResponse>> => {
-  const token = getToken();
-
-  if (!token) {
-    throw new Error("User is not authenticated");
-  }
-
-  try {
-    console.log("Sending order data to API:", orderData);
-
-    const response = await api.post<CreateOrderResponse>(
-      "/orders/create-order",
-      orderData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-
-    console.log("API response received:", response.data);
-    return response;
-  } catch (error: any) {
-    if (error.response) {
-      console.error("API call error:", error.response.data);
-      throw new Error(
-        `Failed to create order: ${error.response.data.message || error.message}`,
-      );
-    }
-    console.error("Unknown error:", error.message);
-    throw new Error("An unknown error occurred while creating the order.");
-  }
-};
-
 export const getOrdersByUser = async (
   filter: "all" | "ongoing" | "completed" | "cancelled" = "all",
   search?: string,
-  sortBy: "invoice" | "createdAt" = "invoice",
-  order: "asc" | "desc" = "asc",
+  sortBy: "invoice" | "createdAt" | any = "invoice",
+  order: "asc" | "desc" | any = "asc",
   page: number = 1,
   limit: number = 12,
-  startDate?: string,
-  endDate?: string,
+  startDate?: string | null,
+  endDate?: string | null,
 ): Promise<AxiosResponse<OrdersByUserResponse>> => {
   const token = getToken();
 
@@ -316,40 +269,3 @@ export const confirmDelivery = async (
     throw new Error("An unknown error occurred while confirming the delivery.");
   }
 };
-
-// export const uploadPaymentProof = async (
-//   orderId: number,
-//   paymentProofUrl: string,
-// ): Promise<AxiosResponse<GenericResponse>> => {
-//   const token = getToken();
-
-//   if (!token) {
-//     throw new Error("User is not authenticated");
-//   }
-
-//   try {
-//     const response = await api.post<GenericResponse>(
-//       `/orders/upload-payment/${orderId}`,
-//       { payment_proof: paymentProofUrl },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//         },
-//       },
-//     );
-
-//     return response;
-//   } catch (error: any) {
-//     if (error.response) {
-//       console.error("API call error:", error.response.data);
-//       throw new Error(
-//         `Failed to upload payment proof: ${error.response.data.message || error.message}`,
-//       );
-//     }
-//     console.error("Unknown error:", error.message);
-//     throw new Error(
-//       "An unknown error occurred while uploading the payment proof.",
-//     );
-//   }
-// };

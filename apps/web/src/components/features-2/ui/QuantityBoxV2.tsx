@@ -2,7 +2,7 @@
 import { ChangeEvent, MouseEvent, useState } from "react";
 import './css/quantityBox.css'
 
-export default function ({
+export default function QuantityBoxV2({
   qty = 0,
   minimumQty = 0,
   maximumQty,
@@ -23,7 +23,7 @@ export default function ({
       if (quantity < maximumQty) {
         
         setQuantity((prev) => (prev += 1));
-        console.log(quantity);
+        // console.log(quantity);
       }
     }
   }

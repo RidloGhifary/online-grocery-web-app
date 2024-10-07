@@ -6,7 +6,6 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { queryKeys } from "@/constants/queryKeys";
-import { getProductCategoryList } from "@/actions/categories";
 
 export default async function Page() {
   const queryClient = new QueryClient();
@@ -14,10 +13,10 @@ export default async function Page() {
     queryKey: [queryKeys.products],
     queryFn: () => getProductListWithFilter({}),
   });
-  await queryClient.prefetchQuery({
-    queryKey: [queryKeys.productCategories],
-    queryFn: async () => await getProductCategoryList(),
-  });
+  // await queryClient.prefetchQuery({
+  //   queryKey: [queryKeys.productCategories],
+  //   queryFn: () => getProductCategoryList({}),
+  // });
   return (
     <>
       <HydrationBoundary state={dehydrate(queryClient)}>

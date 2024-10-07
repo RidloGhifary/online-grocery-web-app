@@ -5,12 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { RiGitBranchFill } from "react-icons/ri";
 
-export default function ({
+export default function ProductCardF2({
   name = "lorem",
   price = 10000,
   city = "Jakarta",
   slug = "lorem",
+  image = 'https://placehold.co/600x400.svg'
 }: ProductCardListInterface) {
+  // console.log(JSON.stringify(image));
+  
   return (
     // w-11/12
     <Link
@@ -21,7 +24,7 @@ export default function ({
         <Image
           width={300}
           height={300}
-          src="/sample-product-image.jpg"
+          src={image}
           alt="Placeholder"
           className="h-[180px] w-full object-contain"
           loading="lazy"
@@ -36,16 +39,16 @@ export default function ({
               currency: "IDR",
             }).format(price)}
           </p>
-          <p className="truncate text-xs text-slate-500">
+          {/* <p className="truncate text-xs text-slate-500">
             <s>Rp. 2.000.000</s>
             <b className="ml-1 text-rose-500">50%</b>
-          </p>
+          </p> */}
         </div>
         <div className="flex items-center gap-1">
           <RiGitBranchFill size={15} />
           <span className="text-sm text-primary">{city}</span>
         </div>
-        <p className="badge-base-100 badge">2rb Sold</p>
+        {/* <p className="badge-base-100 badge">2rb Sold</p> */}
       </div>
     </Link>
   );

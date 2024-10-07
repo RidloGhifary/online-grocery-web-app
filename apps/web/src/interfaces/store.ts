@@ -24,7 +24,7 @@ export interface StoreInterface {
   id: number;
   created_by: number;
   name: string;
-  store_type: "branch" | "primary";
+  store_type: "branch" | "central";
   city_id: number;
   address: string;
   kecamatan: string;
@@ -32,6 +32,10 @@ export interface StoreInterface {
   image: string | null;
   latitude: string | number;
   longtitude: string | number;
+  city?: {
+    city_name: string;
+    type:'kabupaten'|'kota'
+  }
   createdAt: string | Date | null;
   updatedAt: string | Date | null;
   deletedAt: string | Date | null;

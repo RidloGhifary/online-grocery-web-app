@@ -13,6 +13,9 @@ export const createOrderSchema = z.object({
   storeId: z.number(),
   selectedCourier: z.string(),
   selectedCourierPrice: z.number(),
+  productVoucherId: z.number().nullable(),
+  deliveryVoucherId: z.number().nullable(),
+  note: z.string().optional(),
 });
 
 export const getOrdersByUserSchema = z.object({
@@ -35,10 +38,6 @@ export const getOrderByIdSchema = z.object({
 export const cancelOrderSchema = z.object({
   orderId: z.coerce.number(),
 });
-
-// export const uploadPaymentProofSchema = z.object({
-//   payment_proof: z.string(),
-// });
 
 export const uploadPaymentProofSchema = z.object({
   payment_proof: z.string(),

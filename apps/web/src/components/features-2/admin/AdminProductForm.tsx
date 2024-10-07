@@ -1,26 +1,28 @@
-'use client'
+"use client";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import ButtonWithAction from "../ui/ButtonWithAction";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/constants/queryKeys";
 import Select from "react-select";
 import CommonResultInterface from "@/interfaces/CommonResultInterface";
 import {
-  ProductCategoryInterface,
   ProductCompleteInterface,
   ProductRecordInterface,
 } from "@/interfaces/ProductInterface";
 import { UploadDropzone } from "@/utils/uploadthing";
-import { FaCheck, FaTrash } from "react-icons/fa";
+import { FaCheck, FaRegSave, FaTrash } from "react-icons/fa";
 import Image from "next/image";
 import { Reorder, useDragControls } from "framer-motion";
 import { IoReorderFour } from "react-icons/io5";
 import { createProduct } from "@/actions/products";
 import { Bounce, toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useAtom } from "jotai";
+import { currentProductOperation } from "@/stores/productStores";
+import { getProductCategoryList } from "@/actions/categories";
 
 // Define the Zod schema for validation
 const productSchema = z.object({
@@ -38,15 +40,18 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 export default function ProductForm() {
-  const router = useRouter();
   const queryClient = useQueryClient();
-  const categoriesData = queryClient.getQueryData<
-    CommonResultInterface<ProductCategoryInterface[]>
-  >([queryKeys.productCategories]);
+  const queryParams = useSearchParams();
+
+  const [, setCurrentOperation] = useAtom(currentProductOperation);
+  const { data: categoriesData, isLoading: categoryLoading } = useQuery({
+    queryKey: [queryKeys.productCategories],
+    queryFn: async () => await getProductCategoryList({}),
+  });
 
   // Check if categoriesData is valid and contains data
-  const categories = Array.isArray(categoriesData?.data)
-    ? categoriesData.data
+  const categories = Array.isArray(categoriesData?.data.data)
+    ? categoriesData.data.data
     : [];
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -74,7 +79,6 @@ export default function ProductForm() {
   const mutation = useMutation({
     mutationFn: createProduct,
     onSuccess: () => {
-
       toast.success("Success add data", {
         position: "top-right",
         autoClose: 2000,
@@ -85,25 +89,47 @@ export default function ProductForm() {
         progress: undefined,
         theme: "colored",
         transition: Bounce,
-        containerId:10912
+        // containerId:10912
       });
-      setTimeout(()=>{router.refresh();},2000)
+      const params = {
+        search: queryParams.get("search") || "",
+        orderField: queryParams.get("orderField") || "product_name",
+        order: (queryParams.get("order") as "asc" | "desc") || "asc",
+        category: queryParams.get("category") || "",
+        page: Number(queryParams.get("page")) || 1,
+        limit: Number(queryParams.get("limit")) || 20,
+      };
+      setTimeout(() => {
+        mutation.reset();
+      }, 500);
+      return queryClient.invalidateQueries({
+        queryKey: [queryKeys.products, { ...params }],
+      });
+      // setTimeout(()=>{router.refresh();},2000)
       // router.refresh();
     },
-    onError : (e)=>{
-     let error : any  = ''
-     if (typeof JSON.parse(e.message) === 'string') {
-      error = JSON.parse(JSON.parse(e.message)) as unknown as CommonResultInterface<ProductCompleteInterface>
-      error = (error as unknown as CommonResultInterface<ProductCompleteInterface>).error
-     } else {
-      error = JSON.parse(e.message) as unknown as CommonResultInterface<ProductCompleteInterface>
-      error = (error as unknown as CommonResultInterface<ProductCompleteInterface>).error
-     }
-     
-     if (typeof error === 'object') {
-       if (Array.isArray(error)) {
+    onError: (e) => {
+      let error: any = "";
+      if (typeof JSON.parse(e.message) === "string") {
+        error = JSON.parse(
+          JSON.parse(e.message),
+        ) as unknown as CommonResultInterface<ProductCompleteInterface>;
+        error = (
+          error as unknown as CommonResultInterface<ProductCompleteInterface>
+        ).error;
+      } else {
+        error = JSON.parse(
+          e.message,
+        ) as unknown as CommonResultInterface<ProductCompleteInterface>;
+        error = (
+          error as unknown as CommonResultInterface<ProductCompleteInterface>
+        ).error;
+      }
+
+      if (typeof error === "object") {
+        if (Array.isArray(error)) {
           // console.log(error);
-          (error as Array<{message:string}>).forEach((e,i)=>{
+          (error as Array<{ message: string }>).forEach((e, i) => {
             toast.error(e.message, {
               position: "top-right",
               autoClose: 2000,
@@ -114,10 +140,10 @@ export default function ProductForm() {
               progress: undefined,
               theme: "colored",
               transition: Bounce,
-              containerId:10912,
-              toastId:i
+              containerId: 10912,
+              // toastId:i
             });
-          })
+          });
         }
       } else {
         toast.error(error.error, {
@@ -130,19 +156,18 @@ export default function ProductForm() {
           progress: undefined,
           theme: "colored",
           transition: Bounce,
-          containerId:10912
+          containerId: 10912,
         });
       }
-    }
+    },
   });
   const onSubmit = (data: ProductFormValues) => {
     // console.log("Form Data:", data);
     mutation.mutate(data as unknown as ProductRecordInterface);
   };
-  
 
   // Transform categories data for React Select
-  const categoryOptions = categories.map((category) => ({
+  const categoryOptions = categories?.map((category) => ({
     value: category.id,
     label: category.display_name || category.name,
   }));
@@ -161,6 +186,12 @@ export default function ProductForm() {
     setUploadedImages(updatedImages);
     setValue("image", JSON.stringify(updatedImages));
   };
+  useEffect(() => {
+    if (mutation.isSuccess) {
+      // console.log("success");
+      setCurrentOperation("idle");
+    }
+  }, [mutation.isSuccess]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -208,10 +239,14 @@ export default function ProductForm() {
             setValue("product_category_id", option?.value || 0)
           }
           placeholder="Select a category"
-          value={categoryOptions.find(
+          value={categoryOptions?.find(
             (option) => option.value === watch("product_category_id"),
           )}
           isDisabled={mutation.isSuccess}
+          isLoading={categoryLoading}
+          loadingMessage={() => (
+            <span className="loading loading-spinner loading-xs"></span>
+          )}
         />
         {errors.product_category_id && (
           <p className="text-red-500">{errors.product_category_id.message}</p>
@@ -361,13 +396,13 @@ export default function ProductForm() {
       </div>
 
       <div className="flex max-w-full justify-end py-5">
-        <ButtonWithAction type="submit" replaceTWClass="btn btn-primary">
-          Save{" "}
+        <ButtonWithAction type="submit" replaceTWClass="btn btn-primary btn-sm">
+          Save <FaRegSave />
           {mutation.isPending ? (
             <span className="loading loading-spinner loading-xs"></span>
           ) : mutation.isSuccess ? (
             <>
-            <FaCheck />
+              <FaCheck />
             </>
           ) : (
             ""

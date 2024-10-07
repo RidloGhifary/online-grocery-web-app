@@ -1,6 +1,18 @@
 import React from "react";
 import { IconType } from "react-icons";
-import { FaHome, FaShoppingBag, FaUserFriends } from "react-icons/fa";
+import {
+  FaBoxes,
+  FaHome,
+  FaJournalWhills,
+  FaShoppingBag,
+  FaUser,
+  FaUserFriends,
+} from "react-icons/fa";
+import { FaShop } from "react-icons/fa6";
+import { IoIosSettings } from "react-icons/io";
+import { GiFruitBowl } from "react-icons/gi";
+import { MdAdminPanelSettings, MdCategory } from "react-icons/md";
+import { GrTransaction } from "react-icons/gr";
 import { FaStore } from "react-icons/fa6";
 
 export interface AdminSideMenuInterface {
@@ -21,33 +33,71 @@ const adminSideMenuDatas: {
     {
       name: "admin.dashboard.menu",
       displayName: "Dashboard",
-      icon: <FaHome size={"1.5em"} />,
+      icon: <FaHome />,
       href: "",
       permission: "admin_dashboard_access",
     },
     {
-      name: "admin.users.menu",
-      displayName: "User",
-      icon: <FaUserFriends size={"1.5em"} />,
+      name: "admin.stock.menu",
+      displayName: "Stock Management",
+      icon: <FaBoxes />,
+      href: "/stocks",
+      permission: "admin_stock_access",
+      subMenu: [
+        {
+          name: "admin.stock.journals",
+          displayName: "Journals",
+          icon: <FaJournalWhills />,
+          href: "/stocks/journals",
+          permission: "admin_stock_access",
+        },
+      ],
+    },
+    {
+      name: "admin.user.menu",
+      displayName: "Account",
+      icon: <FaUserFriends />,
+      permission: "admin_user_access",
+      subMenu: [
+        {
+          name: "admin.user.list",
+          displayName: "Customer",
+          icon: <FaUser />,
+          href: "/accounts/customers",
+          permission: "admin_user_list",
+        },
+        {
+          name: "admin.user.list",
+          displayName: "Admin",
+          icon: <MdAdminPanelSettings />,
+          href: "/accounts/admin",
+          permission: "super",
+        },
+        // {
+        //   name: "admin.users.roles.list",
+        //   displayName: "Roles",
+        //   href: "/roles",
+        //   permission: "admin_users_roles_list",
+        // },
+        // {
+        //   name: "admin.users.permissions.list",
+        //   displayName: "Permissions",
+        //   href: "/permissions",
+        //   permission: "admin_users_permissions_list",
+        // },
+      ],
+    },
+    {
+      name: "admin.manage.menu",
+      displayName: "Manage",
+      icon: <GrTransaction size={"1.5em"} />,
       permission: "admin_users_access",
       subMenu: [
         {
-          name: "admin.users.list",
-          displayName: "User",
-          href: "/user",
-          permission: "admin_users_list",
-        },
-        {
-          name: "admin.users.roles.list",
-          displayName: "Roles",
-          href: "/roles",
-          permission: "admin_users_roles_list",
-        },
-        {
-          name: "admin.users.permissions.list",
-          displayName: "Permissions",
-          href: "/permissions",
-          permission: "admin_users_permissions_list",
+          name: "admin.orders.list",
+          displayName: "Orders",
+          href: "/manage/orders",
+          permission: "admin_access",
         },
       ],
     },
@@ -55,19 +105,21 @@ const adminSideMenuDatas: {
       name: "admin.products.menu",
       displayName: "Products",
       permission: "admin_product_access",
-      icon: <FaShoppingBag size={"1.5em"} />,
+      icon: <FaShoppingBag />,
       subMenu: [
         {
           name: "admin.products.list",
           displayName: "Products",
           href: "/products",
+          icon: <GiFruitBowl />,
           permission: "admin_product_list",
         },
         {
           name: "admin.products.category",
           displayName: "Categories",
           href: "/categories",
-          permission: "admin_product_category",
+          icon: <MdCategory />,
+          permission: "admin_product_category_list",
         },
       ],
     },
@@ -75,12 +127,13 @@ const adminSideMenuDatas: {
       name: "admin.stores.menu",
       displayName: "Stores",
       permission: "super",
-      icon: <FaStore size={"1.5em"} />,
+      icon: <FaShop />,
       subMenu: [
         {
           name: "admin.stores.list",
           displayName: "Stores",
           href: "/stores",
+          icon: <FaShop />,
           permission: "super",
         },
       ],

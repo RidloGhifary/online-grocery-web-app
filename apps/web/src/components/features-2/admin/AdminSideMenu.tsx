@@ -5,7 +5,7 @@ import {
 } from "@/constants/adminSideMenuData";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
+import React, { ReactNode } from "react";
 import { IconType } from "react-icons";
 import { useQuery } from "@tanstack/react-query";
 import { getAdmin } from "@/actions/user";
@@ -77,21 +77,18 @@ export default function AdminSideMenu() {
 
       if (item.subMenu && item.subMenu.length > 0) {
         return (
-          <li key={item.name}>
+          <li key={item.name+(Math.random() + 1).toString(36).substring(7)}>
             <details open={shouldOpen}>
-              <summary>{renderDisplayName(item.displayName)}</summary>
-              <ul>{renderMenuItems(item.subMenu)}</ul>
+              <summary>{item.icon as ReactNode?item.icon as ReactNode:''} {renderDisplayName(item.displayName)}</summary>
+              <ul> {renderMenuItems(item.subMenu)}</ul>
             </details>
           </li>
         );
       } else {
         return (
-          <li key={item.name}>
-            <Link
-              className={` ${isActive ? "font-bold" : ""}`}
-              href={`${baseUrlGroup}${item.href}`}
-            >
-              {renderDisplayName(item.displayName)}
+          <li key={item.name+(Math.random() + 1).toString(36).substring(7)}>
+            <Link className={` ${isActive ? "font-bold" : ""}`} href={`${baseUrlGroup}${item.href}`}>
+            {item.icon as ReactNode?item.icon as ReactNode:''} {renderDisplayName(item.displayName)}
             </Link>
           </li>
         );

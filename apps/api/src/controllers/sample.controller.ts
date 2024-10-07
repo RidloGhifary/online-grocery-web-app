@@ -7,7 +7,7 @@ export class SampleController {
   }
  
   async getSampleDataById(req: Request, res: Response) {
-    const ress = await prisma.storeHasAdmin.findFirst()
+    const ress = await prisma.productCategory.findFirst()
     return res.status(200);
   }
 

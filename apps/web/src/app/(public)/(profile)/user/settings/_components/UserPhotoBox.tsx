@@ -20,7 +20,7 @@ export default function UserPhotoBox({
       const cookie = await getCookies("token");
       const field = data.image ? "image" : "remove_image";
       const response = await axios.patch(
-        `http://localhost:8000/api/users/biodata?field=${field}`,
+        `${process.env.NEXT_PUBLIC_BASE_API_URL}/users/biodata?field=${field}`,
         data,
         {
           headers: {

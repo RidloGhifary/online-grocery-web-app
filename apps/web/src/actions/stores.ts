@@ -16,7 +16,7 @@ export interface GetStoresResponse extends CommonResultInterface<StoreProps[]> {
 export async function getStores({
   page = 1,
 }: {
-  page: number;
+  page?: number;
 }): Promise<GetStoresResponse> {
   const result = {
     ok: false,
@@ -127,15 +127,10 @@ export async function createStore({
       body: JSON.stringify(formData),
     });
 
-    if (!response.ok) {
-      result.error = `Failed to create store: ${response.statusText}`;
-      return result;
-    }
-
     const data = await response.json();
     result.data = data.data;
-    result.ok = data.ok || true;
-    result.message = data.message || "Store created successfully";
+    result.ok = data.ok;
+    result.message = data.message;
     return result;
   } catch (error) {
     result.error =
@@ -172,15 +167,10 @@ export async function editStore({
       },
     );
 
-    if (!response.ok) {
-      result.error = `Failed to update store: ${response.statusText}`;
-      return result;
-    }
-
     const data = await response.json();
     result.data = data.data;
-    result.ok = data.ok || true;
-    result.message = data.message || "Store updated successfully";
+    result.ok = data.ok ;
+    result.message = data.message;
     return result;
   } catch (error) {
     result.error =

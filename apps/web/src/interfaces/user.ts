@@ -69,7 +69,7 @@ export interface UserInterface {
   email: string;
   phone_number: string | null;
   gender: "male" | "female";
-  password: string | null;
+  password?: string ;
   middle_name: string | null;
   image: string | null;
   referral: string | null;
@@ -79,7 +79,42 @@ export interface UserInterface {
   created_at: Date | null;
   updated_at: Date | null;
   deleted_at: Date | null;
-  role?: UserHasRole[];
+  role ?: UserHasRole[]
+  store_admins?: StoreAdminInterface[]
+}
+
+export interface StoreAdminInterface {
+  id?:number
+  store_id?: number
+  user_id?:number
+  assignee_id?:number
+}
+
+export interface UserInputInterface {
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string | null;
+  gender: "male" | "female";
+  password: string | null;
+  middle_name: string | null;
+  image: string | null;
+  role_id : number
+}
+
+export interface UserUpdateInputInterface {
+  id?: number
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string | null;
+  gender: "male" | "female";
+  password: string | null;
+  middle_name: string | null;
+  image: string | null;
+  role_id : number
 }
 
 export interface UserHasRole {

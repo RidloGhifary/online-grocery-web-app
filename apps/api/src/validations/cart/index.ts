@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-const getCartItemsSchema = z.object({});
-
 export const addItemSchema = z.object({
   productId: z
     .number()

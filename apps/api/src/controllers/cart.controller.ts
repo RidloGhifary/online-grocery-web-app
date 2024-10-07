@@ -56,6 +56,7 @@ export class CartController {
               price: true,
               image: true,
               description: true,
+              unit_in_gram: true,
             },
           },
         },
@@ -125,37 +126,28 @@ export class CartController {
 
     try {
       const result = await prisma.$transaction(async (prisma) => {
-        const currentUserAddress = await prisma.user.findFirst({
-          where:{
-            id: userId
-          },
-          include: {
-            addresses: {
-              where: {
-                is_primary: true,
-              },
-            },
-          },
+        const selectedStore = await prisma.store.findUnique({
+          where: { id: storeId },
+          include: { city: true },
         });
-        console.log(currentUserAddress);
-        
+
+        if (!selectedStore) {
+          throw new Error('Store not found');
+        }
+
         const product = await prisma.product.findUnique({
           where: { id: productId },
           include: {
             StoreHasProduct: {
               where: {
                 store: {
-                  city_id: currentUserAddress?.addresses[0].city_id,
+                  city_id: selectedStore.city_id,
                 },
               },
-              // include:{
-              //   store : true
-              // }
             },
           },
         });
-        console.log(product);
-        
+
         if (!product) {
           throw new Error('Product not found');
         }
@@ -351,12 +343,16 @@ export class CartController {
             in: productIds,
           },
         },
+        include: {
+          product: true,
+        },
       });
 
       if (cartItems.length === 0) {
         return res.status(404).json({ error: 'No chosen items for checkout' });
       }
 
+      const updatedCartItems = [];
       for (let i = 0; i < productIds.length; i++) {
         const productId = productIds[i];
         const quantity = quantities[i];
@@ -370,9 +366,22 @@ export class CartController {
             qty: quantity,
           },
         });
+
+        const product = cartItems.find(
+          (item) => item.product_id === productId,
+        )?.product;
+        if (product) {
+          const totalWeight = (product.unit_in_gram || 0) * quantity;
+          updatedCartItems.push({
+            product_id: productId,
+            qty: quantity,
+            totalWeight,
+            ...product,
+          });
+        }
       }
 
-      return res.json(cartItems);
+      return res.json(updatedCartItems);
     } catch (error) {
       return res
         .status(500)

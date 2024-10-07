@@ -41,16 +41,16 @@ interface Order {
 }
 
 interface OrderItemsProps {
-  order: Order;
+  order: Order | any;
 }
 
 const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
   const totalProductPrice = order.order_details.reduce(
-    (acc, item) => acc + item.price * item.qty,
+    (acc: any, item: any) => acc + item.price * item.qty,
     0,
   );
   const totalPrice = totalProductPrice + order.deliveryPrice;
-  const formattedDate = new Date(order.createdAt).toLocaleDateString("id-ID", {
+  const formattedDate = new Date(order?.createdAt).toLocaleDateString("id-ID", {
     timeZone: "Asia/Jakarta",
     year: "numeric",
     month: "2-digit",
@@ -81,7 +81,7 @@ const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
       <div className="font-bold">Total Price: {convertRupiah(totalPrice)}</div>
       <div className="flex items-center">
         <FaBoxOpen />
-        {order.order_details.map((item, index) => (
+        {order.order_details.map((item: any, index: any) => (
           <span key={index} className="ml-2">
             {item.product.name} X {item.qty}
             {index < order.order_details.length - 1 ? ", " : ""}

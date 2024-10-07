@@ -10,6 +10,13 @@ export interface RoleInterface {
   roles_permissions ?: RoleHasPermissionInterface[]
 }
 
+export interface RoleInputInterface {
+  id: number;
+  name: string;
+  display_name: string | null;
+  role_id:number
+}
+
 export interface RoleHasPermissionInterface {
   id: number;
   permission_id: number;

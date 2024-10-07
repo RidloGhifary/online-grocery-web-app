@@ -8,6 +8,7 @@ interface Product {
   price: number;
   image: string | null;
   description: string;
+  unit_in_gram: number;
 }
 
 interface CartItem {
@@ -28,10 +29,10 @@ interface CartItemProps {
   onCheckboxChange?: (id: number) => void;
   onQuantityChange?: (id: number, quantity: number) => void;
   onRemoveItem?: (id: number) => void;
-  setModalContent: (content: string) => void;
-  setActionToConfirm: (action: () => void) => void;
-  setModalVisible: (visible: boolean) => void;
-  setIsSortModal: (isSortModal: boolean) => void;
+  setModalContent?: (content: string) => void;
+  setActionToConfirm?: (action: () => void) => void;
+  setModalVisible?: (visible: boolean) => void;
+  setIsSortModal?: (isSortModal: boolean) => void;
 }
 
 const CartItem: React.FC<CartItemProps> = ({
@@ -65,12 +66,23 @@ const CartItem: React.FC<CartItemProps> = ({
   };
 
   const handleRemoveClick = () => {
-    setModalContent(`Do you want to delete ${item.product.name}?`);
-    setActionToConfirm(
-      () => () => onRemoveItem && onRemoveItem(item.product_id),
-    );
-    setModalVisible(true);
-    setIsSortModal(false);
+    if (setModalContent) {
+      setModalContent(`Do you want to delete ${item.product.name}?`);
+    }
+
+    if (setActionToConfirm) {
+      setActionToConfirm(
+        () => () => onRemoveItem && onRemoveItem(item.product_id),
+      );
+    }
+
+    if (setModalVisible) {
+      setModalVisible(true);
+    }
+
+    if (setIsSortModal) {
+      setIsSortModal(false);
+    }
   };
 
   return (
@@ -118,6 +130,9 @@ const CartItem: React.FC<CartItemProps> = ({
             ) : (
               <span className="font-semibold">{item.qty}</span>
             )}
+          </div>
+          <div className="mt-2 font-semibold">
+            Total weight: {item.qty * item.product.unit_in_gram} gram
           </div>
         </div>
       </div>

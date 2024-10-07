@@ -8,13 +8,17 @@ import { Modal } from "@/components/features-2/ui/Modal";
 import PaginationPushRoute from "@/components/features-2/ui/PaginationPushRoute";
 import SearchBar from "@/components/features-2/ui/SearchBar";
 import { useProductWithFilter } from "@/hooks/publicProductHooks";
+import { geoAtom, geoReadyAtom } from "@/stores/geoStores";
+import { useAtom } from "jotai";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChangeEventHandler, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-export default function () {
+export default function ProductListPage() {
   const [modalActive, setModalActive] = useState<boolean>(false);
   const [isDebouncing, setIsDebouncing] = useState<boolean>(false);
+  const [geoLocation] = useAtom(geoAtom);
+  const [geoReady] = useAtom(geoReadyAtom);
 
   const queryParams = useSearchParams();
   const pathname = usePathname();
@@ -25,18 +29,21 @@ export default function () {
     error,
     data: products,
   } = useProductWithFilter({
-    search: queryParams.get("search") || '',
+    search: queryParams.get("search") || "",
     orderField: queryParams.get("orderField") || "product_name",
     order: (queryParams.get("order") as "asc" | "desc") || "asc",
-    category: queryParams.get("category") || '',
+    category: queryParams.get("category") || "",
     page: Number(queryParams.get("page")) || 1,
     limit: Number(queryParams.get("limit")) || 20,
+    latitude: geoLocation?.coords?.latitude,
+    longitude: geoLocation?.coords?.longitude,
   });
 
   const debounced = useDebouncedCallback(
     (value) => {
       const params = new URLSearchParams(window.location.search);
       params.set("search", value);
+      params.set("page", "1");
 
       if (value === "" || !value) {
         params.delete("search");

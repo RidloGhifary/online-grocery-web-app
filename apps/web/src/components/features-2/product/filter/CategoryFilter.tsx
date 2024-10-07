@@ -20,7 +20,7 @@ export default function CategoryFilter() {
     } else {
       params.set("category", selectedCategory);
     }
-
+    params.set("page", '1');
     router.replace(`${pathname}?${params.toString()}`);
   };
 
@@ -33,7 +33,7 @@ export default function CategoryFilter() {
       >
         All
       </Radio>
-      {data?.data?.map((category, index) => (
+      {data?.data?.data?.map((category, index) => (
         <Radio
           defaultChecked={searchParams.get("category") === category.name}
           key={index}

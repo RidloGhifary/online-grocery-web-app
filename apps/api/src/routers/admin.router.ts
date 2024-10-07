@@ -1,6 +1,9 @@
 import { AdminController } from '@/controllers/admin.controller';
+import validateRequestVerbose from '@/middlewares/validateRequestVerbose';
+import { verifyPermission } from '@/middlewares/verifyPermission';
 import { verifySuperAdmin } from '@/middlewares/verifySuperAdmin';
 import { verifyToken } from '@/middlewares/verifyToken';
+import { adminCreateSchema, adminUpdateSchema, deleteAdminSchema } from '@/validations/admin';
 import { Router } from 'express';
 
 export class AdminRouter {
@@ -44,6 +47,39 @@ export class AdminRouter {
       verifySuperAdmin,
       this.adminController.switchAdminStore,
     );
+    this.router.get(
+      '/manage-admin',
+      verifyToken,
+      verifyPermission('super'),
+      this.adminController.getAllAdmin
+    )
+    this.router.post(
+      '/manage-admin',
+      verifyToken,
+      verifyPermission('super'),
+      validateRequestVerbose(adminCreateSchema),
+      this.adminController.createAdmin
+    )
+    this.router.patch(
+      '/manage-admin/update',
+      verifyToken,
+      verifyPermission('super'),
+      validateRequestVerbose(adminUpdateSchema),
+      this.adminController.updateAdmin
+    )
+    this.router.delete(
+      '/manage-admin/delete/:id',
+      verifyToken,
+      verifyPermission('super'),
+      validateRequestVerbose(deleteAdminSchema,'params'),
+      this.adminController.deleteAdmin
+    )
+    this.router.get(
+      '/manage-customer',
+      verifyToken,
+      verifyPermission('admin_user_list'),
+      this.adminController.getAllCustomer
+    )
   }
 
   getRouter(): Router {

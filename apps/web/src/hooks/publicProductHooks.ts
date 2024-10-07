@@ -10,6 +10,8 @@ export function useProductWithFilter({
   orderField,
   page,
   limit,
+  latitude,
+  longitude,
 }: {
   category?: string;
   search?: string;
@@ -17,6 +19,8 @@ export function useProductWithFilter({
   orderField?: string;
   page?: number;
   limit?: number;
+  latitude?: number | null | string;
+  longitude?: number | null | string;
 }) {
   let keys: {} | undefined = undefined;
   if (category || search || order || orderField || page || limit) {
@@ -27,18 +31,22 @@ export function useProductWithFilter({
       orderField,
       page: page ?? undefined,
       limit: limit ?? undefined,
+      latitude,
+      longitude,
     };
   }
   return useQuery({
     queryKey: [queryKeys.products, keys || undefined],
-    queryFn: async () => {
-      const data = await getProductListWithFilter({
+    queryFn: () => {
+      const data = getProductListWithFilter({
         search: search,
         orderField: orderField,
         order: order,
         category: category,
         page: page,
         limit: limit,
+        latitude,
+        longitude,
       });
       return data;
     },

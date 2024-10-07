@@ -5,11 +5,12 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "cross-env NODE_ENV=development ts-node-dev -r tsconfig-paths/register src/index.ts",
-    "build": "tsc && tsc-alias",
-    "serve": "cross-env NODE_ENV=production node dist/index.js",
+    "build": "npx prisma migrate dev --name newInit2 && npx prisma generate && tsc && tsc-alias && npx prisma migrate deploy && npx prisma db seed",
+    "serve": "cross-env NODE_ENV=production node dist/src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prisma": "npx prisma",
     "migrate": "dotenv -e .env.development -- npx prisma migrate dev",
+    "migrate:prod": "npx prisma migrate dev --name newInit",
     "migrate:clean": "dotenv -e \".env.development\" -- npx prisma migrate reset --skip-seed",
     "migrate:seed": "dotenv -e \".env.development\" -- npx prisma db seed"
   },
@@ -20,11 +21,12 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.7.1",
+    "@prisma/internals": "^5.19.1",
     "axios": "^1.7.5",
-    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
+    "decimal.js": "^10.4.3",
     "dotenv": "^16.3.1",
     "dotenv-cli": "^7.4.2",
     "express": "^4.18.2",

@@ -6,6 +6,7 @@ import { PaginationInterface } from "./PaginateInterface";
  * @template T - The type of data to be returned. 
  */
 export default interface CommonPaginatedResultInterface<T> {
+  [x: string]: any;
   /**
    * Indicates whether the operation was successful.
    */

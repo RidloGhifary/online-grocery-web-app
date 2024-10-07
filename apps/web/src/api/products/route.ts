@@ -22,7 +22,7 @@ interface GetProductByIdResponse {
 }
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api",
 });
 
 export async function getAllProducts(): Promise<
@@ -30,7 +30,7 @@ export async function getAllProducts(): Promise<
 > {
   try {
     const response = await api.get<GetAllProductsResponse>("/products");
-    console.log(response);
+    // console.log(response);
     return response;
   } catch (error) {
     throw new Error(`Failed to fetch products: ${error}`);
@@ -42,7 +42,7 @@ export async function getProductById(id: number) {
     const response = await api.get<GetProductByIdResponse>(
       `/products/details/${id}`,
     );
-    console.log(response);
+    // console.log(response);
     return response;
   } catch (error) {
     throw new Error(`Failed to fetch product by ID: ${error}`);
